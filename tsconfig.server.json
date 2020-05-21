@@ -1,0 +1,20 @@
+{
+	"compilerOptions": {
+		// "baseUrl": "./",
+		"emitDecoratorMetadata": true,
+		"esModuleInterop": true,
+		"experimentalDecorators": true,
+		"importHelpers": true,
+		"module": "commonjs",
+		"outDir": "dist",
+		"removeComments": true,
+		"sourceMap": true,
+		"strict": true,
+		"target": "es6",
+		"allowJs": true,
+		"moduleResolution": "node",
+		"types": ["node"]
+	},
+	"include": ["src/**/*.ts", "src/**/*.js", "spec/**/*.ts"],
+	"exclude": ["src/public/"]
+}

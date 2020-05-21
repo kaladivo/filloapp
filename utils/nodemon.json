@@ -1,0 +1,6 @@
+{
+	"watch": ["src"],
+	"ext": "ts",
+	"ignore": ["src/public"],
+	"exec": "cross-env ENV_FILE=development TS_NODE_PROJECT=tsconfig.server.json ts-node -r ./utils/setupEnv.js ./src/server/index.ts"
+}
