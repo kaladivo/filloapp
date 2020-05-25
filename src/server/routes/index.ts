@@ -1,8 +1,6 @@
 import Router from 'koa-router'
 import auth from './auth'
 import form from './form'
-import googleapis from './googleapis'
-import test from './test'
 
 const router = new Router()
 
@@ -19,7 +17,5 @@ router.get('/', async (ctx, next) => {
 
 router.use(auth.routes(), auth.allowedMethods())
 router.use(form.routes(), form.allowedMethods())
-router.use(googleapis.routes(), googleapis.allowedMethods())
-router.use(test.routes(), test.allowedMethods())
 
 export default router
