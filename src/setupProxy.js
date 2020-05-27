@@ -4,7 +4,7 @@ module.exports = function setupProxy(app) {
 	app.use(
 		'/api',
 		proxy.createProxyMiddleware({
-			target: 'http://localhost:3001',
+			target: `http://localhost:${process.env.SERVER_PORT}`,
 			changeOrigin: true,
 		})
 	)

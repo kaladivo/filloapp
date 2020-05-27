@@ -1,67 +1,166 @@
 import Router from 'koa-router'
-import bcrypt from 'bcrypt'
-import {
-	login,
-	checkUser,
-	createUser as createUserUrl,
-} from '../../../constants/api/auth'
-import {createUser, getUser} from './db'
+import {google} from 'googleapis'
+import {UNAUTHORIZED} from 'http-status-codes'
+import Schema from 'validate'
+import * as errorCodes from '../../../constants/errorCodes'
+import * as authRoutes from '../../../constants/api/auth'
+import {createOrUpdateUser} from './db'
 import {withDataDbMiddleware} from '../../dbService'
-import {createJwtForUser, withValidUserMiddleware} from '../../utils/auth'
+import SendableError from '../../utils/SendableError'
+import {createJwtForUser} from '../../utils/auth'
+import validateBodyMiddleware from '../../utils/validateBodyMiddleware'
 
-const SALT_ROUNDS = Number(process.env.SALT_ROUNDS || 10)
+async function codeToUser(code: string) {
+	try {
+		const oauth2Client = new google.auth.OAuth2(
+			'252011438258-43ahfvm02k4dhhlqhd8cfjqqg0gaabv1.apps.googleusercontent.com',
+			'sCSw2vRT4WSnv7zWgiP7bNtO',
+			'http://localhost:3000'
+		)
+
+		const {tokens} = await oauth2Client.getToken(code)
+		const {access_token: accessToken, refresh_token: refreshToken} = tokens
+		console.log(tokens)
+
+		if (!accessToken) {
+			throw new SendableError('Unable to retrieve access token', {
+				status: 403,
+				errorCode: errorCodes.UNABLE_TO_GET_USER_INFO,
+			})
+		}
+		oauth2Client.setCredentials({
+			access_token: accessToken,
+			refresh_token: refreshToken,
+		})
+
+		const {data: userData} = await google
+			.oauth2({auth: oauth2Client, version: 'v2'})
+			.userinfo.get()
+
+		if (!userData.email) {
+			throw new SendableError("Unable to retrieve user' s email", {
+				status: UNAUTHORIZED,
+				errorCode: errorCodes.UNABLE_TO_GET_USER_INFO,
+			})
+		}
+
+		return {
+			accessToken,
+			refreshToken: refreshToken || undefined,
+			email: userData.email,
+			userData,
+		}
+	} catch (e) {
+		if (e instanceof SendableError) throw e
+		throw new SendableError('Unable to get user info from google api', {
+			status: UNAUTHORIZED,
+			errorCode: errorCodes.UNABLE_TO_GET_USER_INFO,
+			payload: {
+				googleApiMessage: e.message,
+			},
+		})
+	}
+}
+
+async function accessTokenToUser(googleAccessToken: string) {
+	try {
+		const oauth2Client = new google.auth.OAuth2(
+			'252011438258-43ahfvm02k4dhhlqhd8cfjqqg0gaabv1.apps.googleusercontent.com',
+			'sCSw2vRT4WSnv7zWgiP7bNtO',
+			'http://localhost:3000'
+		)
+
+		oauth2Client.setCredentials({
+			access_token: googleAccessToken,
+		})
+
+		const {data: userData} = await google
+			.oauth2({auth: oauth2Client, version: 'v2'})
+			.userinfo.get()
+
+		if (!userData.email) {
+			throw new SendableError("Unable to retrieve user' s email", {
+				status: UNAUTHORIZED,
+				errorCode: errorCodes.UNABLE_TO_GET_USER_INFO,
+			})
+		}
+
+		return {
+			accessToken: googleAccessToken,
+			email: userData.email,
+			userData,
+		}
+	} catch (e) {
+		if (e instanceof SendableError) throw e
+		throw new SendableError('Unable to get user info from google api', {
+			status: UNAUTHORIZED,
+			errorCode: errorCodes.UNABLE_TO_GET_USER_INFO,
+			payload: {
+				googleApiMessage: e.message,
+			},
+		})
+	}
+}
 
 const router = new Router()
 
-router.post(login, withDataDbMiddleware, async (ctx, next) => {
-	try {
-		const {password, username} = ctx.request.body
-		const {dbClient} = ctx.state
-		const dbUser = await getUser({username, dbClient})
-		const passwordValid = await bcrypt.compare(password, dbUser.password)
-
-		if (!passwordValid) {
-			throw new Error('Bad credentials')
-		}
-
-		ctx.body = {username, accessToken: await createJwtForUser({username})}
-		await next()
-	} catch (e) {
-		ctx.status = 401
-		console.log('Error while logging in', e)
-	}
-})
-
-router.post(
-	createUserUrl,
-	async (ctx, next) => {
-		if (process.env.NODE_ENV === 'development') {
-			await next()
-			return
-		}
-
-		ctx.state = 403
+const loginSchema = new Schema({
+	code: {
+		type: String,
+		required: true,
 	},
+})
+router.post(
+	authRoutes.login,
+	validateBodyMiddleware(loginSchema),
 	withDataDbMiddleware,
 	async (ctx, next) => {
 		const {dbClient} = ctx.state
-		const {password, username} = ctx.request.body
+		const {code} = ctx.request.body
 
-		try {
-			const hashedPass = await bcrypt.hash(password, SALT_ROUNDS)
-			await createUser({username, password: hashedPass, dbClient})
-			ctx.body = 200
-			await next()
-		} catch (e) {
-			ctx.body = 'Unable to create user.'
-			ctx.status = 400
-			console.error(e)
-		}
+		const {accessToken, refreshToken, userData, email} = await codeToUser(code)
+
+		const user = await createOrUpdateUser({
+			accessToken,
+			refreshToken,
+			email,
+			userData,
+			dbClient,
+		})
+
+		ctx.body = {bearer: await createJwtForUser(user)}
+		await next()
 	}
 )
 
-router.get(checkUser, withValidUserMiddleware, (ctx) => {
-	ctx.body = ctx.state.user
+const refreshSchema = new Schema({
+	googleAccessToken: {
+		type: String,
+		required: true,
+	},
 })
+router.post(
+	authRoutes.refresh,
+	validateBodyMiddleware(refreshSchema),
+	withDataDbMiddleware,
+	async (ctx, next) => {
+		const {dbClient} = ctx.state
+		const {googleAccessToken} = ctx.request.body
+
+		const {accessToken, userData, email} = await accessTokenToUser(
+			googleAccessToken
+		)
+
+		const user = await createOrUpdateUser({
+			accessToken,
+			email,
+			userData,
+			dbClient,
+		})
+
+		ctx.body = {bearer: await createJwtForUser(user)}
+		await next()
+	}
+)
 
 export default router

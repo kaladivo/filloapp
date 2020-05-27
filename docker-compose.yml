@@ -5,9 +5,10 @@ services:
     command: bash -c 'while !</dev/tcp/postgres/5432; do sleep 1; done; yarn start'
     environment:
       - NODE_ENV=development
-      - PORT=7000
+      - SERVER_PORT=3001
+      - PORT=3000
     ports:
-      - '7000:7000'
+      - '3000:3000'
     working_dir: /usr/src/app
     volumes:
       - nodemodules:/usr/src/app/node_modules

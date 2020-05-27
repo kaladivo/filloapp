@@ -7,8 +7,10 @@ import logger from 'koa-logger'
 import bodyParser from 'koa-bodyparser'
 import send from 'koa-send'
 import serve from 'koa-static'
+import {UNKNOWN} from '../constants/errorCodes'
 
 import rootRouter from './routes'
+import SendableError from './utils/SendableError'
 
 const app = new Koa()
 const appRouter = new Router()
@@ -19,14 +21,13 @@ app.use(async (context, next) => {
 		await next()
 	} catch (e) {
 		console.warn('Request returned error', e)
-		context.body = e.message
-		context.status = 500
-		// if (e instanceof ErrorWithPayload) {
-		// 	context.body = e.payload
-		// 	context.status = e.status
-		// } else {
-		// 	throw e
-		// }
+		if (e instanceof SendableError) {
+			e.fillResponse(context.response)
+		} else {
+			context.body = {message: e.message, errorCode: UNKNOWN}
+			context.status = 500
+			throw e
+		}
 	}
 })
 
@@ -47,6 +48,6 @@ app.use(bodyParser())
 appRouter.use(rootRouter.routes())
 app.use(appRouter.routes()).use(appRouter.allowedMethods())
 
-const PORT = process.env.PORT || 3000
+const PORT = process.env.SERVER_PORT || process.env.PORT || 3000
 console.info('🔥  Api is listening on ', PORT)
 app.listen(PORT)

@@ -1,18 +1,17 @@
 import {Context, Next} from 'koa'
 import jwt from 'jsonwebtoken'
+import {UNAUTHORIZED} from '../../constants/errorCodes'
+import User from '../../constants/User'
+import SendableError from './SendableError'
 
 const secret = process.env.SERVER_SECRET || 'secret'
-const publicUrl = process.env.JWT_ISS || 'smlouvy-web'
+const publicUrl = process.env.JWT_ISS || 'https://filloapp.cz'
 
-export interface User {
-	username: string
-}
-
-export async function createJwtForUser({username}: {username: string}) {
-	const token = await jwt.sign({}, secret, {
-		subject: username,
+export async function createJwtForUser(user: User) {
+	const token = await jwt.sign(user, secret, {
+		subject: user.email,
 		issuer: publicUrl,
-		expiresIn: '1 day',
+		expiresIn: '1 hour',
 	})
 	return token
 }
@@ -21,18 +20,31 @@ export async function withValidUserMiddleware(ctx: Context, next: Next) {
 	try {
 		const {authorization} = ctx.request.headers
 		const bearer = authorization.replace('Bearer ', '')
-		const decoded: any = await jwt.verify(bearer, secret, {issuer: publicUrl})
+		const {
+			email,
+			domain,
+			googleAccessToken,
+			customerAdmin,
+			additionalInfo,
+		} = (await jwt.verify(bearer, secret, {issuer: publicUrl})) as any
 
-		if (!decoded) {
+		if (!email || !domain || googleAccessToken || additionalInfo) {
 			throw new Error('Unauthorized')
 		}
 
-		const {sub: username} = decoded
-		const user: User = {username}
+		const user: User = {
+			email,
+			domain,
+			googleAccessToken,
+			customerAdmin,
+			additionalInfo,
+		}
 		ctx.state.user = user
 	} catch (e) {
-		ctx.status = 401
-		return
+		throw new SendableError('Unauthorized', {
+			status: 401,
+			errorCode: UNAUTHORIZED,
+		})
 	}
 	await next()
 }

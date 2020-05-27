@@ -16,5 +16,5 @@
 		"types": ["node"]
 	},
 	"include": ["src/**/*.ts", "src/**/*.js", "spec/**/*.ts"],
-	"exclude": ["src/public/"]
+	"exclude": ["src/public/", "src/app/"]
 }

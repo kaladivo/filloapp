@@ -1,0 +1,15 @@
+version: '2'
+services:
+  base:
+    image: node:12
+    volumes:
+      - nodemodules:/usr/src/app/node_modules
+      - .:/usr/src/app
+    working_dir: /usr/src/app
+  install:
+    extends:
+      service: base
+    command: yarn install
+volumes:
+  nodemodules:
+    external: true

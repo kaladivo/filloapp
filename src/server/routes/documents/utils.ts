@@ -1,7 +1,7 @@
-export function getFieldsFromDocument({googleDocId}: {googleDocsId: string}) {}
+export function getFieldsFromDocument({googleDocsId}: {googleDocsId: string}) {}
 
 export function generateDocument({
-	googleDocId,
+	googleDocsId,
 	googleDocsFolderId,
 	values,
 }: {

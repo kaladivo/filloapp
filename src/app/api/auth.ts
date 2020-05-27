@@ -25,7 +25,7 @@ export default class ImportExportService {
 	}
 
 	checkUser = (request: {bearer: string}): Promise<AxiosResponse<User>> => {
-		return this.apiService.get<any>(authRoutes.checkUser, {
+		return this.apiService.get<any>(authRoutes.login, {
 			headers: {Authentication: `Bearer ${request.bearer}`},
 		})
 	}

@@ -1,6 +1,7 @@
 import Router from 'koa-router'
 import auth from './auth'
 import form from './form'
+import blueprints from './blueprints'
 
 const router = new Router()
 
@@ -17,5 +18,6 @@ router.get('/', async (ctx, next) => {
 
 router.use(auth.routes(), auth.allowedMethods())
 router.use(form.routes(), form.allowedMethods())
+router.use(blueprints.routes(), blueprints.allowedMethods())
 
 export default router

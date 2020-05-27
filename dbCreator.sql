@@ -42,8 +42,10 @@ create table "user"
 		constraint user_domain_domain_fk
 			references domain
 				on update cascade on delete restrict,
-	google_token text not null,
-	customer_admin boolean default false not null
+	google_access_token text not null,
+	customer_admin boolean default false not null,
+	google_refresh_token text,
+	additional_info json not null
 );
 
 alter table "user" owner to postgres;
@@ -89,6 +91,56 @@ alter table blueprint_field owner to postgres;
 create unique index blueprint_field_id_uindex
 	on blueprint_field (id);
 
+create table blueprints_group
+(
+	id bigserial not null
+		constraint blueprints_group_pk
+			primary key,
+	name text not null,
+	created_at timestamp default now() not null,
+	created_by text not null
+);
+
+alter table blueprints_group owner to postgres;
+
+create unique index blueprints_group_id_uindex
+	on blueprints_group (id);
+
+create table blueprint_blueprints_group
+(
+	blueprint_id bigserial not null
+		constraint blueprint_blueprint_group_blueprint_id_fk
+			references blueprint
+				on update cascade on delete restrict,
+	blueprint_group_id bigserial not null
+		constraint blueprint_blueprint_group_blueprints_group_id_fk
+			references blueprints_group
+				on update cascade on delete restrict
+);
+
+alter table blueprint_blueprints_group owner to postgres;
+
+create unique index blueprint_blueprints_group_blueprint_id_blueprint_group_id_uind
+	on blueprint_blueprints_group (blueprint_id, blueprint_group_id);
+
+create table blueprints_group_submit
+(
+	id bigserial not null
+		constraint blueprint_submit_pk
+			primary key,
+	submitted_at timestamp default now() not null,
+	submitted_by text not null
+		constraint blueprint_submit_user_email_fk
+			references "user"
+				on update cascade on delete restrict,
+	blueprints_group_id bigserial not null
+		constraint blueprints_group_submit_blueprints_group_id_fk
+			references blueprints_group
+				on update cascade on delete restrict
+);
+
+alter table blueprints_group_submit owner to postgres;
+
 create table document
 (
 	id bigserial not null
@@ -99,13 +151,39 @@ create table document
 		constraint document_blueprint_id_fk
 			references blueprint
 				on update cascade on delete restrict,
-	created_at timestamp default now() not null
+	blueprints_submit_group_id bigserial not null
+		constraint document_blueprints_group_submit_id_fk
+			references blueprints_group_submit
+				on update cascade on delete restrict
 );
 
 alter table document owner to postgres;
 
 create unique index document_id_uindex
 	on document (id);
+
+create unique index blueprint_submit_id_uindex
+	on blueprints_group_submit (id);
+
+create table filled_blueprint_field
+(
+	id bigserial not null
+		constraint filled_blueprint_field_pk
+			primary key,
+	blueprints_group_submit_id bigserial not null
+		constraint filled_blueprint_field_blueprints_group_submit_id_fk
+			references blueprints_group_submit
+				on update cascade on delete restrict,
+	value text,
+	blueprint_field_d bigserial not null
+		constraint filled_blueprint_field_blueprint_field_id_fk
+			references blueprint_field
+);
+
+alter table filled_blueprint_field owner to postgres;
+
+create unique index filled_blueprint_field_id_uindex
+	on filled_blueprint_field (id);
 
 create function random_string(randomlength integer) returns text
 	leakproof
