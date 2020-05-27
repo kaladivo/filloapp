@@ -86,7 +86,11 @@ export async function accessTokenToUser(googleAccessToken: string) {
 		return {
 			accessToken: googleAccessToken,
 			email: userData.email,
-			userData,
+			userData: {
+				name: userData.name,
+				picture: userData.picture,
+				locale: userData.locale,
+			},
 		}
 	} catch (e) {
 		if (e instanceof SendableError) throw e

@@ -26,6 +26,7 @@ export async function withValidUserMiddleware(ctx: Context, next: Next) {
 			googleAccessToken,
 			customerAdmin,
 			additionalInfo,
+			customer,
 		} = (await jwt.verify(bearer, secret)) as any
 
 		if (!email || !domain || !googleAccessToken || !additionalInfo) {
@@ -38,6 +39,7 @@ export async function withValidUserMiddleware(ctx: Context, next: Next) {
 			googleAccessToken,
 			customerAdmin,
 			additionalInfo,
+			customer,
 		}
 		ctx.state.user = user
 	} catch (e) {

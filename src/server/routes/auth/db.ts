@@ -117,9 +117,17 @@ async function getUser({
 }): Promise<User | null> {
 	const result = await dbClient.query(
 		`
-        select * 
-        from "user"
-        where email = $1
+		select 
+			u.email,
+			u.domain,
+			u.google_access_token,
+			u.customer_admin,
+			u.additional_info,
+			json_build_object('id', customer.id, 'name', customer.name) as customer
+        from "user" u
+		left join domain on u.domain = domain.domain
+		left join customer on domain.customer_id = customer.id
+		where email = $1
     `,
 		[email]
 	)
@@ -134,6 +142,7 @@ async function getUser({
 		googleAccessToken: userFromDb.google_access_token,
 		customerAdmin: userFromDb.customer_admin,
 		additionalInfo: userFromDb.additional_info,
+		customer: userFromDb.customer,
 	}
 }
 

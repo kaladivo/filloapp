@@ -4,6 +4,10 @@ export default interface User {
 	domain: string
 	googleAccessToken: string
 	customerAdmin: boolean
+	customer: {
+		name: string
+		id: string
+	}
 	additionalInfo: {
 		verified_email: boolean
 		name?: string
