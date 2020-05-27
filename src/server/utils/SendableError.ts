@@ -6,6 +6,8 @@ export default class SendableError extends ExtendableError {
 	readonly status: number = 500
 	readonly payload: any = {}
 	readonly errorCode: ErrorCode = UNKNOWN
+	readonly error: Error | undefined = undefined
+	readonly description: string | undefined = undefined
 
 	constructor(
 		message: string,
@@ -13,12 +15,18 @@ export default class SendableError extends ExtendableError {
 			status,
 			payload,
 			errorCode,
-		}: {status: number; payload?: any; errorCode: ErrorCode}
+		}: {status: number; payload?: any; errorCode: ErrorCode},
+		{error, description}: {error?: Error; description?: string} = {
+			error: undefined,
+			description: undefined,
+		}
 	) {
 		super(message)
 		this.status = status
 		this.payload = payload || {}
 		this.errorCode = errorCode
+		this.error = error
+		this.description = description
 	}
 
 	fillResponse(response: Response) {
@@ -28,5 +36,13 @@ export default class SendableError extends ExtendableError {
 			errorCode: this.errorCode,
 			...this.payload,
 		}
+	}
+
+	logError(logger: (desc: string, any: any) => void) {
+		logger('Error description', this.description)
+		logger('Error message', this.message)
+		logger('Error payload', this.payload)
+		logger('Error errorCode', this.errorCode)
+		logger('Error error', this.error)
 	}
 }

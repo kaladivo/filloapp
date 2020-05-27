@@ -1,11 +1,7 @@
 import {AxiosResponse, AxiosInstance} from 'axios'
+import User from '../../constants/User'
 
 import * as authRoutes from '../../constants/api/auth'
-
-export interface User {
-	username: string
-	accessToken: string
-}
 
 export default class ImportExportService {
 	apiService: AxiosInstance
@@ -15,13 +11,11 @@ export default class ImportExportService {
 	}
 
 	login = ({
-		username,
-		password,
+		code,
 	}: {
-		username: string
-		password: string
-	}): Promise<AxiosResponse<User>> => {
-		return this.apiService.post<any>(authRoutes.login, {username, password})
+		code: string
+	}): Promise<AxiosResponse<{bearer: string}>> => {
+		return this.apiService.post<any>(authRoutes.login, {code})
 	}
 
 	checkUser = (request: {bearer: string}): Promise<AxiosResponse<User>> => {

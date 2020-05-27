@@ -26,9 +26,9 @@ export async function withValidUserMiddleware(ctx: Context, next: Next) {
 			googleAccessToken,
 			customerAdmin,
 			additionalInfo,
-		} = (await jwt.verify(bearer, secret, {issuer: publicUrl})) as any
+		} = (await jwt.verify(bearer, secret)) as any
 
-		if (!email || !domain || googleAccessToken || additionalInfo) {
+		if (!email || !domain || !googleAccessToken || !additionalInfo) {
 			throw new Error('Unauthorized')
 		}
 
