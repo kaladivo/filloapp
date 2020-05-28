@@ -50,3 +50,7 @@ export async function withValidUserMiddleware(ctx: Context, next: Next) {
 	}
 	await next()
 }
+
+export function extractUser(ctx: Context): User {
+	return ctx.state.user
+}

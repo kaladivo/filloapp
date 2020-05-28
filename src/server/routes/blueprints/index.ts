@@ -1,14 +1,14 @@
-import {PoolClient} from 'pg'
 import httpStatus from 'http-status-codes'
 import Schema from 'validate'
 import Router from 'koa-router'
 import moment from 'moment'
-import {NOT_DELETED} from '../../../constants/errorCodes'
+import {FORBIDDEN, NOT_DELETED} from '../../../constants/errorCodes'
+
 import * as errorCodes from '../../../constants/errorCodes'
 import * as blueprintsRoutes from '../../../constants/api/blueprints'
 import validateBodyMiddleware from '../../utils/validateBodyMiddleware'
-import {withValidUserMiddleware} from '../../utils/auth'
-import {withDriveApi} from '../../utils/googleApis'
+import {withValidUserMiddleware, extractUser} from '../../utils/auth'
+import {withDriveApiMiddleware, extractDriveApi} from '../../utils/googleApis'
 import {getBlueprintFields, getFileMetadata} from './utils'
 import SendableError from '../../utils/SendableError'
 import {
@@ -16,9 +16,14 @@ import {
 	listBlueprintsForUser,
 	listBlueprintsForCustomer,
 	deleteBlueprint,
+	getBlueprintById,
+	searchBlueprintsForCustomer,
+	searchBlueprintsForUser,
 } from './db'
-import {withDataDbMiddleware} from '../../dbService'
-import User from '../../../constants/User'
+import {withDataDbMiddleware, extractDbClient} from '../../dbService'
+import withPaginationMiddleware, {
+	extractPagination,
+} from '../../utils/withPaginationMiddleware'
 
 const router = new Router()
 
@@ -33,10 +38,12 @@ router.post(
 	blueprintsRoutes.createBlueprint,
 	validateBodyMiddleware(createBlueprintSchema),
 	withValidUserMiddleware,
-	withDriveApi,
+	withDriveApiMiddleware,
 	withDataDbMiddleware,
 	async (ctx, next) => {
-		const {drive, user, dbClient} = ctx.state
+		const drive = extractDriveApi(ctx)
+		const user = extractUser(ctx)
+		const dbClient = extractDbClient(ctx)
 		const {fileId} = ctx.request.body
 
 		const {mimeType, name} = await getFileMetadata({fileId, drive})
@@ -94,30 +101,95 @@ router.post(
 )
 
 router.get(
-	blueprintsRoutes.listBlueprints,
+	blueprintsRoutes.searchBlueprint,
 	withValidUserMiddleware,
 	withDataDbMiddleware,
 	async (ctx, next) => {
-		const {user, dbClient}: {user: User; dbClient: PoolClient} = ctx.state
-		const {limit = 10, skip = 0} = ctx.request.query
+		const user = extractUser(ctx)
+		const dbClient = extractDbClient(ctx)
+
+		const {query} = ctx.request.query
+
+		if (!query) {
+			throw new SendableError('Missing query', {
+				status: httpStatus.BAD_REQUEST,
+				errorCode: errorCodes.BAD_BODY,
+			})
+		}
+
+		if (user.customerAdmin) {
+			ctx.body = await searchBlueprintsForCustomer({
+				dbClient,
+				query,
+				customerId: user.customer.id,
+			})
+		} else {
+			ctx.body = await searchBlueprintsForUser({
+				dbClient,
+				query,
+				user,
+			})
+		}
+		await next()
+	}
+)
+
+router.get(
+	blueprintsRoutes.getBlueprint,
+	withValidUserMiddleware,
+	withDataDbMiddleware,
+	async (ctx, next) => {
+		const user = extractUser(ctx)
+		const dbClient = extractDbClient(ctx)
+		const {blueprintId} = ctx.params
+
+		const blueprint = await getBlueprintById({
+			blueprintId,
+			dbClient,
+			customerId: user.customer.id,
+		})
+
+		if (!blueprint) {
+			throw new SendableError('Blueprint was not found.', {
+				status: httpStatus.NOT_FOUND,
+				errorCode: errorCodes.NOT_FOUND,
+			})
+		}
+
+		if (blueprint.owner.email !== user.email && !user.customerAdmin) {
+			throw new SendableError('Insufficient permissions', {
+				status: httpStatus.FORBIDDEN,
+				errorCode: FORBIDDEN,
+			})
+		}
+
+		ctx.body = blueprint
+
+		await next()
+	}
+)
+
+router.get(
+	blueprintsRoutes.listBlueprints,
+	withValidUserMiddleware,
+	withPaginationMiddleware,
+	withDataDbMiddleware,
+	async (ctx, next) => {
+		const user = extractUser(ctx)
+		const dbClient = extractDbClient(ctx)
+		const pagination = extractPagination(ctx)
 
 		if (user.customerAdmin) {
 			ctx.body = await listBlueprintsForCustomer({
 				dbClient,
-				user,
-				pagination: {
-					limit,
-					skip,
-				},
+				customerId: user.customer.id,
+				pagination,
 			})
 		} else {
 			ctx.body = await listBlueprintsForUser({
 				dbClient,
 				user,
-				pagination: {
-					limit,
-					skip,
-				},
+				pagination,
 			})
 		}
 		await next()
@@ -129,24 +201,37 @@ router.delete(
 	withValidUserMiddleware,
 	withDataDbMiddleware,
 	async (ctx, next) => {
-		const {user, dbClient}: {user: User; dbClient: PoolClient} = ctx.state
+		const user = extractUser(ctx)
+		const dbClient = extractDbClient(ctx)
 		const {blueprintId} = ctx.params
 
-		const deleted = await deleteBlueprint({
-			dbClient,
-			user,
+		const blueprintToDelete = await getBlueprintById({
 			blueprintId,
+			dbClient,
+			customerId: user.customer.id,
 		})
 
-		if (!deleted) {
+		if (!blueprintToDelete) {
 			throw new SendableError(
 				'Blueprint was not deleted. Make sure it exists and you have the correct permissions',
 				{
-					status: 400,
+					status: httpStatus.NOT_MODIFIED,
 					errorCode: NOT_DELETED,
 				}
 			)
 		}
+
+		if (blueprintToDelete.owner.email !== user.email && !user.customerAdmin) {
+			throw new SendableError('Insufficient permissions', {
+				status: httpStatus.FORBIDDEN,
+				errorCode: FORBIDDEN,
+			})
+		}
+
+		await deleteBlueprint({
+			dbClient,
+			blueprintId,
+		})
 		ctx.body = {deleted: blueprintId}
 
 		await next()

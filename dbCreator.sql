@@ -62,7 +62,8 @@ create table blueprint
 				on update cascade on delete restrict,
 	id bigserial not null
 		constraint blueprint_pk
-			primary key
+			primary key,
+	name text not null
 );
 
 alter table blueprint owner to postgres;
@@ -175,9 +176,7 @@ create table filled_blueprint_field
 			references blueprints_group_submit
 				on update cascade on delete restrict,
 	value text,
-	blueprint_field_d bigserial not null
-		constraint filled_blueprint_field_blueprint_field_id_fk
-			references blueprint_field
+	blueprint_field_name text not null
 );
 
 alter table filled_blueprint_field owner to postgres;

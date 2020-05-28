@@ -1,6 +1,6 @@
 import HttpStatus from 'http-status-codes'
 import {Context, Next} from 'koa'
-import {google} from 'googleapis'
+import {google, drive_v3 as driveV3, docs_v1 as docsV1} from 'googleapis'
 import {UNAUTHORIZED} from '../../constants/errorCodes'
 import User from '../../constants/User'
 import SendableError from './SendableError'
@@ -19,7 +19,7 @@ function getAuth(user: User) {
 	return oauth2Client
 }
 
-export async function withDriveApi(ctx: Context, next: Next) {
+export async function withDriveApiMiddleware(ctx: Context, next: Next) {
 	const {user} = ctx.state
 	if (!user) {
 		throw new SendableError('No user', {
@@ -36,7 +36,11 @@ export async function withDriveApi(ctx: Context, next: Next) {
 	await next()
 }
 
-export async function withGoogleDocsApi(ctx: Context, next: Next) {
+export function extractDriveApi(ctx: Context): driveV3.Drive {
+	return ctx.state.drive
+}
+
+export async function withGoogleDocsApiMiddleware(ctx: Context, next: Next) {
 	const {user} = ctx.state
 	if (!user) {
 		throw new SendableError('No user', {
@@ -51,4 +55,8 @@ export async function withGoogleDocsApi(ctx: Context, next: Next) {
 	ctx.state.docs = docs
 
 	await next()
+}
+
+export function extractGoogleDocsApi(ctx: Context): docsV1.Docs {
+	return ctx.state.docs
 }

@@ -58,3 +58,7 @@ export async function withDataDbMiddleware(ctx: Context, next: Next) {
 		client.release()
 	}
 }
+
+export function extractDbClient(ctx: Context): PoolClient {
+	return ctx.state.dbClient
+}
