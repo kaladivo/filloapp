@@ -10,6 +10,9 @@ export type ErrorCode =
 	| 'resource_not_deleted'
 	| 'forbidden'
 	| 'bad_pagination'
+	| 'unable_to_access_drive_file'
+	| 'unable_to_access_output_folder'
+	| 'error_generating_documents'
 
 export const NO_CUSTOMER_FOR_EMAIL: ErrorCode = 'no_customer_for_email'
 export const UNABLE_TO_GET_USER_INFO: ErrorCode = 'unable_to_get_user_info'
@@ -22,6 +25,11 @@ export const FORBIDDEN: ErrorCode = 'forbidden'
 export const NOT_FOUND: ErrorCode = 'not_found'
 export const BAD_PAGINATION: ErrorCode = 'bad_pagination'
 export const UNABLE_TO_GET_GOOGLE_FILE: ErrorCode = 'unable_to_get_google_file'
+export const ERROR_GENERATING_DOCUMENT: ErrorCode = 'error_generating_documents'
+export const UNABLE_TO_ACCESS_DRIVE_FILE: ErrorCode =
+	'unable_to_access_drive_file'
+export const UNABLE_TO_ACCESS_OUTPUT_FOLDER: ErrorCode =
+	'unable_to_access_output_folder'
 
 const errorCodes: {[key: string]: ErrorCode} = {
 	NO_CUSTOMER_FOR_EMAIL,
@@ -35,6 +43,9 @@ const errorCodes: {[key: string]: ErrorCode} = {
 	NOT_FOUND,
 	BAD_PAGINATION,
 	UNABLE_TO_GET_GOOGLE_FILE,
+	UNABLE_TO_ACCESS_DRIVE_FILE,
+	UNABLE_TO_ACCESS_OUTPUT_FOLDER,
+	ERROR_GENERATING_DOCUMENT,
 }
 
 export default errorCodes

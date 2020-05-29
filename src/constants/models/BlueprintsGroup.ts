@@ -1,3 +1,4 @@
+import {BlueprintsGroupSubmit} from './BlueprintsGroupSubmit'
 import {OwnerInfo} from './OwnerInfo'
 import {Blueprint} from './Blueprint'
 
@@ -13,6 +14,7 @@ export interface BlueprintGroup {
 	owner: OwnerInfo
 	fields: GroupField
 	blueprints: Blueprint[]
+	submits: BlueprintsGroupSubmit[]
 }
 
 export interface BlueprintsGroupPreview {

@@ -240,7 +240,7 @@ router.delete(
 			throw new SendableError(
 				'Blueprint was not deleted. Make sure it exists and you have the correct permissions',
 				{
-					status: httpStatus.NOT_MODIFIED,
+					status: httpStatus.OK,
 					errorCode: NOT_DELETED,
 				}
 			)

@@ -100,6 +100,8 @@ create table blueprints_group
 	name text not null,
 	created_at timestamp default now() not null,
 	created_by text not null
+		constraint blueprints_group_user_email_fk
+			references "user"
 );
 
 alter table blueprints_group owner to postgres;
@@ -130,14 +132,15 @@ create table blueprints_group_submit
 		constraint blueprint_submit_pk
 			primary key,
 	submitted_at timestamp default now() not null,
-	submitted_by text not null
+	submitted_by_email text not null
 		constraint blueprint_submit_user_email_fk
 			references "user"
 				on update cascade on delete restrict,
 	blueprints_group_id bigserial not null
 		constraint blueprints_group_submit_blueprints_group_id_fk
 			references blueprints_group
-				on update cascade on delete restrict
+				on update cascade on delete restrict,
+	folder_id text not null
 );
 
 alter table blueprints_group_submit owner to postgres;
@@ -176,13 +179,32 @@ create table filled_blueprint_field
 			references blueprints_group_submit
 				on update cascade on delete restrict,
 	value text,
-	blueprint_field_name text not null
+	name text not null,
+	type text not null
 );
 
 alter table filled_blueprint_field owner to postgres;
 
 create unique index filled_blueprint_field_id_uindex
 	on filled_blueprint_field (id);
+
+create table generated_document
+(
+	id bigserial not null
+		constraint submitted_blueprint_pk
+			primary key,
+	name text not null,
+	google_doc_id text not null,
+	pdf_id text,
+	blueprints_group_submit_id bigserial not null
+		constraint submitted_blueprint_blueprints_group_submit_id_fk
+			references blueprints_group_submit
+);
+
+alter table generated_document owner to postgres;
+
+create unique index submitted_blueprint_id_uindex
+	on generated_document (id);
 
 create function random_string(randomlength integer) returns text
 	leakproof

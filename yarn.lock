@@ -1631,6 +1631,11 @@
   dependencies:
     "@types/node" "*"
 
+"@types/is-object@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@types/is-object/-/is-object-1.0.1.tgz#3f81ed1afcce4aa89d90cf1061b9ee3e0eecff20"
+  integrity sha512-e/M8ftfyT2G15paoTiOEpB9T4GgN/zxb6wWI1tmUResYabaXgS1UYV54TFaAtB+AhV/LJZK0Vd9PEIw5DiQqNw==
+
 "@types/istanbul-lib-coverage@*", "@types/istanbul-lib-coverage@^2.0.0":
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/@types/istanbul-lib-coverage/-/istanbul-lib-coverage-2.0.1.tgz#42995b446db9a48a11a07ec083499a860e9138ff"
@@ -6525,6 +6530,11 @@ is-obj@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/is-obj/-/is-obj-2.0.0.tgz#473fb05d973705e3fd9620545018ca8e22ef4982"
   integrity sha512-drqDG3cbczxxEJRoOXcOjtdp1J/lyp1mNn0xaznRs8+muBhgQcrnbspox5X5fOw0HnMnbfDzvnEMEtqDEJEo8w==
+
+is-object@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/is-object/-/is-object-1.0.1.tgz#8952688c5ec2ffd6b03ecc85e769e02903083470"
+  integrity sha1-iVJojF7C/9awPsyF52ngKQMINHA=
 
 is-path-cwd@^2.0.0:
   version "2.2.0"

@@ -5,7 +5,7 @@ import {BAD_BODY} from '../../constants/errorCodes'
 import SendableError from './SendableError'
 
 export default (schema: Schema) => async (ctx: Context, next: Next) => {
-	const errors = schema.validate(ctx.request.body)
+	const errors = schema.validate(ctx.request.body, {strip: false})
 	if (errors.length > 0) {
 		throw new SendableError('BAD BODY', {
 			errorCode: BAD_BODY,

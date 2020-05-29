@@ -321,7 +321,7 @@ export async function searchBlueprintsForUser({
 		group by blueprint.id, u.email
 		order by blueprint.name asc
 	`,
-		[user.customer.id, `${query.toLowerCase()}%`]
+		[user.email, `${query.toLowerCase()}%`]
 	)
 
 	return result.rows
@@ -409,7 +409,7 @@ export async function listTinyBlueprintsForUser({
 			blueprint.name
 		from blueprint
 			left join "user" u on blueprint.user_email = u.email
-		where user.email = $1
+		where u.email = $1
 		order by blueprint.name asc
 	`,
 		[user.email]
