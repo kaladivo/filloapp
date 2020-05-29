@@ -1,7 +1,7 @@
 import {PoolClient} from 'pg'
+import {TinyBlueprint, Blueprint} from '../../../constants/models/Blueprint'
 import {PaginationPosition} from '../../../constants/models/Pagination'
 
-import {Blueprint} from '../../../constants/models/Blueprint'
 import User from '../../../constants/User'
 
 async function getBlueprint({
@@ -370,4 +370,50 @@ export async function deleteBlueprint({
 		await dbClient.query(`rollback`)
 		throw e
 	}
+}
+
+export async function listTinyBlueprintsForCustomer({
+	customerId,
+	dbClient,
+}: {
+	customerId: string
+	dbClient: PoolClient
+}): Promise<TinyBlueprint[]> {
+	const result = await dbClient.query(
+		`
+		select 
+			blueprint.id,
+			blueprint.name
+		from blueprint
+			left join "user" u on blueprint.user_email = u.email
+			left join domain on u.domain = domain.domain
+		where domain.customer_id = $1
+		order by blueprint.name asc
+	`,
+		[customerId]
+	)
+	return result.rows
+}
+
+export async function listTinyBlueprintsForUser({
+	user,
+	dbClient,
+}: {
+	user: User
+	dbClient: PoolClient
+}) {
+	const result = await dbClient.query(
+		`
+		select 
+			blueprint.id,
+			blueprint.name
+		from blueprint
+			left join "user" u on blueprint.user_email = u.email
+		where user.email = $1
+		order by blueprint.name asc
+	`,
+		[user.email]
+	)
+
+	return result.rows
 }

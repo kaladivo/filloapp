@@ -154,7 +154,6 @@ router.get(
 	withPaginationMiddleware,
 	withDataDbMiddleware,
 	async (ctx, next) => {
-		console.log('here')
 		const user = extractUser(ctx)
 		const dbClient = extractDbClient(ctx)
 		const pagination = extractPagination(ctx)

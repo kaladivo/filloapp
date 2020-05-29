@@ -19,6 +19,8 @@ import {
 	getBlueprintById,
 	searchBlueprintsForCustomer,
 	searchBlueprintsForUser,
+	listTinyBlueprintsForCustomer,
+	listTinyBlueprintsForUser,
 } from './db'
 import {withDataDbMiddleware, extractDbClient} from '../../dbService'
 import withPaginationMiddleware, {
@@ -190,6 +192,29 @@ router.get(
 				dbClient,
 				user,
 				pagination,
+			})
+		}
+		await next()
+	}
+)
+
+router.get(
+	blueprintsRoutes.listBlueprintsTiny,
+	withValidUserMiddleware,
+	withDataDbMiddleware,
+	async (ctx, next) => {
+		const user = extractUser(ctx)
+		const dbClient = extractDbClient(ctx)
+
+		if (user.customerAdmin) {
+			ctx.body = await listTinyBlueprintsForCustomer({
+				dbClient,
+				customerId: user.customer.id,
+			})
+		} else {
+			ctx.body = await listTinyBlueprintsForUser({
+				dbClient,
+				user,
 			})
 		}
 		await next()

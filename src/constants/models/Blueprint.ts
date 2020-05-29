@@ -13,3 +13,8 @@ export interface Blueprint {
 	name: string
 	fields: BlueprintField[]
 }
+
+export interface TinyBlueprint {
+	id: string
+	name: string
+}
