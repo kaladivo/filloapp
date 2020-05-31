@@ -1,5 +1,4 @@
 import {AxiosResponse, AxiosInstance} from 'axios'
-import User from '../../constants/User'
 
 import * as authRoutes from '../../constants/api/auth'
 
@@ -10,6 +9,7 @@ export default class ImportExportService {
 		this.apiService = apiService
 	}
 
+	// TODO change
 	login = ({
 		code,
 	}: {
@@ -18,8 +18,10 @@ export default class ImportExportService {
 		return this.apiService.post<any>(authRoutes.login, {code})
 	}
 
-	checkUser = (request: {bearer: string}): Promise<AxiosResponse<User>> => {
-		return this.apiService.get<any>(authRoutes.login, {
+	checkUser = (request: {
+		bearer: string
+	}): Promise<AxiosResponse<{bearer: string}>> => {
+		return this.apiService.get<any>(authRoutes.checkUser, {
 			headers: {Authentication: `Bearer ${request.bearer}`},
 		})
 	}

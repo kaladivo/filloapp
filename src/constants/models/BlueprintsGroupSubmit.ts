@@ -1,4 +1,4 @@
-import User from '../User'
+import {OwnerInfo} from './OwnerInfo'
 
 export interface GeneratedDocument {
 	id: string
@@ -17,7 +17,7 @@ export interface BlueprintsGroupSubmit {
 	id: string
 	submittedAt: string
 	folderId: string
-	byUser: User
+	byUser: OwnerInfo
 	filledValues: Array<FilledValue>
 	generatedFiles: Array<GeneratedDocument>
 }

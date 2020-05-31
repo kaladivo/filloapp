@@ -3,7 +3,7 @@ import Schema from 'validate'
 import * as authRoutes from '../../../constants/api/auth'
 import {createOrUpdateUser} from './db'
 import {withDataDbMiddleware} from '../../dbService'
-import {createJwtForUser} from '../../utils/auth'
+import {createJwtForUser, withValidUserMiddleware} from '../../utils/auth'
 import validateBodyMiddleware from '../../utils/validateBodyMiddleware'
 import {codeToUser, accessTokenToUser} from './utils'
 
@@ -67,5 +67,10 @@ router.post(
 		await next()
 	}
 )
+
+router.get(authRoutes.checkUser, withValidUserMiddleware, async (ctx, next) => {
+	ctx.status = 200
+	await next()
+})
 
 export default router

@@ -1,13 +1,17 @@
-import {useState, useEffect} from 'react'
+import {useState, useEffect, useCallback} from 'react'
 import sysend from 'sysend'
+import {useGoogleLogout} from 'react-google-login'
+import UserInfo from '../../constants/User'
 
-export interface User {
-	username: string
-	accessToken: string
-}
+const CLIENT_ID = String(process.env.REACT_APP_GOOGLE_CLIENT_ID)
 
 const KEY_BROADCAST_AUTH = 'AUTH_BROADCAST'
 const KEY_LOCAL_STORAGE = 'AUTH_LOCAL_STORAGE'
+
+export interface User {
+	accessToken: string
+	userInfo: UserInfo
+}
 
 const onChangeListeners: Array<(user: User | null) => void> = []
 
@@ -18,17 +22,27 @@ function onUserChange(newUser: User | null) {
 	})
 }
 
+/**
+ * Sets the new user.
+ * @param user new user
+ */
 export function setUser(user: User) {
 	console.log('setting user', user)
 	localStorage.setItem(KEY_LOCAL_STORAGE, JSON.stringify(user))
 	onUserChange(user)
 }
 
-export function cleanUser() {
+/**
+ * Will clean user from local storage. Will not perform any api call!
+ */
+function cleanUser() {
 	localStorage.removeItem(KEY_LOCAL_STORAGE)
 	onUserChange(null)
 }
 
+/**
+ * Gets the current user. Prefer using the useUser hook when possible
+ */
 export function getUser(): User | null {
 	try {
 		const jsonString = localStorage.getItem(KEY_LOCAL_STORAGE)
@@ -42,7 +56,8 @@ export function getUser(): User | null {
 }
 
 /**
- * @returns disposer
+ * @param listener wil be called when user changes
+ * @returns disposer - call this method to stop listening
  */
 export function listenForUserChange(
 	listener: (user: User | null) => void
@@ -63,7 +78,10 @@ sysend.on(KEY_BROADCAST_AUTH, (user: User | null) => {
 	})
 })
 
-export function useUser() {
+/**
+ * Hook for getting current user
+ */
+export function useUser(): User | null {
 	const [currentUser, setCurrentUser] = useState(getUser())
 
 	useEffect(() => {
@@ -71,4 +89,15 @@ export function useUser() {
 	}, [])
 
 	return currentUser
+}
+
+export function useLogout(): () => void {
+	const {signOut: googleSignOut} = useGoogleLogout({
+		clientId: CLIENT_ID,
+	})
+
+	return useCallback(() => {
+		googleSignOut()
+		cleanUser()
+	}, [googleSignOut])
 }

@@ -1,11 +1,12 @@
 import {authAxiosInstanceFactory} from './axiosInstance'
-import {getUser, cleanUser} from '../utils/auth'
 import AuthService from './auth'
-import FormsService from './forms'
+import BlueprintsService from './Blueprints'
+import BlueprintsGroupsService from './BlueprintsGroups'
 
 export class ApiService {
 	auth: AuthService
-	forms: FormsService
+	blueprints: BlueprintsService
+	blueprintsGroups: BlueprintsGroupsService
 
 	constructor({
 		getBearer,
@@ -16,11 +17,7 @@ export class ApiService {
 	}) {
 		const axiosInstance = authAxiosInstanceFactory({getBearer, onBearerRefused})
 		this.auth = new AuthService(axiosInstance)
-		this.forms = new FormsService(axiosInstance)
+		this.blueprints = new BlueprintsService(axiosInstance)
+		this.blueprintsGroups = new BlueprintsGroupsService(axiosInstance)
 	}
 }
-
-export default new ApiService({
-	getBearer: () => getUser()?.accessToken || null,
-	onBearerRefused: cleanUser,
-})

@@ -13,7 +13,7 @@ function LoadingScreen() {
 		>
 			<CircularProgress size={70} />
 			<br />
-			<Typography>Generuji soubory. Toto může trvat 10 - 30 vteřin.</Typography>
+			<Typography />
 		</div>
 	)
 }

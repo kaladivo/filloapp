@@ -1,0 +1,44 @@
+{
+	"appName": "FilloApp",
+	"common": {
+		"submit": "submit"
+	},
+	"AuthChecker": {
+		"unableToCheckUser": "Unable to check user. Logout and login might be required."
+	},
+	"DriveFilePicker": {
+		"nothingSelected": "No files selected. Picker was closed."
+	},
+	"TopBar": {
+		"logout": "Logout"
+	},
+	"sections": {
+		"blueprintsGroups": "Blueprints groups"
+	},
+	"LoginScreen": {
+		"loginWithGoogle": "Sign in with google"
+	},
+	"BlueprintsGroupScreen": {
+		"title": "Forms to submit"
+	},
+	"BlueprintsGroupDetailScreen": {},
+	"BlueprintsGroupDetail": {
+		"createdAt": "Created at: {{date}}",
+		"latestFiles": "Most recent files",
+		"submit": "Submit",
+		"blueprints": "Blueprints",
+		"submits": "Submits",
+		"submitTitle": "Submitted at: {{date}} by {{name}}"
+	},
+	"SubmitBlueprintsGroupScreen": {
+		"fillValues": "Fill values to be inserted into {{name}}",
+		"generating": "Generating documents. This might take 10 - 30 seconds.",
+		"outputName": "Output name",
+		"generatePdfs": "Generate PDF files from generated documents",
+		"selectOutputFolder": "Select outputFolder",
+		"selectedOutputFolder": "Selected {{name}}",
+		"select": "Select",
+		"name": "Name of the generated files",
+		"nameHelp": "Will be used as a part of the name"
+	}
+}

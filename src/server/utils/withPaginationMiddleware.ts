@@ -1,5 +1,6 @@
 import {Context, Next} from 'koa'
 import httpStatus from 'http-status-codes'
+import {PaginationPosition} from '../../constants/models/Pagination'
 import errorCodes from '../../constants/errorCodes'
 import SendableError from './SendableError'
 
@@ -19,7 +20,7 @@ async function withPaginationMiddleware(ctx: Context, next: Next) {
 	await next()
 }
 
-export function extractPagination(ctx: Context) {
+export function extractPagination(ctx: Context): PaginationPosition {
 	return ctx.state.pagination
 }
 

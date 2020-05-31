@@ -1,0 +1,5 @@
+{
+	"test": {
+		"aha": "ahoj {{name}}"
+	}
+}

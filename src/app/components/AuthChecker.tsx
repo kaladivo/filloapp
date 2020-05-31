@@ -1,18 +1,31 @@
-import {memo, useEffect, useCallback} from 'react'
+import {useEffect, useCallback} from 'react'
 import {useSnackbar} from 'notistack'
+import {useTranslation} from 'react-i18next'
 import {cleanUser, getUser, User} from '../utils/auth'
 import apiService from '../api'
 
-async function refreshUser(): Promise<User | null> {
-	try {
-		const validateUserResponse = await apiService.auth.checkUser({
-			bearer: getUser().accessToken,
-		})
+// async function refreshUser(): Promise<User | null> {
+// 	try {
+// 		const validateUserResponse = await apiService.auth.checkUser({
+// 			bearer: getUser().accessToken,
+// 		})
 
-		return validateUserResponse.data
+// 		return validateUserResponse.data
+// 	} catch (e) {
+// 		if (e?.response?.status === 401 || e?.response?.status === 403) {
+// 			return null
+// 		}
+// 		throw e
+// 	}
+// }
+
+async function checkUser(user: User): Promise<boolean> {
+	try {
+		await apiService.auth.checkUser({bearer: user.accessToken})
+		return true
 	} catch (e) {
-		if (e?.response?.status === 401 || e?.response?.status === 403) {
-			return null
+		if (e.response?.status === 401) {
+			return false
 		}
 		throw e
 	}
@@ -20,16 +33,16 @@ async function refreshUser(): Promise<User | null> {
 
 function AuthChecker() {
 	const snackbar = useSnackbar()
+	const {t} = useTranslation()
 	const checkAuth = useCallback(() => {
-		refreshUser()
-			.then((user) => {
-				if (!user) cleanUser()
+		checkUser(getUser())
+			.then((valid) => {
+				if (!valid) cleanUser() // TODO try to refresh
 			})
 			.catch((e) => {
-				snackbar.enqueueSnackbar(
-					'Nelze ověřit správnost uživatele. Pokud se vyskytnout problémy. Odhlašte a přihlašte se.',
-					{variant: 'warning'}
-				)
+				snackbar.enqueueSnackbar(t('AuthChecker.unableToCheckUser'), {
+					variant: 'warning',
+				})
 				console.warn('Error while refreshing user', e)
 			})
 	}, [snackbar])
@@ -41,4 +54,4 @@ function AuthChecker() {
 	return null
 }
 
-export default memo(AuthChecker)
+export default AuthChecker

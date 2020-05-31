@@ -12,7 +12,7 @@ export interface BlueprintGroup {
 	name: string
 	createdAt: string
 	owner: OwnerInfo
-	fields: GroupField
+	fields: GroupField[]
 	blueprints: Blueprint[]
 	submits: BlueprintsGroupSubmit[]
 }
