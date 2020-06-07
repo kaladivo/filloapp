@@ -7,6 +7,8 @@ stages:
   - deploy
 
 docker:image:
+  only:
+    - tags
   stage: deploy
   image: docker:1.11
   services:
