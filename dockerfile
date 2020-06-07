@@ -9,6 +9,8 @@ COPY package*.json ./
 USER node
 
 RUN yarn install
+RUN yarn build
+RUN mkdir temp_files
 
 COPY --chown=node:node . .
 
