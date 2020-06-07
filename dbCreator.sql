@@ -1,9 +1,3 @@
-create schema public;
-
-comment on schema public is 'standard public schema';
-
-alter schema public owner to postgres;
-
 create table customer
 (
 	id char(20) default random_string(20) not null
@@ -205,24 +199,4 @@ alter table generated_document owner to postgres;
 
 create unique index submitted_blueprint_id_uindex
 	on generated_document (id);
-
-create function random_string(randomlength integer) returns text
-	leakproof
-	strict
-	language sql
-as $$
-SELECT array_to_string(
-               ARRAY(
-                       SELECT substring(
-                                      'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',
-                                      trunc(random()*62)::int+1,
-                                      1
-                                  )
-                       FROM generate_series(1,randomLength) AS gs(x)
-                   )
-           , ''
-           )
-$$;
-
-alter function random_string(integer) owner to postgres;
 
