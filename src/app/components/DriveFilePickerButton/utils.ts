@@ -57,6 +57,7 @@ export async function showFilePicker({
 				if (builtPicker) builtPicker.dispose()
 			}
 
+			console.log('Token', {userToken})
 			const builder = new picker.PickerBuilder()
 				.setOAuthToken(userToken)
 				.setTitle(title)

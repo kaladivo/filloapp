@@ -18,7 +18,7 @@ interface Props {
 function SubmitFlow({blueprintsGroup}: Props) {
 	const {t} = useTranslation()
 	const [step, setStep] = useState<'values' | 'settings' | 'loading' | 'error'>(
-		'error'
+		'values'
 	)
 	const api = useApiService()
 	const history = useHistory()
@@ -128,9 +128,15 @@ function SubmitFlow({blueprintsGroup}: Props) {
 			{step === 'loading' && (
 				<LoadingIndicator text={t('SubmitBlueprintsGroupScreen.loading')} />
 			)}
-			{step === 'error' && submitDetailTask.isRejected && (
-				<ErrorScreen onRetry={onSubmit} onGoBack={() => setStep('settings')} />
-			)}
+			{step === 'error' &&
+				submitDetailTask.isRejected &&
+				submitDetailTask.error && (
+					<ErrorScreen
+						error={submitDetailTask.error}
+						onRetry={onSubmit}
+						onGoBack={() => setStep('settings')}
+					/>
+				)}
 		</>
 	)
 }

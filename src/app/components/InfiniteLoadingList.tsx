@@ -14,11 +14,12 @@ interface Props<Result, Item> {
 	offset?: number
 	displayOnLoading: React.ReactNode
 	displayOnEnd: React.ReactNode
-	listContainerClass?: string
+	listContainerProps: any
 	renderRejected: (args: {
 		error: Error
 		tryAgain: () => void
 	}) => React.ReactNode
+	ListContainer: React.ElementType
 }
 
 function InfiniteLoadingList<Result, Item>({
@@ -27,9 +28,10 @@ function InfiniteLoadingList<Result, Item>({
 	resultToItems,
 	children,
 	displayOnLoading,
-	listContainerClass,
+	listContainerProps,
 	displayOnEnd,
 	renderRejected,
+	ListContainer,
 }: Props<Result, Item>) {
 	const [lastResult, setLastResult] = useState<Result | null>(null)
 	const [items, setItems] = useState<Item[] | null>(null)
@@ -78,9 +80,9 @@ function InfiniteLoadingList<Result, Item>({
 	return (
 		<BottomScrollListener onBottom={handleBottomReached} offset={offset}>
 			<>
-				<div className={listContainerClass} ref={itemsRef}>
+				<ListContainer ref={itemsRef} {...listContainerProps}>
 					{children(items || [])}
-				</div>
+				</ListContainer>
 				{(loadMoreTask.isPending || loadMoreTask.isInitial) && displayOnLoading}
 				{loadMoreTask.isRejected &&
 					renderRejected({
@@ -97,6 +99,8 @@ InfiniteLoadingList.defaultProps = {
 	offset: 500,
 	displayOnLoading: <LoadingIndicator />,
 	displayOnEnd: <Typography align="center">End of the list reached</Typography>,
+	ListContainer: 'div',
+	listContainerProps: {},
 	renderRejected: ({error, tryAgain}: {error: Error; tryAgain: () => void}) => (
 		<RetryableError
 			error={error}

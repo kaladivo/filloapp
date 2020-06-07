@@ -12,89 +12,93 @@ import {useTranslation} from 'react-i18next'
 import {Link} from 'react-router-dom'
 import {BlueprintGroup} from '../../../../constants/models/BlueprintsGroup'
 import GoogleFilePreview from '../../GoogleFilePreview'
+import GeneratedFilesList from './GeneratedFilesList'
 
-const useStyles = makeStyles(() =>
+const useStyles = makeStyles((theme) =>
 	createStyles({
-		root: {},
+		root: {
+			padding: theme.spacing(1, 2),
+			'& > *': {
+				margin: theme.spacing(2, 0),
+			},
+		},
+		buttons: {
+			display: 'flex',
+			flexDirection: 'row-reverse',
+			margin: theme.spacing(0, -1, 2),
+			'& > *': {
+				margin: theme.spacing(0, 1),
+			},
+		},
 	})
 )
 
 interface Props {
-	className?: string
 	blueprintsGroup: BlueprintGroup
 }
 
-function BlueprintsGroupDetail({className, blueprintsGroup}: Props) {
+function BlueprintsGroupDetail({blueprintsGroup}: Props) {
 	const {t} = useTranslation()
 	const classes = useStyles()
 	return (
-		<Container component={Paper} className={`${classes.root} ${className}`}>
-			<Typography variant="h4">{blueprintsGroup.name}</Typography>
-			{/* TODO localize date */}
-			<Typography>
-				{t('BlueprintsGroupDetail.createdAt', {
-					date: moment(blueprintsGroup.createdAt).format('DD. MM. YYYY'),
-				})}
-			</Typography>
-
-			<Button
-				variant="contained"
-				color="primary"
-				to={`/blueprints-group/${blueprintsGroup.id}/submit`}
-				component={Link}
-			>
-				Submit
-			</Button>
-
-			{blueprintsGroup.submits.length > 0 && (
-				<>
-					<Typography variant="h5">
-						{t('BlueprintsGroupDetail.latestFiles')}
+		<Container>
+			<div className={classes.buttons}>
+				<Button
+					variant="outlined"
+					color="primary"
+					onClick={() => alert(t('common.notImplemented'))}
+				>
+					{t('common.delete')}
+				</Button>
+				<Button
+					variant="contained"
+					color="primary"
+					to={`/blueprints-group/${blueprintsGroup.id}/submit`}
+					component={Link}
+				>
+					{blueprintsGroup.submits.length > 0
+						? t('BlueprintsGroupDetailScreen.generateNew')
+						: t('BlueprintsGroupDetailScreen.createSubmit')}
+				</Button>
+			</div>
+			<Paper className={classes.root}>
+				<div>
+					<Typography variant="h4">{blueprintsGroup.name}</Typography>
+					<Typography>
+						{t('BlueprintsGroupDetailScreen.createdAt', {
+							date: moment(blueprintsGroup.createdAt).format('DD. MM. YYYY'),
+						})}
 					</Typography>
-					{blueprintsGroup.submits[0].generatedFiles.map((oneFile) => {
+				</div>
+
+				<div>
+					<Typography variant="h5">
+						{t('BlueprintsGroupDetailScreen.generatedFiles')}
+					</Typography>
+					{blueprintsGroup.submits.length > 0 ? (
+						<GeneratedFilesList submit={blueprintsGroup.submits[0]} />
+					) : (
+						<Typography>
+							{t('BlueprintsGroupDetailScreen.noneGeneratedYet')}
+						</Typography>
+					)}
+				</div>
+
+				<div>
+					<Typography variant="h5">
+						{t('BlueprintsGroupDetailScreen.blueprints')}
+					</Typography>
+					{blueprintsGroup.blueprints.map((one) => {
 						return (
-							<div>
+							<Typography>
 								<GoogleFilePreview
-									file={{name: oneFile.name, id: oneFile.googleDocId}}
+									file={{name: one.name, id: one.googleDocsId}}
 								/>
-							</div>
+							</Typography>
 						)
 					})}
-				</>
-			)}
-
-			<Typography variant="h5">
-				{t('BlueprintsGroupDetail.blueprints')}
-			</Typography>
-			{blueprintsGroup.blueprints.map((one) => {
-				return (
-					<div>
-						<GoogleFilePreview file={{name: one.name, id: one.googleDocsId}} />
-					</div>
-				)
-			})}
-			<Typography variant="h5">{t('BlueprintsGroupDetail.submits')}</Typography>
-			{blueprintsGroup.submits.map((oneSubmit) => {
-				return (
-					<div>
-						<Typography>
-							{t('BlueprintsGroupDetail.submitTitle', {
-								date: moment(oneSubmit.submittedAt).fromNow(),
-								name: oneSubmit.byUser.info.name,
-							})}
-						</Typography>
-						{oneSubmit.generatedFiles.map((oneFile) => {
-							return (
-								<div>
-									<GoogleFilePreview
-										file={{name: oneFile.name, id: oneFile.googleDocId}}
-									/>
-								</div>
-							)
-						})}
-					</div>
-				)
-			})}
+				</div>
+			</Paper>
 		</Container>
 	)
 }

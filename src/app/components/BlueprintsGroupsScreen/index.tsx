@@ -1,5 +1,11 @@
 import React, {useCallback} from 'react'
-import {Typography, makeStyles, createStyles, Button} from '@material-ui/core'
+import {
+	Typography,
+	makeStyles,
+	createStyles,
+	Button,
+	Grid,
+} from '@material-ui/core'
 import {useTranslation} from 'react-i18next'
 import {Link} from 'react-router-dom'
 import RootContainer from '../RootContainer'
@@ -11,12 +17,11 @@ import BlueprintGroupItem from './components/BlueprintsGroupItem'
 const useStyles = makeStyles((theme) =>
 	createStyles({
 		root: {},
-
+		newButton: {
+			marginTop: theme.spacing(1),
+		},
 		blueprintsList: {
-			margin: theme.spacing(-2, 0),
-			'& > *': {
-				margin: theme.spacing(2, 0),
-			},
+			margin: theme.spacing(2, -1),
 		},
 	})
 )
@@ -47,6 +52,7 @@ function BlueprintsGroupsScreen() {
 		<RootContainer maxWidth="md">
 			<Typography variant="h5">{t('BlueprintsGroupScreen.title')}</Typography>
 			<Button
+				className={classes.newButton}
 				component={Link}
 				to="/blueprints-group/new"
 				variant="contained"
@@ -57,11 +63,18 @@ function BlueprintsGroupsScreen() {
 			<InfiniteLoadingList
 				resultToItems={(result) => result.items}
 				loadMore={loadMore}
-				listContainerClass={classes.blueprintsList}
+				ListContainer={Grid}
+				listContainerProps={{
+					className: classes.blueprintsList,
+					container: true,
+					spacing: 2,
+				}}
 			>
 				{(items: BlueprintsGroupPreview[]) => {
 					return items.map((one) => (
-						<BlueprintGroupItem key={one.id} blueprintGroup={one} />
+						<Grid item xs={12} sm={6} md={4}>
+							<BlueprintGroupItem key={one.id} blueprintGroup={one} />
+						</Grid>
 					))
 				}}
 			</InfiniteLoadingList>
