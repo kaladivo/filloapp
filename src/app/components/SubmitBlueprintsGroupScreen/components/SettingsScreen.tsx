@@ -1,42 +1,107 @@
-import React, {useState} from 'react'
+import React from 'react'
 import {
-	Grid,
 	FormControlLabel,
 	Checkbox,
 	Typography,
 	Button,
 	TextField,
+	makeStyles,
+	createStyles,
+	FormControl,
+	Tooltip,
 } from '@material-ui/core'
 import {useTranslation} from 'react-i18next'
 import {PickedDocument} from '../../DriveFilePickerButton/utils'
 import DriveFilePickerButton from '../../DriveFilePickerButton'
 
+const useStyles = makeStyles((theme) =>
+	createStyles({
+		root: {
+			'& > *': {
+				display: 'block',
+				margin: theme.spacing(0, 0, 2),
+			},
+		},
+		folderPicker: {},
+		folderPickerButtonAndState: {
+			display: 'flex',
+			alignItems: 'center',
+		},
+		folderPickerButton: {
+			marginRight: theme.spacing(1),
+		},
+		buttons: {
+			display: 'flex',
+			'& > *': {
+				margin: theme.spacing(0, 1),
+			},
+		},
+		checkboxes: {
+			'& > * ': {display: 'block'},
+		},
+	})
+)
+
 export interface SettingsValues {
-	generatePdfs: boolean
 	outputFolder: PickedDocument | null
 	name: string
+	generatePdfs: boolean
+	generateMasterPdf: boolean
+	generateDocuments: boolean
 }
 
 interface Props {
 	onNext: () => void
 	values: SettingsValues
 	onChange: (values: SettingsValues) => void
+	onBack: () => void
 }
 
-function SettingsScreen({onNext, values, onChange}: Props) {
+function SettingsScreen({onNext, values, onChange, onBack}: Props) {
+	const classes = useStyles()
 	const {t} = useTranslation()
 
+	const canBeSubmitted = !!values.outputFolder
+
 	return (
-		<Grid container spacing={2}>
-			<Grid item xs={12}>
-				<TextField
-					value={values.name}
-					label={t('SubmitBlueprintsGroupScreen.name')}
-					helperText={t('SubmitBlueprintsGroupScreen.nameHelp')}
-					onChange={(e) => onChange({...values, name: e.target.value})}
-				/>
-			</Grid>
-			<Grid item xs={12}>
+		<form
+			onSubmit={(e) => {
+				e.preventDefault()
+				onNext()
+			}}
+			className={classes.root}
+		>
+			<TextField
+				fullWidth
+				value={values.name}
+				label={t('SubmitBlueprintsGroupScreen.versionName')}
+				helperText={t('SubmitBlueprintsGroupScreen.versionNameHelp')}
+				onChange={(e) => onChange({...values, name: e.target.value})}
+			/>
+			<div className={classes.folderPicker}>
+				<Typography variant="h6">
+					{t('SubmitBlueprintsGroupScreen.selectOutputFolder')}
+				</Typography>
+				<div className={classes.folderPickerButtonAndState}>
+					<DriveFilePickerButton
+						className={classes.folderPickerButton}
+						variant="contained"
+						color="primary"
+						label={t('SubmitBlueprintsGroupScreen.select')}
+						pickerTitle={t('SubmitBlueprintsGroupScreen.selectOutputFolder')}
+						onSelected={(selected) => {
+							onChange({...values, outputFolder: selected[0] || null})
+						}}
+						pickerMode="folders"
+					/>
+					<Typography>
+						{t('SubmitBlueprintsGroupScreen.selectedOutputFolder', {
+							name: values.outputFolder ? values.outputFolder.name : 'none',
+						})}
+					</Typography>
+				</div>
+			</div>
+			<FormControl className={classes.checkboxes}>
 				<FormControlLabel
 					label={t('SubmitBlueprintsGroupScreen.generatePdfs')}
 					control={
@@ -48,30 +113,49 @@ function SettingsScreen({onNext, values, onChange}: Props) {
 						/>
 					}
 				/>
-			</Grid>
-			<Grid item xs={12}>
-				<Typography>
-					{t('SubmitBlueprintsGroupScreen.selectOutputFolder')}
-				</Typography>
-				<Typography>
-					{t('SubmitBlueprintsGroupScreen.selectedOutputFolder', {
-						name: values.outputFolder?.name || 'none',
-					})}
-				</Typography>
-				<DriveFilePickerButton
-					label={t('SubmitBlueprintsGroupScreen.selectOutputFolder')}
-					pickerTitle={t('SubmitBlueprintsGroupScreen.select')}
-					onSelected={(selected) => {
-						console.log('aha1', selected)
-						onChange({...values, outputFolder: selected[0] || null})
-					}}
-					pickerMode="folders"
-				/>
-			</Grid>
-			<Button variant="contained" color="primary" onClick={onNext}>
-				Generate
-			</Button>
-		</Grid>
+				<Tooltip title={t('common.notImplemented') || ''}>
+					<FormControlLabel
+						label={t('SubmitBlueprintsGroupScreen.generateMasterPdf')}
+						disabled
+						control={
+							<Checkbox
+								checked={values.generateMasterPdf}
+								onChange={(_, checked) => {
+									onChange({...values, generateMasterPdf: checked})
+								}}
+							/>
+						}
+					/>
+				</Tooltip>
+				<Tooltip title={t('common.notImplemented') || ''}>
+					<FormControlLabel
+						label={t('SubmitBlueprintsGroupScreen.generateDocuments')}
+						disabled
+						control={
+							<Checkbox
+								checked={values.generateDocuments}
+								onChange={(_, checked) => {
+									onChange({...values, generateDocuments: checked})
+								}}
+							/>
+						}
+					/>
+				</Tooltip>
+			</FormControl>
+			<div className={classes.buttons}>
+				<Button
+					disabled={!canBeSubmitted}
+					type="submit"
+					variant="contained"
+					color="primary"
+				>
+					{t('SubmitBlueprintsGroupScreen.generate')}
+				</Button>
+				<Button variant="outlined" color="primary" onClick={onBack}>
+					{t('common.back')}
+				</Button>
+			</div>
+		</form>
 	)
 }
 

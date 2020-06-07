@@ -4,6 +4,7 @@ import HomeIcon from '@material-ui/icons/Home'
 import BlueprintsGroupsScreen from './components/BlueprintsGroupsScreen'
 import BlueprintsGroupDetailScreen from './components/BlueprintsGroupDetailScreen'
 import SubmitBlueprintsGroupScreen from './components/SubmitBlueprintsGroupScreen'
+import CreateBlueprintGroupScreen from './components/CreateBlueprintGroupScreen'
 import DevScreen from './components/DevScreen'
 
 export interface Section {
@@ -35,6 +36,10 @@ function useSections(): Section[] {
 				Icon: HomeIcon,
 				section: 'main',
 			},
+		},
+		{
+			paths: ['/blueprints-group/new'],
+			Component: CreateBlueprintGroupScreen,
 		},
 		{
 			paths: ['/blueprints-group/:id/submit'],

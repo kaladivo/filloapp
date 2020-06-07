@@ -1,6 +1,7 @@
 import React, {useCallback} from 'react'
-import {Typography, makeStyles, createStyles} from '@material-ui/core'
+import {Typography, makeStyles, createStyles, Button} from '@material-ui/core'
 import {useTranslation} from 'react-i18next'
+import {Link} from 'react-router-dom'
 import RootContainer from '../RootContainer'
 import InfiniteLoadingList from '../InfiniteLoadingList'
 import {useApiService} from '../../api/apiContext'
@@ -45,13 +46,23 @@ function BlueprintsGroupsScreen() {
 	return (
 		<RootContainer maxWidth="md">
 			<Typography variant="h5">{t('BlueprintsGroupScreen.title')}</Typography>
+			<Button
+				component={Link}
+				to="/blueprints-group/new"
+				variant="contained"
+				color="primary"
+			>
+				{t('BlueprintsGroupScreen.addNew')}
+			</Button>
 			<InfiniteLoadingList
 				resultToItems={(result) => result.items}
 				loadMore={loadMore}
 				listContainerClass={classes.blueprintsList}
 			>
 				{(items: BlueprintsGroupPreview[]) => {
-					return items.map((one) => <BlueprintGroupItem blueprintGroup={one} />)
+					return items.map((one) => (
+						<BlueprintGroupItem key={one.id} blueprintGroup={one} />
+					))
 				}}
 			</InfiniteLoadingList>
 		</RootContainer>

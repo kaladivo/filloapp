@@ -1,4 +1,6 @@
 import {AxiosResponse, AxiosInstance} from 'axios'
+import {TinyBlueprint} from '../../../constants/models/Blueprint'
+import * as blueprintsUrls from '../../../constants/api/blueprints'
 
 export default class BlueprintsService {
 	apiService: AxiosInstance
@@ -7,13 +9,7 @@ export default class BlueprintsService {
 		this.apiService = apiService
 	}
 
-	// generateFilesFromData = ({
-	// 	files,
-	// 	keyMap,
-	// }: {
-	// 	files: FormFile
-	// 	keyMap: FormFields
-	// }): Promise<AxiosResponse<{url: string}>> => {
-	// 	return this.apiService.post(formUrls.generateFilesFromData, {files, keyMap})
-	// }
+	listBlueprints = (): Promise<AxiosResponse<TinyBlueprint[]>> => {
+		return this.apiService.get(blueprintsUrls.listBlueprintsTiny)
+	}
 }

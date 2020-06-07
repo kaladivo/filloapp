@@ -1,11 +1,15 @@
-import React, {useState, useMemo, useCallback} from 'react'
+import React, {useState, useMemo, useCallback, useEffect} from 'react'
 import {Typography} from '@material-ui/core'
 import {useTranslation} from 'react-i18next'
 import {useAsync} from 'react-async'
+import {useHistory} from 'react-router-dom'
+import {useSnackbar} from 'notistack'
 import {BlueprintGroup} from '../../../../constants/models/BlueprintsGroup'
 import FillValuesScreen from './FillValuesScreen'
 import SettingsScreen, {SettingsValues} from './SettingsScreen'
 import {useApiService} from '../../../api/apiContext'
+import LoadingIndicator from '../../LoadingIndicator'
+import ErrorScreen from './ErrorScreen'
 
 interface Props {
 	blueprintsGroup: BlueprintGroup
@@ -13,8 +17,12 @@ interface Props {
 
 function SubmitFlow({blueprintsGroup}: Props) {
 	const {t} = useTranslation()
-	const [step, setStep] = useState<'values' | 'settings'>('values')
+	const [step, setStep] = useState<'values' | 'settings' | 'loading' | 'error'>(
+		'error'
+	)
 	const api = useApiService()
+	const history = useHistory()
+	const {enqueueSnackbar} = useSnackbar()
 
 	const defaultValues = useMemo(() => {
 		return blueprintsGroup.fields.reduce<{[key: string]: string}>(
@@ -35,10 +43,10 @@ function SubmitFlow({blueprintsGroup}: Props) {
 	const [settings, setSettings] = useState<SettingsValues>({
 		generatePdfs: true,
 		outputFolder: null,
+		generateDocuments: true,
+		generateMasterPdf: false,
 		name: '',
 	})
-
-	console.log(settings)
 
 	const submitDetailTask = useAsync({
 		deferFn: useCallback(async () => {
@@ -55,6 +63,8 @@ function SubmitFlow({blueprintsGroup}: Props) {
 				}
 			}, {})
 
+			// TODO handle unauthorized errors!
+
 			const settingsToSubmit = {
 				outputName: settings.name,
 				generatePdfs: settings.generatePdfs,
@@ -62,14 +72,30 @@ function SubmitFlow({blueprintsGroup}: Props) {
 				outputFolderId: settings.outputFolder?.id || '',
 			}
 
-			console.log('submitting', valuesToSubmit, {settings})
-
-			api.blueprintsGroups.submit({
+			await api.blueprintsGroups.submit({
 				id: blueprintsGroup.id,
 				data: {values: valuesToSubmit, settings: settingsToSubmit},
 			})
 		}, [values, settings]),
+		onReject: useCallback(() => {
+			setStep('error')
+		}, [setStep]),
+		onResolve: useCallback(() => {
+			history.push(`/blueprints-group/${blueprintsGroup.id}`)
+			enqueueSnackbar(t('SubmitBlueprintsGroupScreen.success'), {
+				variant: 'success',
+			})
+		}, [history, blueprintsGroup]),
 	})
+
+	const onSubmit = useCallback(() => {
+		setStep('loading')
+		submitDetailTask.run()
+	}, [submitDetailTask, setStep])
+
+	useEffect(() => {
+		if (step === 'error' && !submitDetailTask.isRejected) setStep('settings')
+	}, [step, setStep, submitDetailTask])
 
 	return (
 		<>
@@ -90,13 +116,20 @@ function SubmitFlow({blueprintsGroup}: Props) {
 			)}
 			{step === 'settings' && (
 				<SettingsScreen
+					onBack={() => setStep('values')}
 					values={settings}
 					onChange={(vals) => {
 						console.log('aha', vals)
 						setSettings(vals)
 					}}
-					onNext={submitDetailTask.run}
+					onNext={onSubmit}
 				/>
+			)}
+			{step === 'loading' && (
+				<LoadingIndicator text={t('SubmitBlueprintsGroupScreen.loading')} />
+			)}
+			{step === 'error' && submitDetailTask.isRejected && (
+				<ErrorScreen onRetry={onSubmit} onGoBack={() => setStep('settings')} />
 			)}
 		</>
 	)

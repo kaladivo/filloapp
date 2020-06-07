@@ -1,11 +1,11 @@
 import React, {useCallback} from 'react'
-import {Button} from '@material-ui/core'
+import {Button, ButtonProps} from '@material-ui/core'
 import {useSnackbar} from 'notistack'
 import {useTranslation} from 'react-i18next'
 import {useUser} from '../../utils/auth'
 import {showFilePicker, PickerMode, PickedDocument} from './utils'
 
-interface Props {
+interface Props extends ButtonProps {
 	className?: string
 	onSelected: (bla: PickedDocument[]) => void
 	pickerTitle: string
@@ -21,6 +21,7 @@ function DriveFilePickerButton({
 	pickerMode,
 	multiple,
 	label,
+	...rest
 }: Props) {
 	const user = useUser()
 	const {t} = useTranslation()
@@ -44,7 +45,11 @@ function DriveFilePickerButton({
 	}, [googleAccessToken, pickerTitle, onSelected, enqueueSnackbar])
 
 	return (
-		<Button className={className} onClick={showPickerAndHandleCallback}>
+		<Button
+			{...rest}
+			className={className}
+			onClick={showPickerAndHandleCallback}
+		>
 			{label}
 		</Button>
 	)

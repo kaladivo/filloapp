@@ -15,6 +15,16 @@ export default class BlueprintsGroupsService {
 		this.apiService = apiService
 	}
 
+	create = ({
+		name,
+		blueprintsIds,
+	}: {
+		name: string
+		blueprintsIds: string[]
+	}): Promise<AxiosResponse<BlueprintGroup>> => {
+		return this.apiService.post(groupsUrls.createGroup, {name, blueprintsIds})
+	}
+
 	list = ({
 		pagination,
 	}: {
