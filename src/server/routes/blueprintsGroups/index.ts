@@ -120,8 +120,6 @@ router.post(
 		const {name} = ctx.request.body
 		const blueprintsIds: string[] = unique(ctx.request.body.blueprintsIds)
 
-		console.log('here')
-
 		if (
 			!(await checkIfUserHasAccessToBlueprints({user, blueprintsIds, dbClient}))
 		) {
@@ -130,8 +128,6 @@ router.post(
 				errorCode: FORBIDDEN,
 			})
 		}
-
-		console.log('here')
 
 		try {
 			ctx.body = await createGroup({blueprintsIds, name, user, dbClient})
@@ -183,8 +179,6 @@ router.put(
 				errorCode: FORBIDDEN,
 			})
 		}
-
-		console.log('here')
 
 		let submits = []
 		if (user.customerAdmin) {
@@ -325,7 +319,6 @@ const submitGroupSchema = new Schema({
 	},
 	settings: {
 		outputName: {
-			required: true,
 			type: String,
 		},
 		outputFolderId: {
@@ -380,22 +373,6 @@ router.post(
 			})
 		}
 
-		// // Can user access individual blueprints?
-		// if (
-		// 	!user.customerAdmin &&
-		// 	blueprintGroup.blueprints.some(
-		// 		(oneBlueprint) => oneBlueprint.owner.email !== user.email
-		// 	)
-		// ) {
-		// 	throw new SendableError(
-		// 		'Can not access to some blueprint form blueprint group',
-		// 		{
-		// 			status: httpStatus.FORBIDDEN,
-		// 			errorCode: FORBIDDEN,
-		// 		}
-		// 	)
-		// }
-
 		if (!(await canUserRead({drive, fileId: outputFolderId}))) {
 			throw new SendableError(
 				'Output folder can not be accessed current user.',
@@ -440,7 +417,9 @@ router.post(
 
 		const generateBlueprintTasks = blueprintGroup.blueprints.map(
 			async (blueprint) => {
-				const fileName = `${outputName} - ${blueprint.name}`
+				const fileName = `${outputName ? `${outputName} -` : ''}${
+					blueprint.name
+				}`
 				const googleDocId = await generateFilledDocument({
 					blueprint,
 					targetFolderId: outputFolderId,
@@ -492,13 +471,6 @@ router.post(
 				{error: e}
 			)
 		}
-
-		// Generate documents
-		// - Check if document can be accessed
-		// - Check if folder can be accessed
-		// Generate PDF files
-		// Generate master pdf file
-		// Save submit to db
 
 		await next()
 	}
