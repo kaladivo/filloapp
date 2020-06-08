@@ -76,7 +76,7 @@ function SubmitFlow({blueprintsGroup}: Props) {
 				id: blueprintsGroup.id,
 				data: {values: valuesToSubmit, settings: settingsToSubmit},
 			})
-		}, [values, settings]),
+		}, [values, settings, blueprintsGroup, api]),
 		onReject: useCallback(() => {
 			setStep('error')
 		}, [setStep]),
@@ -85,7 +85,7 @@ function SubmitFlow({blueprintsGroup}: Props) {
 			enqueueSnackbar(t('SubmitBlueprintsGroupScreen.success'), {
 				variant: 'success',
 			})
-		}, [history, blueprintsGroup]),
+		}, [history, blueprintsGroup, t, enqueueSnackbar]),
 	})
 
 	const onSubmit = useCallback(() => {

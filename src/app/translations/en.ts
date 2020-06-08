@@ -37,7 +37,7 @@ export default {
 		'blueprints': 'Blueprints',
 		'submits': 'Submits',
 		'submitTitle': 'Submitted at: {{date}} by {{name}}',
-		'generateNew': 'Generate new',
+		'generateNew': 'Edit',
 		'createSubmit': 'Submit',
 		'noneGeneratedYet': 'No documents were yet generated.',
 		'goToFolderButton': 'Open drive folder',

@@ -15,7 +15,7 @@ function BlueprintsGroupDetailScreen() {
 		promiseFn: useCallback(async () => {
 			const detailData = await api.blueprintsGroups.get({id})
 			return detailData.data
-		}, [id]),
+		}, [id, api]),
 	})
 
 	return (

@@ -47,7 +47,7 @@ function SelectBlueprints({className, onChange}: Props) {
 			setSelectedValue(newValue)
 			onChange(newValue)
 		},
-		[setSelectedValue]
+		[setSelectedValue, onChange]
 	)
 
 	const fetchBlueprintsTask = useAsync({

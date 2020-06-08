@@ -45,9 +45,12 @@ function CreateBlueprintGroupScreen() {
 			})
 			return result.data
 		}, [api, name, selected]),
-		onResolve: useCallback((createdGroup: BlueprintGroup) => {
-			history.push(`/blueprints-group/${createdGroup.id}/submit`)
-		}, []),
+		onResolve: useCallback(
+			(createdGroup: BlueprintGroup) => {
+				history.push(`/blueprints-group/${createdGroup.id}/submit`)
+			},
+			[history]
+		),
 	})
 
 	const canBeSubmitted =

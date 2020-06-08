@@ -42,7 +42,15 @@ function DriveFilePickerButton({
 			}
 			onSelected(selectedDocs)
 		})
-	}, [googleAccessToken, pickerTitle, onSelected, enqueueSnackbar])
+	}, [
+		googleAccessToken,
+		pickerTitle,
+		onSelected,
+		enqueueSnackbar,
+		multiple,
+		pickerMode,
+		t,
+	])
 
 	return (
 		<Button
