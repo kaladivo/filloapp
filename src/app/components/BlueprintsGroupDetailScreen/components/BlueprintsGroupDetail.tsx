@@ -4,7 +4,6 @@ import {
 	makeStyles,
 	createStyles,
 	Paper,
-	Container,
 	Button,
 } from '@material-ui/core'
 import moment from 'moment'
@@ -13,6 +12,7 @@ import {Link} from 'react-router-dom'
 import {BlueprintGroup} from '../../../../constants/models/BlueprintsGroup'
 import GoogleFilePreview from '../../GoogleFilePreview'
 import GeneratedFilesList from './GeneratedFilesList'
+import BackBreadcrumb from '../../BackBreadcrumb'
 
 const useStyles = makeStyles((theme) =>
 	createStyles({
@@ -21,6 +21,10 @@ const useStyles = makeStyles((theme) =>
 			'& > *': {
 				margin: theme.spacing(2, 0),
 			},
+		},
+		header: {
+			display: 'flex',
+			justifyContent: 'space-between',
 		},
 		buttons: {
 			display: 'flex',
@@ -41,25 +45,29 @@ function BlueprintsGroupDetail({blueprintsGroup}: Props) {
 	const {t} = useTranslation()
 	const classes = useStyles()
 	return (
-		<Container>
-			<div className={classes.buttons}>
-				<Button
-					variant="outlined"
-					color="primary"
-					onClick={() => alert(t('common.notImplemented'))}
-				>
-					{t('common.delete')}
-				</Button>
-				<Button
-					variant="contained"
-					color="primary"
-					to={`/blueprints-group/${blueprintsGroup.id}/submit`}
-					component={Link}
-				>
-					{blueprintsGroup.submits.length > 0
-						? t('BlueprintsGroupDetailScreen.generateNew')
-						: t('BlueprintsGroupDetailScreen.createSubmit')}
-				</Button>
+		<div>
+			<div className={classes.header}>
+				<BackBreadcrumb to="/" text={t('common.goBack')} />
+
+				<div className={classes.buttons}>
+					<Button
+						variant="outlined"
+						color="primary"
+						onClick={() => alert(t('common.notImplemented'))}
+					>
+						{t('common.delete')}
+					</Button>
+					<Button
+						variant="contained"
+						color="primary"
+						to={`/blueprints-group/${blueprintsGroup.id}/submit`}
+						component={Link}
+					>
+						{blueprintsGroup.submits.length > 0
+							? t('BlueprintsGroupDetailScreen.generateNew')
+							: t('BlueprintsGroupDetailScreen.createSubmit')}
+					</Button>
+				</div>
 			</div>
 			<Paper className={classes.root}>
 				<div>
@@ -99,7 +107,7 @@ function BlueprintsGroupDetail({blueprintsGroup}: Props) {
 					})}
 				</div>
 			</Paper>
-		</Container>
+		</div>
 	)
 }
 

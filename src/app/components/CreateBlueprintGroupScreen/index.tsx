@@ -16,6 +16,7 @@ import SelectBlueprints from './components/SelectBlueprints'
 import {TinyBlueprint} from '../../../constants/models/Blueprint'
 import {useApiService} from '../../api/apiContext'
 import {BlueprintGroup} from '../../../constants/models/BlueprintsGroup'
+import BackBreadcrumb from '../BackBreadcrumb'
 
 const useStyles = makeStyles((theme) =>
 	createStyles({
@@ -67,6 +68,7 @@ function CreateBlueprintGroupScreen() {
 
 	return (
 		<RootContainer className={classes.root}>
+			<BackBreadcrumb to="/" text={t('common.goBack')} />
 			<form onSubmit={handleSubmit} className={classes.formContainer}>
 				<Typography variant="h4">
 					{t('CreateBlueprintGroupScreen.title')}

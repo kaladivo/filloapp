@@ -1,6 +1,7 @@
 export default {
 	'appName': 'FilloApp',
 	'common': {
+		'goBack': 'Back',
 		'submit': 'submit',
 		'back': 'back',
 		'unexpectedError': 'There was an unexpected error. Click to try again.',

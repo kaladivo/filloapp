@@ -1,15 +1,18 @@
 import React, {useCallback} from 'react'
 import {useParams} from 'react-router-dom'
 import {useAsync} from 'react-async'
+import {useTranslation} from 'react-i18next'
 import {useApiService} from '../../api/apiContext'
 import RootContainer from '../RootContainer'
 import LoadingIndicator from '../LoadingIndicator'
 import RetryableError from '../RetryableError'
 import BlueprintsGroupDetail from './components/BlueprintsGroupDetail'
+import BackBreadcrumb from '../BackBreadcrumb'
 
 function BlueprintsGroupDetailScreen() {
 	const {id} = useParams()
 	const api = useApiService()
+	const {t} = useTranslation()
 
 	const fetchDetailTask = useAsync({
 		promiseFn: useCallback(async () => {
@@ -20,6 +23,9 @@ function BlueprintsGroupDetailScreen() {
 
 	return (
 		<RootContainer>
+			{!fetchDetailTask.isFulfilled && (
+				<BackBreadcrumb to="/" text={t('common.goBack')} />
+			)}
 			{fetchDetailTask.isLoading && <LoadingIndicator text="Loading detail" />}
 			{fetchDetailTask.isRejected && fetchDetailTask.error && (
 				<RetryableError
