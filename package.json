@@ -103,7 +103,7 @@
 			"last 1 safari version"
 		]
 	},
-	"diabled_husky": {
+	"husky": {
 		"hooks": {
 			"pre-commit": "yarn lint"
 		}
