@@ -64,6 +64,7 @@ export async function showFilePicker({
 				.setDeveloperKey(DEVELOPER_KEY)
 				.enableFeature(picker.Feature.MINE_ONLY)
 				.setCallback(pickerCallback)
+				.setOrigin(`${window.location.protocol}//${window.location.host}`)
 
 			if (pickerMode === 'documents') {
 				builder
