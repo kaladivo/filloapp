@@ -22,7 +22,7 @@ export default {
 		'logout': 'Logout',
 	},
 	'sections': {
-		'blueprintsGroups': 'Blueprints groups',
+		'blueprintsGroups': 'Documents',
 	},
 	'LoginScreen': {
 		'loginWithGoogle': 'Sign in with google',
@@ -38,7 +38,7 @@ export default {
 		'createdAt': 'Created at: {{date}}',
 		'generatedFiles': 'Generated documents',
 		'submit': 'Submit',
-		'blueprints': 'Blueprints',
+		'blueprints': 'Documents',
 		'submits': 'Submits',
 		'submitTitle': 'Submitted at: {{date}} by {{name}}',
 		'generateNew': 'Edit',
@@ -69,11 +69,11 @@ export default {
 		'idHelp': 'Id, will be automatically incremented for each document',
 	},
 	'CreateBlueprintGroupScreen': {
-		'title': 'Create new Blueprint Group ',
+		'title': 'Create new Document ',
 		'name': 'Name',
 		'nameHelp': 'Name of the customer',
-		'selectBlueprintsToGenerate': 'Select blueprints to generate',
-		'dontSeeBlueprint': 'Dont see your blueprint?',
+		'selectBlueprintsToGenerate': 'Select templates to generate',
+		'dontSeeBlueprint': 'Dont see your template?',
 		'createBlueprint': 'Add a new one',
 	},
 }
