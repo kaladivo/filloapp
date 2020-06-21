@@ -40,6 +40,11 @@ export default class BlueprintsGroupsService {
 		return this.apiService.get(url)
 	}
 
+	delete = ({id}: {id: string}): Promise<AxiosResponse<number>> => {
+		const url = groupsUrls.deleteBlueprintGroup.replace(':groupId', id)
+		return this.apiService.delete(url)
+	}
+
 	submit = ({
 		id,
 		data,

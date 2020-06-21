@@ -13,6 +13,7 @@ import {BlueprintGroup} from '../../../../constants/models/BlueprintsGroup'
 import GoogleFilePreview from '../../GoogleFilePreview'
 import GeneratedFilesList from './GeneratedFilesList'
 import BackBreadcrumb from '../../BackBreadcrumb'
+import DeleteButton from './DeleteButton'
 
 const useStyles = makeStyles((theme) =>
 	createStyles({
@@ -50,13 +51,7 @@ function BlueprintsGroupDetail({blueprintsGroup}: Props) {
 				<BackBreadcrumb to="/" text={t('common.goBack')} />
 
 				<div className={classes.buttons}>
-					<Button
-						variant="outlined"
-						color="primary"
-						onClick={() => alert(t('common.notImplemented'))}
-					>
-						{t('common.delete')}
-					</Button>
+					<DeleteButton blueprintsGroupId={blueprintsGroup.id} />
 					<Button
 						variant="contained"
 						color="primary"

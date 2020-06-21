@@ -31,6 +31,8 @@ export default {
 		'title': 'Forms to submit',
 		'addNew': 'Add new',
 		'createdBy': 'Created by {{name}}',
+		'unableToDelete': 'Unable to delete. Are you the owner?',
+		'deleted': 'Deleted',
 	},
 	'BlueprintsGroupDetailScreen': {
 		'createdAt': 'Created at: {{date}}',
