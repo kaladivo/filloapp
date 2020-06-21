@@ -45,7 +45,7 @@ function GeneratedFilesList({className, submit}: Props) {
 				{t('BlueprintsGroupDetailScreen.goToFolderButton')}
 			</Button>
 			{submit.generatedFiles.map((oneFile) => (
-				<div className={classes.file}>
+				<div key={oneFile.id} className={classes.file}>
 					{oneFile.pdfId && (
 						<IconButton
 							target="_blank"

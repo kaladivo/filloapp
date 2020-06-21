@@ -93,7 +93,7 @@ function BlueprintsGroupDetail({blueprintsGroup}: Props) {
 					</Typography>
 					{blueprintsGroup.blueprints.map((one) => {
 						return (
-							<Typography>
+							<Typography key={one.id}>
 								<GoogleFilePreview
 									file={{name: one.name, id: one.googleDocsId}}
 								/>
