@@ -445,16 +445,23 @@ router.post(
 					customerId: user.customer.id,
 					dbClient,
 				})
-			} else generatedValues[valueName] = value.value
+			} else {
+				generatedValues[valueName] = value.value
+			}
 			// TODO handle if value type does not exist
 		}
 		// TODO finish transition
 
 		const generateBlueprintTasks = blueprintGroup.blueprints.map(
 			async (blueprint) => {
-				const fileName = `${outputName ? `${outputName} -` : ''}${
+				const fileNameRaw = `${outputName ? `${outputName} -` : ''}${
 					blueprint.name
 				}`
+
+				const fileName = replaceTemplatesInFileName({
+					fileName: fileNameRaw,
+					values: generatedValues,
+				})
 
 				const googleDocId = await generateFilledDocument({
 					blueprint,

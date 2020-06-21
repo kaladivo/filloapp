@@ -41,7 +41,7 @@ export default {
 		'createdAt': 'Created at: {{date}}',
 		'generatedFiles': 'Generated documents',
 		'submit': 'Submit',
-		'blueprints': 'Documents',
+		'blueprints': 'Templates',
 		'submits': 'Submits',
 		'submitTitle': 'Submitted at: {{date}} by {{name}}',
 		'generateNew': 'Edit',
