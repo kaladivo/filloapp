@@ -26,6 +26,9 @@ export default {
 	},
 	'LoginScreen': {
 		'loginWithGoogle': 'Sign in with google',
+		'canNotSignIn': 'Can not sign you in.',
+		'badDomain':
+			'Your domain is not on our list, make sure you are using your work email',
 	},
 	'BlueprintsGroupScreen': {
 		'title': 'Forms to submit',
