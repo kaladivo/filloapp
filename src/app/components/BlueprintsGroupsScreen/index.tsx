@@ -72,8 +72,8 @@ function BlueprintsGroupsScreen() {
 			>
 				{(items: BlueprintsGroupPreview[]) => {
 					return items.map((one) => (
-						<Grid item xs={12} sm={6} md={4}>
-							<BlueprintGroupItem key={one.id} blueprintGroup={one} />
+						<Grid key={one.id} item xs={12} sm={6} md={4}>
+							<BlueprintGroupItem blueprintGroup={one} />
 						</Grid>
 					))
 				}}
