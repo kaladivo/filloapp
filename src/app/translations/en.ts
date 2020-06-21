@@ -9,6 +9,7 @@ export default {
 			'This is not implemented yet. Many more exciting features are comming in the future including this one',
 		'retry': 'Retry',
 		'delete': 'Delete',
+		'loading': 'loading...',
 	},
 	'AuthChecker': {
 		'unableToCheckUser':
@@ -63,6 +64,7 @@ export default {
 		'success': 'Documents were successfully generated!',
 		'noAccess': 'You dont have access to some of the documents',
 		'requireAccess': 'Require access to document {{number}}',
+		'idHelp': 'Id, will be automatically incremented for each document',
 	},
 	'CreateBlueprintGroupScreen': {
 		'title': 'Create new Blueprint Group ',

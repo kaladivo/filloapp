@@ -14,3 +14,10 @@ export interface BlueprintGroupSubmit {
 	}
 	settings: SubmitSettings
 }
+
+export interface FieldType {
+	newValue: string
+	template: string
+	name: string
+	compiledValue: string
+}

@@ -1,7 +1,9 @@
 import React from 'react'
-import {TextField, Button, Grid} from '@material-ui/core'
+import {Button, Grid} from '@material-ui/core'
 import {useTranslation} from 'react-i18next'
 import {GroupField} from '../../../../constants/models/BlueprintsGroup'
+import StringField from './StringField'
+import IncrementingField from './IncrementingField'
 
 interface Props {
 	fields: GroupField[]
@@ -13,6 +15,9 @@ interface Props {
 function FillValuesScreen({fields, values, onChange, onSubmit}: Props) {
 	const {t} = useTranslation()
 
+	const ids = fields.filter((one) => !one.types.includes('string'))
+	const otherFields = fields.filter((one) => one.types.includes('string'))
+
 	return (
 		<form
 			onSubmit={(e) => {
@@ -21,19 +26,21 @@ function FillValuesScreen({fields, values, onChange, onSubmit}: Props) {
 			}}
 		>
 			<Grid container spacing={2}>
-				{fields.map(({name}, i) => (
+				{[...ids, ...otherFields].map(({name, types}, i) => (
 					<Grid key={name} item xs={12}>
-						<TextField
-							margin="normal"
-							fullWidth
-							autoFocus={i === 0}
-							label={name}
-							value={values[name]}
-							onChange={(e) => {
-								const {value} = e.target
-								onChange({...values, [name]: value})
-							}}
-						/>
+						{types.length === 1 && types[0] === 'string' ? (
+							<StringField
+								autoFocus={i === 0}
+								label={name}
+								value={values[name]}
+								onChange={(e) => {
+									const {value} = e.target
+									onChange({...values, [name]: value})
+								}}
+							/>
+						) : (
+							<IncrementingField type={types[0]} />
+						)}
 					</Grid>
 				))}
 				<Grid item xs={12}>

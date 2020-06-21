@@ -1,5 +1,5 @@
 import {AxiosResponse, AxiosInstance} from 'axios'
-import {BlueprintGroupSubmit} from './models'
+import {BlueprintGroupSubmit, FieldType} from './models'
 import {
 	BlueprintGroup,
 	BlueprintsGroupPreview,
@@ -49,5 +49,14 @@ export default class BlueprintsGroupsService {
 	}): Promise<AxiosResponse<BlueprintGroup>> => {
 		const url = groupsUrls.submit.replace(':groupId', id)
 		return this.apiService.post(url, data)
+	}
+
+	getNextIncValue = ({
+		fieldTypeName,
+	}: {
+		fieldTypeName: string
+	}): Promise<AxiosResponse<FieldType>> => {
+		const url = groupsUrls.getFieldValue.replace(':fieldType', fieldTypeName)
+		return this.apiService.get(url)
 	}
 }
