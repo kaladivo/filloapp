@@ -27,6 +27,8 @@ import {
 	listSubmitsForCustomer,
 	listSubmitsForUser,
 	modifyBlueprint,
+	nextIdFieldValue,
+	prepareIncFieldTypeForSubmit,
 } from './db'
 import * as blueprintsGroupsUrls from '../../../constants/api/blueprintsGroups'
 import validateBodyMiddleware from '../../utils/validateBodyMiddleware'
@@ -42,7 +44,12 @@ import {
 	withGoogleDocsApiMiddleware,
 	extractGoogleDocsApi,
 } from '../../utils/googleApis'
-import {canUserRead, generateFilledDocument, saveDocumentAsPdf} from './utils'
+import {
+	canUserRead,
+	generateFilledDocument,
+	saveDocumentAsPdf,
+	replaceTemplatesInFileName,
+} from './utils'
 
 const router = new Router()
 
@@ -309,10 +316,7 @@ const submitGroupSchema = new Schema({
 				isObject(val) &&
 				!Object.keys(val).some((key) => {
 					const valueTypeDef = val[key]
-					return (
-						!isString(valueTypeDef.value) ||
-						!['string'].includes(valueTypeDef.type)
-					)
+					return !isString(valueTypeDef.value) || !isString(valueTypeDef.type)
 				}),
 		},
 		message: 'Must be map of type and value objects',
@@ -415,17 +419,39 @@ router.post(
 			)
 		}
 
+		const generatedValues: {[key: string]: string} = {}
+
+		// TODO start transition
+		for (const valueName of Object.keys(values)) {
+			const value = values[valueName]
+			if (value.type !== 'string') {
+				// eslint-disable-next-line no-await-in-loop
+				generatedValues[valueName] = await prepareIncFieldTypeForSubmit({
+					blueprintGroupId: groupId,
+					fieldType: value.type,
+					customerId: user.customer.id,
+					dbClient,
+				})
+			} else generatedValues[valueName] = value.value
+			// TODO handle if value type does not exist
+		}
+		// TODO finish transition
+
 		const generateBlueprintTasks = blueprintGroup.blueprints.map(
 			async (blueprint) => {
 				const fileName = `${outputName ? `${outputName} -` : ''}${
 					blueprint.name
 				}`
+
 				const googleDocId = await generateFilledDocument({
 					blueprint,
 					targetFolderId: outputFolderId,
-					fileName,
-					values: Object.keys(values).reduce<any>(
-						(prev, key) => ({...prev, [key]: values[key].value}),
+					fileName: replaceTemplatesInFileName({
+						fileName,
+						values: generatedValues,
+					}),
+					values: Object.keys(generatedValues).reduce<any>(
+						(prev, key) => ({...prev, [key]: generatedValues[key]}),
 						{}
 					),
 					docs,
@@ -472,6 +498,33 @@ router.post(
 			)
 		}
 
+		await next()
+	}
+)
+
+router.get(
+	blueprintsGroupsUrls.getFieldValue,
+	withValidUserMiddleware,
+	withDataDbMiddleware,
+	async (ctx, next) => {
+		const dbClient = extractDbClient(ctx)
+		const user = extractUser(ctx)
+
+		const {fieldType} = ctx.params
+
+		const nextValue = await nextIdFieldValue({
+			fieldType,
+			customerId: user.customer.id,
+			dbClient,
+		})
+
+		ctx.body = {
+			...nextValue,
+			compiledValue: nextValue.template.replace(
+				`{{${nextValue.name}}}`,
+				nextValue.newValue
+			),
+		}
 		await next()
 	}
 )

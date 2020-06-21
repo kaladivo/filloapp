@@ -600,3 +600,84 @@ export async function insertSubmit({
 	)
 	return submitId
 }
+
+export async function nextIdFieldValue({
+	fieldType,
+	customerId,
+	dbClient,
+}: {
+	fieldType: string
+	customerId: string
+	dbClient: PoolClient
+}) {
+	const result = await dbClient.query(
+		`
+		select coalesce(value, 0) + 1 as new_value, template, name, id
+		from incrementing_field_type
+		left join incrementing_field_value ifv on incrementing_field_type.id = ifv.incrementing_field_type_id
+		where incrementing_field_type.name = $1
+			and customer_id = $2
+		order by value desc
+		limit 1
+	`,
+		[fieldType, customerId]
+	)
+
+	const {new_value: newValue, template, name, id} = result.rows[0]
+	return {newValue, template, name, id}
+}
+
+/**
+ * Creates or returns already created value inserted into template
+ */
+export async function prepareIncFieldTypeForSubmit({
+	blueprintGroupId,
+	fieldType,
+	customerId,
+	dbClient,
+}: {
+	customerId: string
+	fieldType: string
+	blueprintGroupId: string
+	dbClient: PoolClient
+}) {
+	// First try to get existing value
+	const existingValue = await dbClient.query(
+		`
+		select ifv.value, ift.template, ift.name
+		from incrementing_field_type ift
+		left join incrementing_field_value ifv on ifv.incrementing_field_type_id = ift.id
+		where ift.name = $1 and ift.customer_id = $2 and ifv.blueprints_group_id = $3
+		`,
+		[fieldType, customerId, blueprintGroupId]
+	)
+	if (existingValue.rows.length > 0) {
+		const {value, name, template} = existingValue.rows[0]
+		return template.replace(`{{${name}}}`, value)
+	}
+
+	// If it does not exists create new one create new
+	try {
+		await dbClient.query('begin')
+		const nextValue = await nextIdFieldValue({
+			fieldType,
+			customerId,
+			dbClient,
+		})
+
+		await dbClient.query(
+			`
+			insert into incrementing_field_value (incrementing_field_type_id, value, blueprints_group_id)
+			values ($1, $2, $3)
+		`,
+			[nextValue.id, nextValue.newValue, blueprintGroupId]
+		)
+
+		await dbClient.query('commit')
+		const {name, newValue: value, template} = nextValue
+		return template.replace(`{{${name}}}`, value)
+	} catch (e) {
+		await dbClient.query('rollback')
+		throw e
+	}
+}

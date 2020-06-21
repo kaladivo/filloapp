@@ -34,6 +34,14 @@ const createBlueprintSchema = new Schema({
 		type: String,
 		required: true,
 	},
+	fieldsOptions: {
+		type: Array,
+		required: true,
+		each: {
+			name: String,
+			type: String,
+		},
+	},
 })
 
 router.post(
@@ -46,7 +54,7 @@ router.post(
 		const drive = extractDriveApi(ctx)
 		const user = extractUser(ctx)
 		const dbClient = extractDbClient(ctx)
-		const {fileId} = ctx.request.body
+		const {fileId, fieldsOptions} = ctx.request.body
 
 		const {mimeType, name} = await getFileMetadata({fileId, drive})
 		if (mimeType !== 'application/vnd.google-apps.document') {
@@ -56,9 +64,9 @@ router.post(
 			})
 		}
 
-		let fields
+		let fieldsNames
 		try {
-			fields = await getBlueprintFields({
+			fieldsNames = await getBlueprintFields({
 				fileId: ctx.request.body.fileId,
 				drive,
 			})
@@ -72,6 +80,18 @@ router.post(
 				{error: e}
 			)
 		}
+
+		const fields = fieldsNames.map((fieldName) => {
+			const fieldOption = fieldsOptions.find(
+				(option: any) => option.name === fieldName
+			)
+			if (!fieldOption) return {type: 'string', name: fieldName}
+			return {
+				name: fieldName,
+				// TODO check if type is valid maybe?
+				type: fieldOption.type,
+			}
+		})
 
 		try {
 			const createdBlueprint = await createOrUpdateBlueprint({

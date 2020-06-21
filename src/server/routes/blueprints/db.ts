@@ -68,7 +68,7 @@ async function createOrUpdateFields({
 	blueprintId,
 	dbClient,
 }: {
-	fields: string[]
+	fields: {name: string; type: string}[]
 	blueprintId: string
 	dbClient: PoolClient
 }) {
@@ -84,9 +84,19 @@ async function createOrUpdateFields({
 		`
 		insert into blueprint_field (blueprint_id, name, type)
 		values
-			${fields.map((field, index) => `($1::int, $${index + 2}, 'string')`).join(', ')}
+			${fields
+				.map(
+					(field, index) => `($1::int, $${index * 2 + 2}, $${index * 2 + 3})`
+				)
+				.join(', ')}
 	`,
-		[Number(blueprintId), ...fields]
+		[
+			Number(blueprintId),
+			...fields.reduce<string[]>(
+				(prev, current) => [...prev, current.name, current.type],
+				[]
+			),
+		]
 	)
 }
 
@@ -101,7 +111,7 @@ async function updateBlueprint({
 	fileId: string
 	blueprintId: string
 	fileName: string
-	fields: string[]
+	fields: {name: string; type: string}[]
 	user: User
 	dbClient: PoolClient
 }): Promise<Blueprint | null> {
@@ -135,7 +145,7 @@ async function createBlueprint({
 }: {
 	fileId: string
 	fileName: string
-	fields: string[]
+	fields: {name: string; type: string}[]
 	user: User
 	dbClient: PoolClient
 }): Promise<Blueprint | null> {
@@ -170,7 +180,7 @@ export async function createOrUpdateBlueprint({
 }: {
 	fileId: string
 	fileName: string
-	fields: string[]
+	fields: {name: string; type: string}[]
 	dbClient: PoolClient
 	user: User
 }): Promise<{blueprint: Blueprint; performedAction: 'update' | 'create'}> {

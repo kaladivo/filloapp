@@ -168,3 +168,19 @@ export async function saveDocumentAsPdf({
 // 	fileName: string
 // 	targetFolderId: string
 // }) {}
+
+export function replaceTemplatesInFileName({
+	fileName,
+	values,
+}: {
+	fileName: string
+	values: {[key: string]: string}
+}) {
+	let newFileName = fileName
+
+	for (const valueName of Object.keys(values)) {
+		newFileName = newFileName.replace(`{{${valueName}}}`, values[valueName])
+	}
+
+	return newFileName
+}
