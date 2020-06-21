@@ -141,6 +141,24 @@ export async function saveDocumentAsPdf({
 	return creatResponse.data.id || '0'
 }
 
+export async function getFolderInfo({
+	folderId,
+	drive,
+}: {
+	folderId: string
+	drive: driveV3.Drive
+}) {
+	try {
+		const exportResponse = await drive.files.get({
+			fileId: folderId,
+		})
+		const {id, name} = exportResponse.data
+		return {id, name}
+	} catch (e) {
+		return null
+	}
+}
+
 // export async function shareWithUser({
 // 	fileId,
 // 	userEmail,

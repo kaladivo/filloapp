@@ -49,6 +49,7 @@ import {
 	generateFilledDocument,
 	saveDocumentAsPdf,
 	replaceTemplatesInFileName,
+	getFolderInfo,
 } from './utils'
 
 const router = new Router()
@@ -57,9 +58,11 @@ router.get(
 	blueprintsGroupsUrls.getBlueprintGroup,
 	withValidUserMiddleware,
 	withDataDbMiddleware,
+	withDriveApiMiddleware,
 	async (ctx, next) => {
 		const user = extractUser(ctx)
 		const dbClient = extractDbClient(ctx)
+		const drive = extractDriveApi(ctx)
 		const {groupId} = ctx.params
 		const group: BlueprintGroup | null = await getGroup({
 			dbClient,
@@ -98,7 +101,17 @@ router.get(
 			})
 		}
 
-		ctx.body = {...group, submits}
+		const enhancedSubmits = await Promise.all(
+			submits.map(async (submit: any) => {
+				const {folderId, ...rest} = submit
+				return {
+					...rest,
+					folder: await getFolderInfo({folderId, drive}),
+				}
+			})
+		)
+
+		ctx.body = {...group, submits: enhancedSubmits}
 		await next()
 	}
 )

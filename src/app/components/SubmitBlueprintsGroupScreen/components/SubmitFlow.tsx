@@ -42,7 +42,10 @@ function SubmitFlow({blueprintsGroup}: Props) {
 	const [values, setValues] = useState(defaultValues)
 	const [settings, setSettings] = useState<SettingsValues>({
 		generatePdfs: true,
-		outputFolder: null,
+		outputFolder:
+			blueprintsGroup.submits.length > 0
+				? blueprintsGroup.submits[0]?.folder || null
+				: null,
 		generateDocuments: true,
 		generateMasterPdf: false,
 		name: '',
@@ -53,11 +56,15 @@ function SubmitFlow({blueprintsGroup}: Props) {
 			const valuesToSubmit = Object.keys(values).reduce<{
 				[key: string]: {type: string; value: string}
 			}>((prev, key) => {
-				if (!values[key]) return prev
+				const valueType =
+					// TODO let user select
+					blueprintsGroup.fields.find((one) => one.name === key)?.types[0] ||
+					'string'
+				if (!values[key] && valueType === 'string') return prev
 				return {
 					...prev,
 					[key]: {
-						type: 'string',
+						type: valueType,
 						value: values[key],
 					},
 				}
@@ -119,7 +126,6 @@ function SubmitFlow({blueprintsGroup}: Props) {
 					onBack={() => setStep('values')}
 					values={settings}
 					onChange={(vals) => {
-						console.log('aha', vals)
 						setSettings(vals)
 					}}
 					onNext={onSubmit}

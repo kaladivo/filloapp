@@ -34,16 +34,18 @@ function GeneratedFilesList({className, submit}: Props) {
 	const classes = useStyles()
 	return (
 		<div className={className}>
-			<Button
-				className={classes.folderButton}
-				variant="outlined"
-				color="secondary"
-				size="small"
-				target="_blank"
-				href={`https://drive.google.com/drive/folders/${submit.folderId}?usp=sharing`}
-			>
-				{t('BlueprintsGroupDetailScreen.goToFolderButton')}
-			</Button>
+			{submit.folder && (
+				<Button
+					className={classes.folderButton}
+					variant="outlined"
+					color="secondary"
+					size="small"
+					target="_blank"
+					href={`https://drive.google.com/drive/folders/${submit.folder.id}?usp=sharing`}
+				>
+					{t('BlueprintsGroupDetailScreen.goToFolderButton')}
+				</Button>
+			)}
 			{submit.generatedFiles.map((oneFile) => (
 				<div key={oneFile.id} className={classes.file}>
 					{oneFile.pdfId && (

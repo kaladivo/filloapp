@@ -2,7 +2,10 @@ export interface SubmitSettings {
 	outputName: string
 	generatePdfs: boolean
 	generateMasterPdf: boolean
-	outputFolderId: string
+	outputFolder?: {
+		id: string
+		name: string
+	}
 }
 
 export interface BlueprintGroupSubmit {

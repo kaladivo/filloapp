@@ -11,7 +11,6 @@ import {
 	Tooltip,
 } from '@material-ui/core'
 import {useTranslation} from 'react-i18next'
-import {PickedDocument} from '../../DriveFilePickerButton/utils'
 import DriveFilePickerButton from '../../DriveFilePickerButton'
 
 const useStyles = makeStyles((theme) =>
@@ -43,7 +42,10 @@ const useStyles = makeStyles((theme) =>
 )
 
 export interface SettingsValues {
-	outputFolder: PickedDocument | null
+	outputFolder: {
+		name: string
+		id: string
+	} | null
 	name: string
 	generatePdfs: boolean
 	generateMasterPdf: boolean
