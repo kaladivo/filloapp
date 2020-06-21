@@ -50,6 +50,7 @@ import {
 	saveDocumentAsPdf,
 	replaceTemplatesInFileName,
 	getFolderInfo,
+	silentlyDeleteFile,
 } from './utils'
 
 const router = new Router()
@@ -338,15 +339,22 @@ const submitGroupSchema = new Schema({
 		outputName: {
 			type: String,
 		},
-		outputFolderId: {
-			required: true,
-			type: String,
+		outputFolder: {
+			id: {required: true, type: String},
 		},
 		generatePdfs: {
 			required: true,
 			type: Boolean,
 		},
 		generateMasterPdf: {
+			required: true,
+			type: Boolean,
+		},
+		generateDocuments: {
+			required: true,
+			type: Boolean,
+		},
+		removeOldVersion: {
 			required: true,
 			type: Boolean,
 		},
@@ -363,7 +371,13 @@ router.post(
 	async (ctx, next) => {
 		const {
 			values,
-			settings: {outputName, generatePdfs, outputFolderId},
+			settings: {
+				outputName,
+				generatePdfs,
+				outputFolder: {id: outputFolderId},
+				generateDocuments,
+				removeOldVersion,
+			},
 		} = ctx.request.body
 		const dbClient = extractDbClient(ctx)
 		const user = extractUser(ctx)
@@ -488,11 +502,32 @@ router.post(
 					})
 				}
 
-				return {blueprint, googleDocId, pdfId, name: fileName}
+				if (!generateDocuments) {
+					await silentlyDeleteFile({fileId: googleDocId, drive})
+				}
+				return {
+					blueprint,
+					googleDocsId: generateDocuments ? googleDocId : null,
+					pdfId,
+					name: fileName,
+				}
 			}
 		)
 
 		try {
+			const oldSubmits = user.customerAdmin
+				? await listSubmitsForCustomer({
+						blueprintsGroupId: groupId,
+						customerId: user.customer.id,
+						dbClient,
+				  })
+				: await listSubmitsForUser({
+						blueprintsGroupId: groupId,
+						customerId: user.customer.id,
+						dbClient,
+						user,
+				  })
+
 			const generated = await Promise.all(generateBlueprintTasks)
 			const insertedId = await insertSubmit({
 				blueprintsGroupId: blueprintGroup.id,
@@ -502,6 +537,25 @@ router.post(
 				values,
 				user,
 			})
+
+			if (removeOldVersion && oldSubmits.length > 0) {
+				await Promise.all(
+					oldSubmits[0].generatedFiles.map(
+						async ({
+							pdfId,
+							googleDocId,
+						}: {
+							pdfId: string
+							googleDocId: string
+						}) => {
+							if (pdfId) await silentlyDeleteFile({fileId: pdfId, drive})
+							if (googleDocId)
+								await silentlyDeleteFile({fileId: googleDocId, drive})
+						}
+					)
+				)
+			}
+
 			ctx.body = await getSubmit({
 				submitId: insertedId,
 				customerId: user.customer.id,

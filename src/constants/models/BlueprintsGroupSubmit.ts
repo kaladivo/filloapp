@@ -3,8 +3,8 @@ import {OwnerInfo} from './OwnerInfo'
 export interface GeneratedDocument {
 	id: string
 	name: string
-	googleDocId: string
-	pdfId: string
+	googleDocId?: string
+	pdfId?: string
 }
 
 export interface FilledValue {

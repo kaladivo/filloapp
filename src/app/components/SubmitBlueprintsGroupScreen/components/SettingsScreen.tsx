@@ -51,6 +51,7 @@ export interface SettingsValues {
 	generatePdfs: boolean
 	generateMasterPdf: boolean
 	generateDocuments: boolean
+	removeOldVersion: boolean
 }
 
 interface Props {
@@ -138,20 +139,28 @@ function SettingsScreen({onNext, values, onChange, onBack}: Props) {
 						}
 					/>
 				</Tooltip>
-				<Tooltip title={t('common.notImplemented') || ''}>
-					<FormControlLabel
-						label={t('SubmitBlueprintsGroupScreen.generateDocuments')}
-						disabled
-						control={
-							<Checkbox
-								checked={values.generateDocuments}
-								onChange={(_, checked) => {
-									onChange({...values, generateDocuments: checked})
-								}}
-							/>
-						}
-					/>
-				</Tooltip>
+				<FormControlLabel
+					label={t('SubmitBlueprintsGroupScreen.generateDocuments')}
+					control={
+						<Checkbox
+							checked={values.generateDocuments}
+							onChange={(_, checked) => {
+								onChange({...values, generateDocuments: checked})
+							}}
+						/>
+					}
+				/>
+				<FormControlLabel
+					label={t('SubmitBlueprintsGroupScreen.removeOldVersion')}
+					control={
+						<Checkbox
+							checked={values.removeOldVersion}
+							onChange={(_, checked) => {
+								onChange({...values, generateDocuments: checked})
+							}}
+						/>
+					}
+				/>
 			</FormControl>
 			<div className={classes.buttons}>
 				<Button

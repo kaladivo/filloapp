@@ -159,6 +159,23 @@ export async function getFolderInfo({
 	}
 }
 
+export async function silentlyDeleteFile({
+	fileId,
+	drive,
+}: {
+	fileId: string
+	drive: driveV3.Drive
+}) {
+	console.log('removing file', {fileId})
+	try {
+		await drive.files.delete({
+			fileId,
+		})
+	} catch (e) {
+		// Fail silently
+	}
+}
+
 // export async function shareWithUser({
 // 	fileId,
 // 	userEmail,

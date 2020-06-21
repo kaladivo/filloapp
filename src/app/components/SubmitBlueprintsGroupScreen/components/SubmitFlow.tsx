@@ -10,6 +10,7 @@ import SettingsScreen, {SettingsValues} from './SettingsScreen'
 import {useApiService} from '../../../api/apiContext'
 import LoadingIndicator from '../../LoadingIndicator'
 import ErrorScreen from './ErrorScreen'
+import {SubmitSettings} from '../../../api/BlueprintsGroups/models'
 
 interface Props {
 	blueprintsGroup: BlueprintGroup
@@ -42,6 +43,7 @@ function SubmitFlow({blueprintsGroup}: Props) {
 	const [values, setValues] = useState(defaultValues)
 	const [settings, setSettings] = useState<SettingsValues>({
 		generatePdfs: true,
+		removeOldVersion: true,
 		outputFolder:
 			blueprintsGroup.submits.length > 0
 				? blueprintsGroup.submits[0]?.folder || null
@@ -72,12 +74,16 @@ function SubmitFlow({blueprintsGroup}: Props) {
 
 			// TODO handle unauthorized errors!
 
-			const settingsToSubmit = {
+			const settingsToSubmit: SubmitSettings = {
 				outputName: settings.name,
 				generatePdfs: settings.generatePdfs,
+				generateDocuments: settings.generateDocuments,
 				generateMasterPdf: false,
-				outputFolderId: settings.outputFolder?.id || '',
+				outputFolder: {id: settings.outputFolder?.id || ''},
+				removeOldVersion: settings.removeOldVersion,
 			}
+
+			console.log({settingsToSubmit, settings})
 
 			await api.blueprintsGroups.submit({
 				id: blueprintsGroup.id,

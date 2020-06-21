@@ -2,9 +2,11 @@ export interface SubmitSettings {
 	outputName: string
 	generatePdfs: boolean
 	generateMasterPdf: boolean
+	removeOldVersion: boolean
+	generateDocuments: boolean
 	outputFolder?: {
 		id: string
-		name: string
+		name?: string
 	}
 }
 

@@ -541,7 +541,7 @@ export async function insertSubmit({
 	dbClient,
 }: {
 	blueprintsGroupId: string
-	generated: Array<{name: string; googleDocId: string; pdfId: string | null}>
+	generated: Array<{name: string; googleDocId?: string; pdfId: string | null}>
 	folderId: string
 	values: {[key: string]: {type: string; value: string}}
 	user: User

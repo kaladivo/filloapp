@@ -56,6 +56,7 @@ export default {
 		'generatePdfs': 'Generate PDF files from generated documents',
 		'generateMasterPdf': 'Generate all of the files into one PDF',
 		'generateDocuments': 'Generate editable documents',
+		'removeOldVersion': 'Remove old version from drive',
 		'selectOutputFolder': 'Select folder to save the generated items into',
 		'selectedOutputFolder': 'Selected folder: {{name}}',
 		'loading': 'Generating documents, this might take 10 - 30 seconds',
