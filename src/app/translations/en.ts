@@ -70,6 +70,9 @@ export default {
 		'noAccess': 'You dont have access to some of the documents',
 		'requireAccess': 'Require access to document {{number}}',
 		'idHelp': 'Id, will be automatically incremented for each document',
+		'folderFieldHelp': 'If you can not pick a file, insert folder url',
+		'folderFieldBadFormat': 'Can not recognize file url',
+		'folderFieldLabel': 'Folder url',
 	},
 	'CreateBlueprintGroupScreen': {
 		'title': 'Create new Document ',

@@ -39,7 +39,7 @@ function FillValuesScreen({fields, values, onChange, onSubmit}: Props) {
 								}}
 							/>
 						) : (
-							<IncrementingField type={types[0]} />
+							<IncrementingField label={name} type={types[0]} />
 						)}
 					</Grid>
 				))}

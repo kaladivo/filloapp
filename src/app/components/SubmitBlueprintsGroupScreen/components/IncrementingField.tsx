@@ -7,9 +7,10 @@ import {useApiService} from '../../../api/apiContext'
 interface Props {
 	className?: string
 	type: string
+	label: string
 }
 
-function IncrementingField({className, type}: Props) {
+function IncrementingField({className, label, type}: Props) {
 	const {t} = useTranslation()
 	const api = useApiService()
 
@@ -28,6 +29,7 @@ function IncrementingField({className, type}: Props) {
 			margin="normal"
 			disabled
 			fullWidth
+			label={label}
 			InputProps={{
 				endAdornment: fetchNextValueTask.isLoading ? (
 					<CircularProgress size={20} />
