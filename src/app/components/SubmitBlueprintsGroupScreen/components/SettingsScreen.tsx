@@ -141,6 +141,7 @@ function SettingsScreen({onNext, values, onChange, onBack}: Props) {
 				</Tooltip>
 				<FormControlLabel
 					label={t('SubmitBlueprintsGroupScreen.generateDocuments')}
+					disabled
 					control={
 						<Checkbox
 							checked={values.generateDocuments}

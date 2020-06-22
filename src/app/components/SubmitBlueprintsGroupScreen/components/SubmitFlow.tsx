@@ -48,7 +48,7 @@ function SubmitFlow({blueprintsGroup}: Props) {
 			blueprintsGroup.submits.length > 0
 				? blueprintsGroup.submits[0]?.folder || null
 				: null,
-		generateDocuments: true,
+		generateDocuments: false,
 		generateMasterPdf: false,
 		name: '',
 	})
