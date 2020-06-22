@@ -12,7 +12,7 @@ import {
 } from '@material-ui/core'
 import {useTranslation} from 'react-i18next'
 import DriveFilePickerButton from '../../DriveFilePickerButton'
-import FolderPickerTextField from './FolderPickerTextField'
+// import FolderPickerTextField from './FolderPickerTextField'
 
 const useStyles = makeStyles((theme) =>
 	createStyles({
@@ -104,14 +104,14 @@ function SettingsScreen({onNext, values, onChange, onBack}: Props) {
 						})}
 					</Typography>
 				</div>
-				<FolderPickerTextField
+				{/* <FolderPickerTextField
 					onChange={(folderId) => {
 						onChange({
 							...values,
 							outputFolder: folderId ? {id: folderId, name: 'unknown'} : null,
 						})
 					}}
-				/>
+				/> */}
 			</div>
 			<FormControl className={classes.checkboxes}>
 				<FormControlLabel
