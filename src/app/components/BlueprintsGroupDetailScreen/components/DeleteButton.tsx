@@ -13,6 +13,7 @@ interface Props {
 
 function DeleteButton({className, blueprintsGroupId}: Props) {
 	const {enqueueSnackbar} = useSnackbar()
+	const {t} = useTranslation()
 	const history = useHistory()
 	const api = useApiService()
 
@@ -21,16 +22,15 @@ function DeleteButton({className, blueprintsGroupId}: Props) {
 			return api.blueprintsGroups.delete({id: blueprintsGroupId})
 		}, [api, blueprintsGroupId]),
 		onReject: useCallback(() => {
-			enqueueSnackbar('BlueprintsGroupScreen.unableToDelete', {
+			enqueueSnackbar(t('BlueprintsGroupScreen.unableToDelete'), {
 				variant: 'error',
 			})
-		}, [enqueueSnackbar]),
+		}, [enqueueSnackbar, t]),
 		onResolve: useCallback(() => {
-			enqueueSnackbar('BlueprintsGroupScreen.deleted', {variant: 'success'})
+			enqueueSnackbar(t('BlueprintsGroupScreen.deleted'), {variant: 'success'})
 			history.push('/')
-		}, [enqueueSnackbar, history]),
+		}, [enqueueSnackbar, history, t]),
 	})
-	const {t} = useTranslation()
 	return (
 		<Button
 			className={className}
