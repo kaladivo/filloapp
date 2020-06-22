@@ -8,14 +8,16 @@ interface Props {
 	className?: string
 	type: string
 	label: string
+	value?: string
 }
 
-function IncrementingField({className, label, type}: Props) {
+function IncrementingField({className, label, type, value}: Props) {
 	const {t} = useTranslation()
 	const api = useApiService()
 
 	const fetchNextValueTask = useAsync({
 		promiseFn: useCallback(async () => {
+			if (value) return value
 			const result = await api.blueprintsGroups.getNextIncValue({
 				fieldTypeName: type,
 			})

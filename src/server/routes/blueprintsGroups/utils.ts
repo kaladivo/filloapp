@@ -209,12 +209,15 @@ export function replaceTemplatesInFileName({
 	values,
 }: {
 	fileName: string
-	values: {[key: string]: string}
+	values: {[key: string]: {value: string}}
 }) {
 	let newFileName = fileName
 
 	for (const valueName of Object.keys(values)) {
-		newFileName = newFileName.replace(`{{${valueName}}}`, values[valueName])
+		newFileName = newFileName.replace(
+			`{{${valueName}}}`,
+			values[valueName].value
+		)
 	}
 
 	return newFileName

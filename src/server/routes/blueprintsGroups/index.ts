@@ -446,21 +446,24 @@ router.post(
 			)
 		}
 
-		const generatedValues: {[key: string]: string} = {}
+		const generatedValues: {[key: string]: {value: string; type: string}} = {}
 
 		// TODO start transition
 		for (const valueName of Object.keys(values)) {
 			const value = values[valueName]
 			if (value.type !== 'string') {
-				// eslint-disable-next-line no-await-in-loop
-				generatedValues[valueName] = await prepareIncFieldTypeForSubmit({
-					blueprintGroupId: groupId,
-					fieldType: value.type,
-					customerId: user.customer.id,
-					dbClient,
-				})
+				generatedValues[valueName] = {
+					// eslint-disable-next-line no-await-in-loop
+					value: await prepareIncFieldTypeForSubmit({
+						blueprintGroupId: groupId,
+						fieldType: value.type,
+						customerId: user.customer.id,
+						dbClient,
+					}),
+					type: value.type,
+				}
 			} else {
-				generatedValues[valueName] = value.value
+				generatedValues[valueName] = value
 			}
 			// TODO handle if value type does not exist
 		}
@@ -480,12 +483,9 @@ router.post(
 				const googleDocId = await generateFilledDocument({
 					blueprint,
 					targetFolderId: outputFolderId,
-					fileName: replaceTemplatesInFileName({
-						fileName,
-						values: generatedValues,
-					}),
+					fileName,
 					values: Object.keys(generatedValues).reduce<any>(
-						(prev, key) => ({...prev, [key]: generatedValues[key]}),
+						(prev, key) => ({...prev, [key]: generatedValues[key].value}),
 						{}
 					),
 					docs,
@@ -528,13 +528,14 @@ router.post(
 						user,
 				  })
 
+			console.log('aha', generatedValues)
 			const generated = await Promise.all(generateBlueprintTasks)
 			const insertedId = await insertSubmit({
 				blueprintsGroupId: blueprintGroup.id,
 				dbClient,
 				folderId: outputFolderId,
 				generated,
-				values,
+				values: generatedValues,
 				user,
 			})
 
