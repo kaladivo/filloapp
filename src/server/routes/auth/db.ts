@@ -98,13 +98,21 @@ async function createUser({
 	email: string
 	dbClient: PoolClient
 }) {
-	console.log('creating inside')
+	const domain = getDomainFromEmail(email)
 	await dbClient.query(
 		`
-        insert into "user" (email, domain, google_access_token, google_refresh_token, additional_info)
-        values ($1, $2, $3, $4, $5)
+        insert into "user" (email, domain, google_access_token, google_refresh_token, additional_info, customer_admin)
+        values ($1, $2, $3, $4, $5, $6)
     `,
-		[email, getDomainFromEmail(email), accessToken, refreshToken, userData]
+		[
+			email,
+			domain,
+			accessToken,
+			refreshToken,
+			userData,
+			// TODO store default value of domain_admin in db
+			['creativedock.cz', 'creativedock.com'].includes(domain),
+		]
 	)
 }
 
