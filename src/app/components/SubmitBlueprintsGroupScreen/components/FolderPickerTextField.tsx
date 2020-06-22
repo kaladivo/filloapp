@@ -32,7 +32,7 @@ function FolderPickerTextField({className, onChange}: Props) {
 			const folderId = matches[1]
 			onChange(folderId)
 		}
-	}, [setIsInvalid, text])
+	}, [setIsInvalid, text, onChange])
 
 	return (
 		<TextField

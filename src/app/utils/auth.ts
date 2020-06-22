@@ -1,9 +1,8 @@
 import {useState, useEffect, useCallback} from 'react'
 import sysend from 'sysend'
-import {useGoogleLogout} from 'react-google-login'
 import UserInfo from '../../constants/User'
 
-const CLIENT_ID = String(process.env.REACT_APP_GOOGLE_CLIENT_ID)
+// const CLIENT_ID = String(process.env.REACT_APP_GOOGLE_CLIENT_ID)
 
 const KEY_BROADCAST_AUTH = 'AUTH_BROADCAST'
 const KEY_LOCAL_STORAGE = 'AUTH_LOCAL_STORAGE'
@@ -92,12 +91,10 @@ export function useUser(): User | null {
 }
 
 export function useLogout(): () => void {
-	const {signOut: googleSignOut} = useGoogleLogout({
-		clientId: CLIENT_ID,
-	})
-
 	return useCallback(() => {
-		googleSignOut()
 		cleanUser()
-	}, [googleSignOut])
+		// TODO use gapi from context
+		// @ts-ignore
+		window.gapi.auth2.getAuthInstance().signOut()
+	}, [])
 }
