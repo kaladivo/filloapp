@@ -24,10 +24,10 @@ const SUPPLIERS_LIST = [
 	},
 	{
 		name: 'cd2',
-		'Supplier_DIC': 'dic1',
-		'Supplier_ICO': 'ico: 1',
-		'Supplier_Name': 'name1',
-		'Supplier_Office': 'office1',
+		'Supplier_DIC': 'dic2',
+		'Supplier_ICO': 'ico: 2',
+		'Supplier_Name': 'name2',
+		'Supplier_Office': 'office2',
 	},
 ]
 
