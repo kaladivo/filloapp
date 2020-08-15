@@ -11,12 +11,14 @@ import {
 import {useTranslation} from 'react-i18next'
 import {useAsync} from 'react-async'
 import {useHistory} from 'react-router-dom'
+import Autocomplete from '@material-ui/lab/Autocomplete'
 import RootContainer from '../RootContainer'
 import SelectBlueprints from './components/SelectBlueprints'
 import {TinyBlueprint} from '../../../constants/models/Blueprint'
 import {useApiService} from '../../api/apiContext'
 import {BlueprintGroup} from '../../../constants/models/BlueprintsGroup'
 import BackBreadcrumb from '../BackBreadcrumb'
+import {useCustomerInfo} from '../CustomerInfoProvider'
 
 const useStyles = makeStyles((theme) =>
 	createStyles({
@@ -34,16 +36,17 @@ function CreateBlueprintGroupScreen() {
 	const api = useApiService()
 	const {t} = useTranslation()
 	const history = useHistory()
+	const customerInfo = useCustomerInfo()
 
 	const [selected, setSelected] = useState<TinyBlueprint[]>([])
 	const [name, setName] = useState('')
-	const [projectName, setProjectName] = useState('')
+	const [projectName, setProjectName] = useState<string | null>(null)
 
 	const createGroupTask = useAsync({
 		deferFn: useCallback(async () => {
 			const result = await api.blueprintsGroups.create({
 				name,
-				projectName,
+				projectName: projectName || '',
 				blueprintsIds: selected.map((one) => one.id),
 			})
 			return result.data
@@ -57,7 +60,7 @@ function CreateBlueprintGroupScreen() {
 	})
 
 	const canBeSubmitted =
-		name && selected.length > 0 && !createGroupTask.isLoading
+		name && selected.length > 0 && !createGroupTask.isLoading && projectName
 
 	const handleSubmit = useCallback(
 		(e) => {
@@ -83,14 +86,26 @@ function CreateBlueprintGroupScreen() {
 					onChange={(e) => setName(e.target.value)}
 					label={t('CreateBlueprintGroupScreen.name')}
 				/>
-				<TextField
-					fullWidth
-					variant="outlined"
-					helperText={t('CreateBlueprintGroupScreen.projectNameDescription')}
-					value={projectName}
-					onChange={(e) => setProjectName(e.target.value)}
-					label={t('CreateBlueprintGroupScreen.projectName')}
-				/>
+				{customerInfo.projectsList && (
+					<Autocomplete
+						onChange={(e: any, newValue: string | null) => {
+							setProjectName(newValue)
+						}}
+						options={customerInfo.projectsList}
+						value={projectName}
+						renderInput={(params) => (
+							<TextField
+								{...params}
+								fullWidth
+								variant="outlined"
+								helperText={t(
+									'CreateBlueprintGroupScreen.projectNameDescription'
+								)}
+								label={t('CreateBlueprintGroupScreen.projectName')}
+							/>
+						)}
+					/>
+				)}
 				<SelectBlueprints onChange={setSelected} />
 				<Typography>
 					{t('CreateBlueprintGroupScreen.dontSeeBlueprint')}{' '}

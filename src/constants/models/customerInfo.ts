@@ -11,4 +11,5 @@ export interface CustomerInfo {
 			[key: string]: string
 		}>
 	}
+	projectsList?: string[]
 }

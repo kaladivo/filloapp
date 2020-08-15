@@ -32,6 +32,7 @@ export async function withCustomerInfoMiddleware(ctx: Context, next: Next) {
 				},
 			],
 		},
+		projectsList: ['project1', 'project2', 'other'],
 	}
 	ctx.state.customerInfo = customerInfo
 
