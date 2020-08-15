@@ -94,7 +94,7 @@ function CreateBlueprintGroupScreen() {
 				<SelectBlueprints onChange={setSelected} />
 				<Typography>
 					{t('CreateBlueprintGroupScreen.dontSeeBlueprint')}{' '}
-					{/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
+					{/* eslint-disable-next-line jsx-a11y/anchor-is-valid, no-alert */}
 					<Link onClick={() => alert(t('common.notImplemented'))}>
 						{t('CreateBlueprintGroupScreen.createBlueprint')}
 					</Link>
