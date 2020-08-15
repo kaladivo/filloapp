@@ -51,7 +51,12 @@ import {
 	replaceTemplatesInFileName,
 	getFolderInfo,
 	silentlyDeleteFile,
+	sendPriceAlertIfLimitExceeded,
 } from './utils'
+import {
+	withCustomerInfoMiddleware,
+	extractCustomerInfo,
+} from '../../utils/customerInfo'
 
 const router = new Router()
 
@@ -385,6 +390,7 @@ router.post(
 	withDataDbMiddleware,
 	withDriveApiMiddleware,
 	withGoogleDocsApiMiddleware,
+	withCustomerInfoMiddleware,
 	async (ctx, next) => {
 		const {
 			values,
@@ -400,6 +406,7 @@ router.post(
 		const user = extractUser(ctx)
 		const drive = extractDriveApi(ctx)
 		const docs = extractGoogleDocsApi(ctx)
+		const customerInfo = extractCustomerInfo(ctx)
 		const {groupId} = ctx.params
 
 		const blueprintGroup = await getGroup({
@@ -545,7 +552,6 @@ router.post(
 						user,
 				  })
 
-			console.log('aha', generatedValues)
 			const generated = await Promise.all(generateBlueprintTasks)
 			const insertedId = await insertSubmit({
 				blueprintsGroupId: blueprintGroup.id,
@@ -574,11 +580,27 @@ router.post(
 				)
 			}
 
-			ctx.body = await getSubmit({
+			const submit = await getSubmit({
 				submitId: insertedId,
 				customerId: user.customer.id,
 				dbClient,
 			})
+			await sendPriceAlertIfLimitExceeded({
+				values: Object.keys(generatedValues).reduce(
+					(prev, valKey) => ({
+						...prev,
+						[valKey]: generatedValues[valKey].value,
+					}),
+					{}
+				),
+				blueprint: {
+					id: submit.id,
+					name: outputName,
+					userName: submit.byUser.info?.name || submit.byUser.email,
+				},
+				customerInfo,
+			})
+			ctx.body = submit
 		} catch (e) {
 			throw new SendableError(
 				'Error while generating documents',
