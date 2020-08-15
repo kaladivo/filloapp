@@ -5,34 +5,35 @@ import Autocomplete from '@material-ui/lab/Autocomplete'
 import {GroupField} from '../../../../constants/models/BlueprintsGroup'
 import StringField from './StringField'
 import IncrementingField from './IncrementingField'
+import {useCustomerInfo} from '../../CustomerInfoProvider'
 
-const disabledFields = [
-	'Supplier_DIC',
-	'Supplier_ICO',
-	'Supplier_Name',
-	'Supplier_Office',
-]
+// const disabledFields = [
+// 	'Supplier_DIC',
+// 	'Supplier_ICO',
+// 	'Supplier_Name',
+// 	'Supplier_Office',
+// ]
 
-const PRICE_FIELD_NAME = 'Order_Price_VAT'
-const PRICE_FIELD_LIMIT = 200000
+// const PRICE_FIELD_NAME = 'Order_Price_VAT'
+// const PRICE_FIELD_LIMIT = 200000
 
-const SUPPLIERS_LIST = [
-	{
-		name: 'cd1',
+// const SUPPLIERS_LIST = [
+// 	{
+// 		name: 'cd1',
 
-		'Supplier_DIC': 'dic1',
-		'Supplier_ICO': 'ico: 1',
-		'Supplier_Name': 'name1',
-		'Supplier_Office': 'office1',
-	},
-	{
-		name: 'cd2',
-		'Supplier_DIC': 'dic2',
-		'Supplier_ICO': 'ico: 2',
-		'Supplier_Name': 'name2',
-		'Supplier_Office': 'office2',
-	},
-]
+// 		'Supplier_DIC': 'dic1',
+// 		'Supplier_ICO': 'ico: 1',
+// 		'Supplier_Name': 'name1',
+// 		'Supplier_Office': 'office1',
+// 	},
+// 	{
+// 		name: 'cd2',
+// 		'Supplier_DIC': 'dic2',
+// 		'Supplier_ICO': 'ico: 2',
+// 		'Supplier_Name': 'name2',
+// 		'Supplier_Office': 'office2',
+// 	},
+// ]
 
 interface Props {
 	fields: GroupField[]
@@ -44,6 +45,12 @@ interface Props {
 function FillValuesScreenCD({fields, values, onChange, onSubmit}: Props) {
 	const {t} = useTranslation()
 	const [selectedEntity, setSelectedEntity] = useState<any | null>(null)
+	const customerInfo = useCustomerInfo()
+
+	const disabledFields = customerInfo.entityFields?.disabledFields || []
+	const suppliersList = customerInfo.entityFields?.suppliersList || []
+	const priceFieldLimit = customerInfo.priceLimit?.limit
+	const priceFieldName = customerInfo.priceLimit?.fieldName
 
 	const ids = fields.filter((one) => !one.types.includes('string'))
 	const otherFields = fields.filter((one) => one.types.includes('string'))
@@ -73,7 +80,7 @@ function FillValuesScreenCD({fields, values, onChange, onSubmit}: Props) {
 			<Grid container spacing={2}>
 				<Grid item xs={12}>
 					<Autocomplete
-						options={SUPPLIERS_LIST}
+						options={suppliersList}
 						getOptionLabel={(option) => option.name}
 						onChange={(e: any, newValue: any | null) => {
 							setSelectedEntity(newValue)
@@ -108,8 +115,10 @@ function FillValuesScreenCD({fields, values, onChange, onSubmit}: Props) {
 										onChange({...values, [name]: value})
 									}}
 								/>
-								{name === PRICE_FIELD_NAME &&
-									Number(values[PRICE_FIELD_NAME]) >= PRICE_FIELD_LIMIT && (
+								{priceFieldLimit &&
+									priceFieldName &&
+									name === priceFieldName &&
+									Number(values[priceFieldName]) >= priceFieldLimit && (
 										<Typography color="secondary">
 											{t('CDSpecific.priceExceeded')}
 										</Typography>

@@ -1,6 +1,6 @@
 import {drive_v3 as driveV3, docs_v1 as docsV1} from 'googleapis'
 import {Stream} from 'stream'
-import {CustomerInfo} from '../../utils/customerInfo'
+import {CustomerInfo} from '../../../constants/models/customerInfo'
 import {Blueprint} from '../../../constants/models/Blueprint'
 import sendMail from '../../utils/sendMail'
 

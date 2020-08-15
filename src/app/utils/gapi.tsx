@@ -1,9 +1,12 @@
 import React, {useEffect, useState} from 'react'
+import {useTranslation} from 'react-i18next'
+import {Typography} from '@material-ui/core'
 
 const CLIENT_ID = String(process.env.REACT_APP_GOOGLE_CLIENT_ID)
 const SCOPES = String(process.env.REACT_APP_GOOGLE_SCOPES)
 
 function GapiProvider({children}: {children: React.ReactNode}) {
+	const {t} = useTranslation()
 	const [loaded, setLoaded] = useState(false)
 	useEffect(() => {
 		// TODO use gapi from index
@@ -17,7 +20,7 @@ function GapiProvider({children}: {children: React.ReactNode}) {
 	}, [])
 
 	if (loaded) return <>{children}</>
-	return <div>Loading</div>
+	return <Typography>{t('common.loading')}</Typography>
 }
 
 export {GapiProvider}

@@ -11,19 +11,21 @@ const muiTheme = createMuiTheme({})
 
 function App() {
 	return (
-		<ThemeProvider theme={muiTheme}>
-			<SnackbarProvider
-				maxSnack={5}
-				anchorOrigin={{vertical: 'bottom', horizontal: 'right'}}
-			>
-				<GapiProvider>
-					<ApiProvider>
-						<CssBaseline />
-						<RootRouter />
-					</ApiProvider>
-				</GapiProvider>
-			</SnackbarProvider>
-		</ThemeProvider>
+		<>
+			<ThemeProvider theme={muiTheme}>
+				<CssBaseline />
+				<SnackbarProvider
+					maxSnack={5}
+					anchorOrigin={{vertical: 'bottom', horizontal: 'right'}}
+				>
+					<GapiProvider>
+						<ApiProvider>
+							<RootRouter />
+						</ApiProvider>
+					</GapiProvider>
+				</SnackbarProvider>
+			</ThemeProvider>
+		</>
 	)
 }
 

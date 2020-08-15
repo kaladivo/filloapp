@@ -5,6 +5,7 @@ import NavigationDrawer from './components/NavigationDrawer'
 import NavigationList from './components/NavigationList'
 import useSections from '../../sections'
 import InsideRouter from './components/InsideRouter'
+import CustomerInfoProvider from '../CustomerInfoProvider'
 
 const drawerWidth = 300
 
@@ -38,25 +39,27 @@ function InsideScreen() {
 	const [drawerOpen, setDrawerOpen] = useState(false)
 	const sections = useSections()
 	return (
-		<div className={classes.root}>
-			<TopBar
-				drawerWidth={drawerWidth}
-				onMenuButtonClicked={() => setDrawerOpen((value) => !value)}
-			/>
-			<NavigationDrawer
-				mobileOpen={drawerOpen}
-				onToggleOpen={() => setDrawerOpen((value) => !value)}
-				drawerWidth={drawerWidth}
-			>
-				<NavigationList sections={sections} />
-			</NavigationDrawer>
-			<main className={classes.content}>
-				<div className={classes.toolbar} />
-				<div className={classes.pageContent}>
-					<InsideRouter sections={sections} />
-				</div>
-			</main>
-		</div>
+		<CustomerInfoProvider>
+			<div className={classes.root}>
+				<TopBar
+					drawerWidth={drawerWidth}
+					onMenuButtonClicked={() => setDrawerOpen((value) => !value)}
+				/>
+				<NavigationDrawer
+					mobileOpen={drawerOpen}
+					onToggleOpen={() => setDrawerOpen((value) => !value)}
+					drawerWidth={drawerWidth}
+				>
+					<NavigationList sections={sections} />
+				</NavigationDrawer>
+				<main className={classes.content}>
+					<div className={classes.toolbar} />
+					<div className={classes.pageContent}>
+						<InsideRouter sections={sections} />
+					</div>
+				</main>
+			</div>
+		</CustomerInfoProvider>
 	)
 }
 
