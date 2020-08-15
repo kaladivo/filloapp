@@ -87,4 +87,8 @@ export default {
 		'projectName': 'Project name',
 		'projectNameDescription': 'Name of the project this document belongs to',
 	},
+	'CDSpecific': {
+		'selectEntityLabel': 'Entity',
+		'autofillFromEntity': 'Will be auto filled once the entity is selected',
+	},
 }
