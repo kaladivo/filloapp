@@ -22,7 +22,7 @@ function IncrementingField({className, label, type, value}: Props) {
 				fieldTypeName: type,
 			})
 			return result.data.compiledValue
-		}, [api, type]),
+		}, [api, type, value]),
 	})
 
 	// TODO handle error

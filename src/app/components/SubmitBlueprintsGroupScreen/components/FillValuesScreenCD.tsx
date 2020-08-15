@@ -68,7 +68,7 @@ function FillValuesScreenCD({fields, values, onChange, onSubmit}: Props) {
 			return {...prev, [fieldName]: selectedEntity[fieldName] || ''}
 		}, {})
 		onChange({...values, ...valuesToChange})
-	}, [selectedEntity])
+	}, [selectedEntity, disabledFields, onChange, values])
 
 	return (
 		<form
