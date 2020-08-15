@@ -11,6 +11,7 @@ export interface BlueprintGroup {
 	id: string
 	name: string
 	createdAt: string
+	projectName: string
 	owner: OwnerInfo
 	fields: GroupField[]
 	blueprints: Blueprint[]
@@ -21,5 +22,6 @@ export interface BlueprintsGroupPreview {
 	id: string
 	name: string
 	createdAt: string
+	projectName: string
 	owner: OwnerInfo
 }

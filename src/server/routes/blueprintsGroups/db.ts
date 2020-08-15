@@ -46,7 +46,8 @@ export async function getGroup({
         select
             blueprints_group.id,
             blueprints_group.name,
-            blueprints_group.created_at,
+						blueprints_group.created_at as "createdAt",
+						blueprints_group.project_name as "projectName",
 			coalesce(
 				json_agg(json_build_object('id', b.id, 'googleDocsId', google_docs_id, 'name', b.name, 'owner', json_build_object('email', blueprintOwner.email, 'info', blueprintOwner.additional_info)))
 					filter (where b.id is not null), json_build_array()
@@ -78,22 +79,24 @@ export async function createGroup({
 	name,
 	blueprintsIds,
 	user,
+	projectName,
 	dbClient,
 }: {
 	name: string
 	blueprintsIds: string[]
 	user: User
+	projectName: string
 	dbClient: PoolClient
 }) {
 	try {
 		await dbClient.query(`begin`)
 		const createdGroupResult = await dbClient.query(
 			`
-			insert into blueprints_group (name, created_by)
-			values ($1, $2)
+			insert into blueprints_group (name, created_by, project_name)
+			values ($1, $2, $3)
 			returning id
 			`,
-			[name, user.email]
+			[name, user.email, projectName]
 		)
 
 		const createdGroupId = createdGroupResult.rows[0].id
@@ -168,6 +171,7 @@ export async function listBlueprintsGroupsForUser({
 			blueprints_group.id, 
 			blueprints_group.name,
 			blueprints_group.created_at as "createdAt",
+			blueprints_group.project_name as "projectName",
 			json_build_object('email', "user".email, 'info', "user".additional_info) as owner
 		from blueprints_group
 			left join "user" on blueprints_group.created_by = "user".email
@@ -196,6 +200,7 @@ export async function listBlueprintsGroupsForCustomer({
 			blueprints_group.id, 
 			blueprints_group.name,
 			blueprints_group.created_at as "createdAt",
+			blueprints_group.project_name as "projectName",
 			json_build_object('email', "user".email, 'info', "user".additional_info) as owner
 		from blueprints_group
 			left join "user" on blueprints_group.created_by = "user".email
@@ -214,10 +219,12 @@ export async function listBlueprintsGroupsForCustomer({
 export async function searchUsersBlueprintsGroups({
 	user,
 	query,
+	pagination,
 	dbClient,
 }: {
 	user: User
 	query: string
+	pagination: PaginationPosition
 	dbClient: PoolClient
 }) {
 	const result = await dbClient.query(
@@ -226,13 +233,15 @@ export async function searchUsersBlueprintsGroups({
 			blueprints_group.id, 
 			blueprints_group.name,
 			blueprints_group.created_at as "createdAt",
+			blueprints_group.project_name as "projectName",
 			json_build_object('email', "user".email, 'info', "user".additional_info) as owner
 		from blueprints_group
 			left join "user" on blueprints_group.created_by = "user".email
-		where "user".email = $1 and lower(blueprints_group.name) like $2 
+		where "user".email = $1 and (lower(blueprints_group.name) like $2 or lower(blueprints_group.project_name) like $2)
 		order by blueprints_group.name asc
+		limit $3 offset $4
 	`,
-		[user.email, `${query.toLowerCase()}%`]
+		[user.email, `${query.toLowerCase()}%`, pagination.limit, pagination.skip]
 	)
 
 	return result.rows
@@ -241,10 +250,12 @@ export async function searchUsersBlueprintsGroups({
 export async function searchCustomersBlueprintsGroups({
 	query,
 	customerId,
+	pagination,
 	dbClient,
 }: {
 	query: string
 	customerId: string
+	pagination: PaginationPosition
 	dbClient: PoolClient
 }) {
 	const result = await dbClient.query(
@@ -253,15 +264,17 @@ export async function searchCustomersBlueprintsGroups({
 			blueprints_group.id, 
 			blueprints_group.name,
 			blueprints_group.created_at as "createdAt",
+			blueprints_group.project_name as "projectName",
 			json_build_object('email', "user".email, 'info', "user".additional_info) as owner
 		from blueprints_group
 			left join "user" on blueprints_group.created_by = "user".email
 			left join domain d on "user".domain = d.domain
 			left join customer c on d.customer_id = c.id
-		where c.id= $1 and lower(blueprints_group.name) like $2
+		where c.id= $1 and (lower(blueprints_group.name) like $2 or lower(blueprints_group.project_name) like $2)
 		order by blueprints_group.name asc
+		limit $3 offset $4
 	`,
-		[customerId, `${query.toLowerCase()}%`]
+		[customerId, `${query.toLowerCase()}%`, pagination.limit, pagination.skip]
 	)
 
 	return result.rows

@@ -22,6 +22,9 @@ const useStyles = makeStyles((theme) =>
 			display: 'flex',
 			alignItems: 'center',
 		},
+		projectName: {
+			fontSize: '1rem',
+		},
 		authorPhoto: {
 			height: theme.spacing(5),
 			borderRadius: '100%',
@@ -41,6 +44,9 @@ function BlueprintsGroupItem({className, blueprintGroup}: Props) {
 		<Card className={className}>
 			<CardContent>
 				<Typography variant="h6">{blueprintGroup.name}</Typography>
+				<Typography className={classes.projectName}>
+					{blueprintGroup.projectName}
+				</Typography>
 				<Typography>
 					{moment(blueprintGroup.createdAt).format('DD. MMMM YYYY')}
 				</Typography>

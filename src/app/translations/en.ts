@@ -36,6 +36,7 @@ export default {
 		'createdBy': 'Created by {{name}}',
 		'unableToDelete': 'Unable to delete. Are you the owner?',
 		'deleted': 'Deleted',
+		'searchLabel': 'Search by name or project',
 	},
 	'BlueprintsGroupDetailScreen': {
 		'createdAt': 'Created at: {{date}}',
@@ -48,6 +49,7 @@ export default {
 		'createSubmit': 'Submit',
 		'noneGeneratedYet': 'No documents were yet generated.',
 		'goToFolderButton': 'Open drive folder',
+		'projectName': 'Project name: {{projectName}}',
 	},
 	'SubmitBlueprintsGroupScreen': {
 		'fillValues': 'Generating documents for {{name}}',
@@ -82,5 +84,7 @@ export default {
 		'selectBlueprintsToGenerate': 'Select templates to generate',
 		'dontSeeBlueprint': 'Dont see your template?',
 		'createBlueprint': 'Add a new one',
+		'projectName': 'Project name',
+		'projectNameDescription': 'Name of the project this document belongs to',
 	},
 }

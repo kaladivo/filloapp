@@ -37,15 +37,17 @@ function CreateBlueprintGroupScreen() {
 
 	const [selected, setSelected] = useState<TinyBlueprint[]>([])
 	const [name, setName] = useState('')
+	const [projectName, setProjectName] = useState('')
 
 	const createGroupTask = useAsync({
 		deferFn: useCallback(async () => {
 			const result = await api.blueprintsGroups.create({
 				name,
+				projectName,
 				blueprintsIds: selected.map((one) => one.id),
 			})
 			return result.data
-		}, [api, name, selected]),
+		}, [api, name, selected, projectName]),
 		onResolve: useCallback(
 			(createdGroup: BlueprintGroup) => {
 				history.push(`/blueprints-group/${createdGroup.id}/submit`)
@@ -80,6 +82,14 @@ function CreateBlueprintGroupScreen() {
 					value={name}
 					onChange={(e) => setName(e.target.value)}
 					label={t('CreateBlueprintGroupScreen.name')}
+				/>
+				<TextField
+					fullWidth
+					variant="outlined"
+					helperText={t('CreateBlueprintGroupScreen.projectNameDescription')}
+					value={projectName}
+					onChange={(e) => setProjectName(e.target.value)}
+					label={t('CreateBlueprintGroupScreen.projectName')}
 				/>
 				<SelectBlueprints onChange={setSelected} />
 				<Typography>

@@ -127,6 +127,10 @@ const createOrEditGroupSchema = new Schema({
 		each: {type: String},
 		required: true,
 	},
+	projectName: {
+		type: String,
+		required: true,
+	},
 })
 
 router.post(
@@ -138,7 +142,7 @@ router.post(
 		const user = extractUser(ctx)
 		const dbClient = extractDbClient(ctx)
 
-		const {name} = ctx.request.body
+		const {name, projectName} = ctx.request.body
 		const blueprintsIds: string[] = unique(ctx.request.body.blueprintsIds)
 
 		if (
@@ -151,7 +155,13 @@ router.post(
 		}
 
 		try {
-			ctx.body = await createGroup({blueprintsIds, name, user, dbClient})
+			ctx.body = await createGroup({
+				blueprintsIds,
+				name,
+				user,
+				projectName,
+				dbClient,
+			})
 			if (!ctx.body) {
 				throw new Error('Not created for some reason. Should not happen')
 			}
@@ -240,6 +250,7 @@ router.get(
 	async (ctx, next) => {
 		const user = extractUser(ctx)
 		const dbClient = extractDbClient(ctx)
+		const pagination = extractPagination(ctx)
 		const {query} = ctx.request.query
 
 		if (!query) {
@@ -252,11 +263,17 @@ router.get(
 		if (user.customerAdmin) {
 			ctx.body = await searchCustomersBlueprintsGroups({
 				customerId: user.customer.id,
+				pagination,
 				query,
 				dbClient,
 			})
 		} else {
-			ctx.body = await searchUsersBlueprintsGroups({user, query, dbClient})
+			ctx.body = await searchUsersBlueprintsGroups({
+				user,
+				pagination,
+				query,
+				dbClient,
+			})
 		}
 
 		await next()

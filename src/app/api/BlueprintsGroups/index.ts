@@ -18,11 +18,17 @@ export default class BlueprintsGroupsService {
 	create = ({
 		name,
 		blueprintsIds,
+		projectName,
 	}: {
 		name: string
 		blueprintsIds: string[]
+		projectName: string
 	}): Promise<AxiosResponse<BlueprintGroup>> => {
-		return this.apiService.post(groupsUrls.createGroup, {name, blueprintsIds})
+		return this.apiService.post(groupsUrls.createGroup, {
+			name,
+			blueprintsIds,
+			projectName,
+		})
 	}
 
 	list = ({
@@ -32,6 +38,18 @@ export default class BlueprintsGroupsService {
 	}): Promise<AxiosResponse<BlueprintsGroupPreview[]>> => {
 		return this.apiService.get(groupsUrls.listBlueprintGroup, {
 			params: pagination,
+		})
+	}
+
+	search = ({
+		query,
+		pagination,
+	}: {
+		query: string
+		pagination: PaginationPosition
+	}): Promise<AxiosResponse<BlueprintsGroupPreview[]>> => {
+		return this.apiService.get(groupsUrls.search, {
+			params: {...pagination, query},
 		})
 	}
 

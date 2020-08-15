@@ -1,13 +1,15 @@
-import React, {useCallback} from 'react'
+import React, {useCallback, useState} from 'react'
 import {
 	Typography,
 	makeStyles,
 	createStyles,
 	Button,
 	Grid,
+	TextField,
 } from '@material-ui/core'
 import {useTranslation} from 'react-i18next'
 import {Link} from 'react-router-dom'
+import {useDebounce} from 'use-debounce'
 import RootContainer from '../RootContainer'
 import InfiniteLoadingList from '../InfiniteLoadingList'
 import {useApiService} from '../../api/apiContext'
@@ -19,6 +21,7 @@ const useStyles = makeStyles((theme) =>
 		root: {},
 		newButton: {
 			marginTop: theme.spacing(1),
+			marginBottom: theme.spacing(3),
 		},
 		blueprintsList: {
 			margin: theme.spacing(2, -1),
@@ -30,6 +33,8 @@ function BlueprintsGroupsScreen() {
 	const classes = useStyles()
 	const api = useApiService()
 	const {t} = useTranslation()
+	const [searchQuery, setSearchQuery] = useState('')
+	const [debouncedQuery] = useDebounce(searchQuery, 300)
 
 	const loadMore = useCallback(
 		async (lastResult: any) => {
@@ -39,13 +44,19 @@ function BlueprintsGroupsScreen() {
 					? lastResult.pagination.limit + lastResult.pagination.skip
 					: 0,
 			}
-			const result = await api.blueprintsGroups.list({pagination})
+			const result = debouncedQuery
+				? await api.blueprintsGroups.search({
+						query: debouncedQuery,
+						pagination,
+				  })
+				: await api.blueprintsGroups.list({pagination})
+
 			return {
 				result: {items: result.data, pagination},
 				isLast: result.data.length < 20,
 			}
 		},
-		[api]
+		[api, debouncedQuery]
 	)
 
 	return (
@@ -60,7 +71,15 @@ function BlueprintsGroupsScreen() {
 			>
 				{t('BlueprintsGroupScreen.addNew')}
 			</Button>
+			<TextField
+				fullWidth
+				label={t('BlueprintsGroupScreen.searchLabel')}
+				variant="outlined"
+				value={searchQuery}
+				onChange={(e) => setSearchQuery(e.target.value)}
+			/>
 			<InfiniteLoadingList
+				key={debouncedQuery}
 				resultToItems={(result) => result.items}
 				loadMore={loadMore}
 				ListContainer={Grid}
