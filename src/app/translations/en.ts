@@ -90,5 +90,7 @@ export default {
 	'CDSpecific': {
 		'selectEntityLabel': 'Entity',
 		'autofillFromEntity': 'Will be auto filled once the entity is selected',
+		'priceExceeded':
+			'Price exceeds  200 000 Kč. Make sure to get approval from Finance department',
 	},
 }

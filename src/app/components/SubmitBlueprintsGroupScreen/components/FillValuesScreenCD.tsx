@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react'
-import {Button, Grid, TextField} from '@material-ui/core'
+import {Button, Grid, TextField, Typography} from '@material-ui/core'
 import {useTranslation} from 'react-i18next'
 import Autocomplete from '@material-ui/lab/Autocomplete'
 import {GroupField} from '../../../../constants/models/BlueprintsGroup'
@@ -12,6 +12,9 @@ const disabledFields = [
 	'Supplier_Name',
 	'Supplier_Office',
 ]
+
+const PRICE_FIELD_NAME = 'Order_Price_VAT'
+const PRICE_FIELD_LIMIT = 200000
 
 const SUPPLIERS_LIST = [
 	{
@@ -89,21 +92,29 @@ function FillValuesScreenCD({fields, values, onChange, onSubmit}: Props) {
 				{[...ids, ...otherFields].map(({name, types}, i) => (
 					<Grid key={name} item xs={12}>
 						{types.length === 1 && types[0] === 'string' ? (
-							<StringField
-								disabled={disabledFields.includes(name)}
-								helperText={
-									disabledFields.includes(name)
-										? t('CDSpecific.autofillFromEntity')
-										: undefined
-								}
-								autoFocus={i === 0}
-								label={name}
-								value={values[name]}
-								onChange={(e) => {
-									const {value} = e.target
-									onChange({...values, [name]: value})
-								}}
-							/>
+							<>
+								<StringField
+									disabled={disabledFields.includes(name)}
+									helperText={
+										disabledFields.includes(name)
+											? t('CDSpecific.autofillFromEntity')
+											: undefined
+									}
+									autoFocus={i === 0}
+									label={name}
+									value={values[name]}
+									onChange={(e) => {
+										const {value} = e.target
+										onChange({...values, [name]: value})
+									}}
+								/>
+								{name === PRICE_FIELD_NAME &&
+									Number(values[PRICE_FIELD_NAME]) >= PRICE_FIELD_LIMIT && (
+										<Typography color="secondary">
+											{t('CDSpecific.priceExceeded')}
+										</Typography>
+									)}
+							</>
 						) : (
 							<IncrementingField
 								label={name}
