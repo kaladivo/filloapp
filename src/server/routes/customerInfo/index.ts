@@ -5,11 +5,13 @@ import {
 } from '../../utils/customerInfo'
 import * as customerInfoUrls from '../../../constants/api/customerInfo'
 import {withValidUserMiddleware} from '../../utils/auth'
+import {withDataDbMiddleware} from '../../dbService'
 
 const router = new Router()
 
 router.get(
 	customerInfoUrls.getCustomerInfo,
+	withDataDbMiddleware,
 	withValidUserMiddleware,
 	withCustomerInfoMiddleware,
 	async (ctx, next) => {

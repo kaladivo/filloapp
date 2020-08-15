@@ -1,40 +1,23 @@
 import {Next, Context} from 'koa'
 import {CustomerInfo} from '../../constants/models/customerInfo'
+import {extractUser} from './auth'
+import {extractDbClient} from '../dbService'
 
 export async function withCustomerInfoMiddleware(ctx: Context, next: Next) {
-	const customerInfo: CustomerInfo = {
-		priceLimit: {
-			limit: 200000,
-			fieldName: 'Order_Price_VAT',
-			alertEmail: 'kaladivo@gmail.com',
-		},
-		entityFields: {
-			disabledFields: [
-				'Supplier_DIC',
-				'Supplier_ICO',
-				'Supplier_Name',
-				'Supplier_Office',
-			],
-			suppliersList: [
-				{
-					name: 'cd1',
-					'Supplier_DIC': 'dic1',
-					'Supplier_ICO': 'ico: 1',
-					'Supplier_Name': 'name1',
-					'Supplier_Office': 'office1',
-				},
-				{
-					name: 'cd2',
-					'Supplier_DIC': 'dic2',
-					'Supplier_ICO': 'ico: 2',
-					'Supplier_Name': 'name2',
-					'Supplier_Office': 'office2',
-				},
-			],
-		},
-		projectsList: ['project1', 'project2', 'other'],
-	}
-	ctx.state.customerInfo = customerInfo
+	const dataDb = extractDbClient(ctx)
+	const user = extractUser(ctx)
+
+	const result = await dataDb.query(
+		`
+		select info 
+		from customer 
+		where customer.id = $1
+	`,
+		[user.customer.id]
+	)
+
+	// eslint-disable-next-line prefer-destructuring
+	ctx.state.customerInfo = result.rows[0].info
 
 	await next()
 }
