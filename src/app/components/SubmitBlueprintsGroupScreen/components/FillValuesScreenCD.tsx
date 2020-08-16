@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react'
+import React, {useState, useEffect, useRef} from 'react'
 import {Button, Grid, TextField, Typography} from '@material-ui/core'
 import {useTranslation} from 'react-i18next'
 import Autocomplete from '@material-ui/lab/Autocomplete'
@@ -55,10 +55,15 @@ function FillValuesScreenCD({fields, values, onChange, onSubmit}: Props) {
 	const ids = fields.filter((one) => !one.types.includes('string'))
 	const otherFields = fields.filter((one) => one.types.includes('string'))
 
+	const valuesRef = useRef(values)
+	useEffect(() => {
+		valuesRef.current = values
+	}, [values])
+
 	useEffect(() => {
 		if (!selectedEntity) {
 			onChange({
-				...values,
+				...valuesRef.current,
 				...disabledFields.reduce((prev, cur) => ({...prev, [cur]: ''}), {}),
 			})
 			return
@@ -67,8 +72,8 @@ function FillValuesScreenCD({fields, values, onChange, onSubmit}: Props) {
 		const valuesToChange = disabledFields.reduce((prev, fieldName) => {
 			return {...prev, [fieldName]: selectedEntity[fieldName] || ''}
 		}, {})
-		onChange({...values, ...valuesToChange})
-	}, [selectedEntity, disabledFields, onChange, values])
+		onChange({...valuesRef.current, ...valuesToChange})
+	}, [selectedEntity, disabledFields, onChange, valuesRef])
 
 	return (
 		<form
