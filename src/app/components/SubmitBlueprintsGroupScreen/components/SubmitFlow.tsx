@@ -5,14 +5,12 @@ import {useAsync} from 'react-async'
 import {useHistory} from 'react-router-dom'
 import {useSnackbar} from 'notistack'
 import {BlueprintGroup} from '../../../../constants/models/BlueprintsGroup'
-import FillValuesScreen from './FillValuesScreen'
 import FillValuesScreenCD from './FillValuesScreenCD'
 import SettingsScreen, {SettingsValues} from './SettingsScreen'
 import {useApiService} from '../../../api/apiContext'
 import LoadingIndicator from '../../LoadingIndicator'
 import ErrorScreen from './ErrorScreen'
 import {SubmitSettings} from '../../../api/BlueprintsGroups/models'
-import {useUser} from '../../../utils/auth'
 
 interface Props {
 	blueprintsGroup: BlueprintGroup
@@ -26,7 +24,6 @@ function SubmitFlow({blueprintsGroup}: Props) {
 	const api = useApiService()
 	const history = useHistory()
 	const {enqueueSnackbar} = useSnackbar()
-	const user = useUser()
 
 	const defaultValues = useMemo(() => {
 		return blueprintsGroup.fields.reduce<{[key: string]: string}>(
@@ -122,25 +119,14 @@ function SubmitFlow({blueprintsGroup}: Props) {
 			</Typography>
 			{step === 'values' && (
 				<>
-					{user?.userInfo.customer.name === 'Creative Dock' ? (
-						<FillValuesScreenCD
-							fields={blueprintsGroup.fields}
-							values={values}
-							onChange={setValues}
-							onSubmit={() => {
-								setStep('settings')
-							}}
-						/>
-					) : (
-						<FillValuesScreen
-							fields={blueprintsGroup.fields}
-							values={values}
-							onChange={setValues}
-							onSubmit={() => {
-								setStep('settings')
-							}}
-						/>
-					)}
+					<FillValuesScreenCD
+						fields={blueprintsGroup.fields}
+						values={values}
+						onChange={setValues}
+						onSubmit={() => {
+							setStep('settings')
+						}}
+					/>
 				</>
 			)}
 			{step === 'settings' && (
