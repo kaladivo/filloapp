@@ -3,7 +3,8 @@ create table customer
 	id char(20) default random_string(20) not null
 		constraint customer_pk
 			primary key,
-	name text not null
+	name text not null,
+	info jsonb default json_build_object() not null
 );
 
 alter table customer owner to postgres;
@@ -95,7 +96,8 @@ create table blueprints_group
 	created_at timestamp default now() not null,
 	created_by text not null
 		constraint blueprints_group_user_email_fk
-			references "user"
+			references "user",
+	project_name text default 'other'::text not null
 );
 
 alter table blueprints_group owner to postgres;
@@ -139,6 +141,9 @@ create table blueprints_group_submit
 
 alter table blueprints_group_submit owner to postgres;
 
+create unique index blueprint_submit_id_uindex
+	on blueprints_group_submit (id);
+
 create table document
 (
 	id bigserial not null
@@ -159,9 +164,6 @@ alter table document owner to postgres;
 
 create unique index document_id_uindex
 	on document (id);
-
-create unique index blueprint_submit_id_uindex
-	on blueprints_group_submit (id);
 
 create table filled_blueprint_field
 (
