@@ -694,3 +694,50 @@ export async function prepareIncFieldTypeForSubmit({
 		throw e
 	}
 }
+
+export async function getDataForSpreadsheetExport({
+	customerId,
+	dbClient,
+}: {
+	customerId: string
+	dbClient: PoolClient
+}) {
+	const {rows: groupsWithFields} = await dbClient.query(
+		`
+	select
+		blueprints_group.id,
+		blueprints_group.name,
+		bgs.submitted_at as "submittedAt",
+		bgs.submitted_by_email as "submittedBy",
+		coalesce(
+						json_agg(json_build_object('value', fbf.value, 'name', fbf.name))
+						filter (where fbf.id is not null), json_build_array()
+		) as values,
+		coalesce (
+						json_agg(bf.name)
+						filter (where bf.name is not null), json_build_array()
+		) as fields
+	from blueprints_group
+	left join blueprint_blueprints_group on blueprints_group.id = blueprint_blueprints_group.blueprint_group_id
+	left join blueprint on blueprint_blueprints_group.blueprint_id = blueprint.id
+	left join "user" u on blueprint.user_email = u.email
+	left join domain on u.domain = domain.domain
+	left join blueprints_group_submit bgs
+	on blueprints_group.id = bgs.blueprints_group_id
+	and bgs.submitted_at = (
+		select MAX(submitted_at)
+		from blueprints_group_submit
+		where blueprints_group_submit.blueprints_group_id = blueprints_group.id
+	)
+	left join blueprint_field bf on blueprint.id = bf.blueprint_id
+	left join filled_blueprint_field fbf on bgs.id = fbf.blueprints_group_submit_id and fbf.name = bf.name
+	where domain.customer_id = $1 and bgs.submitted_at is not null
+	group by blueprints_group.name,blueprints_group.id, bgs.submitted_at, bgs.submitted_by_email
+	order by bgs.submitted_at asc
+
+	`,
+		[customerId]
+	)
+
+	return groupsWithFields
+}

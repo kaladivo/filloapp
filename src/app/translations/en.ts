@@ -92,5 +92,8 @@ export default {
 		'autofillFromEntity': 'Will be auto filled once the entity is selected',
 		'priceExceeded':
 			'Price exceeds  200 000 Kč. Make sure to get approval from Finance department',
+		'syncWithSpreadsheet': 'Sync with spreadsheet',
+		'syncWithSpreadsheetSuccess': 'Sync was successful',
+		'syncWithSpreadsheetError': 'Error while syncing. Try again later.',
 	},
 }

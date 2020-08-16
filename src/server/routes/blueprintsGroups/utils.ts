@@ -1,8 +1,12 @@
-import {drive_v3 as driveV3, docs_v1 as docsV1} from 'googleapis'
+import {PoolClient} from 'pg'
+import {drive_v3 as driveV3, docs_v1 as docsV1, google} from 'googleapis'
 import {Stream} from 'stream'
+import unique from 'array-unique'
 import {CustomerInfo} from '../../../constants/models/customerInfo'
 import {Blueprint} from '../../../constants/models/Blueprint'
 import sendMail from '../../utils/sendMail'
+import {getOAuth2Client} from '../../utils/googleApis'
+import {getDataForSpreadsheetExport} from './db'
 
 // const TEMP_FOLDER: string = String(process.env.TEMP_FOLDER)
 
@@ -249,4 +253,91 @@ export async function sendPriceAlertIfLimitExceeded({
 			`,
 		})
 	}
+}
+
+export async function exportToSpreadsheet({
+	dbClient,
+	refreshTokenOfWriter,
+	customerId,
+	sheetId,
+}: {
+	dbClient: PoolClient
+	customerId: string
+	refreshTokenOfWriter: string
+	sheetId: string
+}) {
+	const submits = await getDataForSpreadsheetExport({
+		customerId,
+		dbClient,
+	})
+
+	const auth = getOAuth2Client({
+		refreshToken: refreshTokenOfWriter,
+	})
+
+	const sheets = google.sheets({version: 'v4', auth})
+
+	const allFields = [
+		...unique(
+			submits
+				.map((one) => one.fields)
+				.reduce((curr, one) => [...curr, ...one], [])
+				.sort()
+		),
+	]
+
+	const values = [
+		['name', 'submittedAt', 'submittedBy', ...allFields],
+		...submits.map((oneSubmit) => {
+			return [
+				oneSubmit.name || '',
+				oneSubmit.submittedAt || '',
+				oneSubmit.submittedBy || '',
+				...allFields.map(
+					(fieldName) =>
+						oneSubmit.values.find((one: any) => one.name === fieldName)
+							?.value || ''
+				),
+			]
+		}),
+	]
+
+	console.log(values)
+	const resource = {values}
+
+	// await sheets.spreadsheets.batchUpdate({
+	// 	spreadsheetId: sheetId,
+	// 	fields: '*',
+	// })
+
+	await sheets.spreadsheets.values.clear({
+		spreadsheetId: sheetId,
+		range: 'Sheet1',
+	})
+
+	// @ts-ignore
+	await sheets.spreadsheets.values.update({
+		spreadsheetId: sheetId,
+		range: 'Sheet1!A1',
+		valueInputOption: 'RAW',
+		resource,
+	})
+
+	// @ts-ignore
+	await sheets.spreadsheets.batchUpdate({
+		spreadsheetId: sheetId,
+		requestBody: {
+			requests: [
+				{
+					'autoResizeDimensions': {
+						'dimensions': {
+							'dimension': 'COLUMNS',
+						},
+					},
+				},
+			],
+		},
+	})
+
+	return values
 }

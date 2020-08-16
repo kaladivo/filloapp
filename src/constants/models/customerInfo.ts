@@ -12,4 +12,8 @@ export interface CustomerInfo {
 		}>
 	}
 	projectsList?: string[]
+	spreadsheetExport?: {
+		refreshTokenOfWriter: string
+		spreadsheetId: string
+	}
 }

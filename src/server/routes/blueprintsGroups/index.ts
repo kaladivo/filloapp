@@ -52,6 +52,7 @@ import {
 	getFolderInfo,
 	silentlyDeleteFile,
 	sendPriceAlertIfLimitExceeded,
+	exportToSpreadsheet,
 } from './utils'
 import {
 	withCustomerInfoMiddleware,
@@ -585,7 +586,8 @@ router.post(
 				customerId: user.customer.id,
 				dbClient,
 			})
-			await sendPriceAlertIfLimitExceeded({
+
+			sendPriceAlertIfLimitExceeded({
 				values: Object.keys(generatedValues).reduce(
 					(prev, valKey) => ({
 						...prev,
@@ -600,6 +602,18 @@ router.post(
 				},
 				customerInfo,
 			})
+
+			if (customerInfo.spreadsheetExport) {
+				await exportToSpreadsheet({
+					dbClient,
+					customerId: user.customer.id,
+					refreshTokenOfWriter:
+						customerInfo.spreadsheetExport.refreshTokenOfWriter,
+					sheetId: customerInfo.spreadsheetExport.spreadsheetId,
+				})
+			}
+
+			await submit
 			ctx.body = submit
 		} catch (e) {
 			throw new SendableError(
@@ -639,6 +653,34 @@ router.get(
 				nextValue.newValue
 			),
 		}
+		await next()
+	}
+)
+
+router.post(
+	blueprintsGroupsUrls.triggerSpreadsheetExport,
+	withValidUserMiddleware,
+	withDataDbMiddleware,
+	withCustomerInfoMiddleware,
+	async (ctx, next) => {
+		const dbClient = extractDbClient(ctx)
+		const user = extractUser(ctx)
+		const customerInfo = extractCustomerInfo(ctx)
+
+		if (!customerInfo.spreadsheetExport) {
+			ctx.body = 'No config in customer info for exporting spreadsheets'
+			ctx.status = 400
+			return
+		}
+
+		await exportToSpreadsheet({
+			dbClient,
+			customerId: user.customer.id,
+			refreshTokenOfWriter: customerInfo.spreadsheetExport.refreshTokenOfWriter,
+			sheetId: customerInfo.spreadsheetExport.spreadsheetId,
+		})
+
+		ctx.body = {targetSpreadsheet: customerInfo.spreadsheetExport}
 		await next()
 	}
 )

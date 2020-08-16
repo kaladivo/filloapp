@@ -1,6 +1,11 @@
 import HttpStatus from 'http-status-codes'
 import {Context, Next} from 'koa'
-import {google, drive_v3 as driveV3, docs_v1 as docsV1} from 'googleapis'
+import {
+	google,
+	drive_v3 as driveV3,
+	docs_v1 as docsV1,
+	sheets_v4 as sheetsV4,
+} from 'googleapis'
 import {UNAUTHORIZED} from '../../constants/errorCodes'
 import SendableError from './SendableError'
 import {extractUser} from './auth'
@@ -44,9 +49,29 @@ export async function withDriveApiMiddleware(ctx: Context, next: Next) {
 
 	await next()
 }
-
 export function extractDriveApi(ctx: Context): driveV3.Drive {
 	return ctx.state.drive
+}
+
+export async function withSheetsApiMiddleware(ctx: Context, next: Next) {
+	const user = extractUser(ctx)
+	if (!user) {
+		throw new SendableError('No user', {
+			errorCode: UNAUTHORIZED,
+			status: HttpStatus.UNAUTHORIZED,
+		})
+	}
+
+	const auth = getOAuth2Client({accessToken: user.googleAccessToken})
+
+	const sheets = google.sheets({version: 'v4', auth})
+	ctx.state.sheets = sheets
+
+	await next()
+}
+
+export function extractSheetsApi(ctx: Context): sheetsV4.Sheets {
+	return ctx.state.sheets
 }
 
 export async function withGoogleDocsApiMiddleware(ctx: Context, next: Next) {

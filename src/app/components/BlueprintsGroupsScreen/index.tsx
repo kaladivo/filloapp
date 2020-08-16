@@ -15,6 +15,7 @@ import InfiniteLoadingList from '../InfiniteLoadingList'
 import {useApiService} from '../../api/apiContext'
 import {BlueprintsGroupPreview} from '../../../constants/models/BlueprintsGroup'
 import BlueprintGroupItem from './components/BlueprintsGroupItem'
+import SyncWithSpreadsheetButton from './components/SyncWithSpreadsheetButton'
 
 const useStyles = makeStyles((theme) =>
 	createStyles({
@@ -25,6 +26,12 @@ const useStyles = makeStyles((theme) =>
 		},
 		blueprintsList: {
 			margin: theme.spacing(2, -1),
+		},
+		buttons: {
+			'& > *': {
+				margin: theme.spacing(1, 1),
+			},
+			margin: theme.spacing(1, -1),
 		},
 	})
 )
@@ -62,15 +69,18 @@ function BlueprintsGroupsScreen() {
 	return (
 		<RootContainer maxWidth="md">
 			<Typography variant="h5">{t('BlueprintsGroupScreen.title')}</Typography>
-			<Button
-				className={classes.newButton}
-				component={Link}
-				to="/blueprints-group/new"
-				variant="contained"
-				color="primary"
-			>
-				{t('BlueprintsGroupScreen.addNew')}
-			</Button>
+			<div className={classes.buttons}>
+				<Button
+					className={classes.newButton}
+					component={Link}
+					to="/blueprints-group/new"
+					variant="contained"
+					color="primary"
+				>
+					{t('BlueprintsGroupScreen.addNew')}
+				</Button>
+				<SyncWithSpreadsheetButton />
+			</div>
 			<TextField
 				fullWidth
 				label={t('BlueprintsGroupScreen.searchLabel')}

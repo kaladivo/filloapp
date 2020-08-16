@@ -82,4 +82,8 @@ export default class BlueprintsGroupsService {
 		const url = groupsUrls.getFieldValue.replace(':fieldType', fieldTypeName)
 		return this.apiService.get(url)
 	}
+
+	triggerSpreadsheetExport = (): Promise<AxiosResponse<void>> => {
+		return this.apiService.post(groupsUrls.triggerSpreadsheetExport)
+	}
 }

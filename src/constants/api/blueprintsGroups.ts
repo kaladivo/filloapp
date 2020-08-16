@@ -7,3 +7,4 @@ export const search = `${root}/search`
 export const submit = `${root}/one/:groupId/submit`
 export const editBlueprint = `${root}/one/:groupId`
 export const getFieldValue = `${root}/id-value/:fieldType`
+export const triggerSpreadsheetExport = `${root}/export-spreadsheet`
