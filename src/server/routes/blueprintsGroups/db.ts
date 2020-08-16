@@ -238,7 +238,7 @@ export async function searchUsersBlueprintsGroups({
 		from blueprints_group
 			left join "user" on blueprints_group.created_by = "user".email
 		where "user".email = $1 and (lower(blueprints_group.name) like $2 or lower(blueprints_group.project_name) like $2)
-		order by blueprints_group.name asc
+		order by blueprints_group.created_at desc
 		limit $3 offset $4
 	`,
 		[user.email, `%${query.toLowerCase()}%`, pagination.limit, pagination.skip]
@@ -271,7 +271,7 @@ export async function searchCustomersBlueprintsGroups({
 			left join domain d on "user".domain = d.domain
 			left join customer c on d.customer_id = c.id
 		where c.id= $1 and (lower(blueprints_group.name) like $2 or lower(blueprints_group.project_name) like $2)
-		order by blueprints_group.name asc
+		order by blueprints_group.created_at desc
 		limit $3 offset $4
 	`,
 		[customerId, `%${query.toLowerCase()}%`, pagination.limit, pagination.skip]
