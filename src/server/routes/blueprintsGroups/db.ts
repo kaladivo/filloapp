@@ -241,7 +241,7 @@ export async function searchUsersBlueprintsGroups({
 		order by blueprints_group.name asc
 		limit $3 offset $4
 	`,
-		[user.email, `${query.toLowerCase()}%`, pagination.limit, pagination.skip]
+		[user.email, `%${query.toLowerCase()}%`, pagination.limit, pagination.skip]
 	)
 
 	return result.rows
@@ -274,7 +274,7 @@ export async function searchCustomersBlueprintsGroups({
 		order by blueprints_group.name asc
 		limit $3 offset $4
 	`,
-		[customerId, `${query.toLowerCase()}%`, pagination.limit, pagination.skip]
+		[customerId, `%${query.toLowerCase()}%`, pagination.limit, pagination.skip]
 	)
 
 	return result.rows
