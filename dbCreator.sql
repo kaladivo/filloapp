@@ -1,3 +1,9 @@
+create schema public;
+
+comment on schema public is 'standard public schema';
+
+alter schema public owner to postgres;
+
 create table customer
 (
 	id char(20) default random_string(20) not null
@@ -79,7 +85,9 @@ create table blueprint_field
 			references blueprint
 				on update cascade on delete restrict,
 	name text not null,
-	type text not null
+	type text not null,
+	display_name text not null,
+	helper_text text
 );
 
 alter table blueprint_field owner to postgres;
@@ -97,7 +105,7 @@ create table blueprints_group
 	created_by text not null
 		constraint blueprints_group_user_email_fk
 			references "user",
-	project_name text default 'other'::text not null
+	project_name text not null
 );
 
 alter table blueprints_group owner to postgres;
@@ -141,9 +149,6 @@ create table blueprints_group_submit
 
 alter table blueprints_group_submit owner to postgres;
 
-create unique index blueprint_submit_id_uindex
-	on blueprints_group_submit (id);
-
 create table document
 (
 	id bigserial not null
@@ -164,6 +169,9 @@ alter table document owner to postgres;
 
 create unique index document_id_uindex
 	on document (id);
+
+create unique index blueprint_submit_id_uindex
+	on blueprints_group_submit (id);
 
 create table filled_blueprint_field
 (
