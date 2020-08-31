@@ -5,6 +5,8 @@ import {Blueprint} from './Blueprint'
 export interface GroupField {
 	name: string
 	types: string[]
+	displayName: string
+	helperText: string | null
 }
 
 export interface BlueprintGroup {

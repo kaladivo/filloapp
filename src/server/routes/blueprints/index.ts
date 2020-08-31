@@ -21,6 +21,7 @@ import {
 	searchBlueprintsForUser,
 	listTinyBlueprintsForCustomer,
 	listTinyBlueprintsForUser,
+	InputBlueprintField,
 } from './db'
 import {withDataDbMiddleware, extractDbClient} from '../../dbService'
 import withPaginationMiddleware, {
@@ -38,8 +39,10 @@ const createBlueprintSchema = new Schema({
 		type: Array,
 		required: true,
 		each: {
-			name: String,
-			type: String,
+			name: {type: String, required: true},
+			type: {type: String, required: true},
+			helperText: String,
+			displayName: String,
 		},
 	},
 })
@@ -85,13 +88,16 @@ router.post(
 			const fieldOption = fieldsOptions.find(
 				(option: any) => option.name === fieldName
 			)
-			if (!fieldOption) return {type: 'string', name: fieldName}
+			if (!fieldOption)
+				return {type: 'string', name: fieldName, displayName: fieldName}
 			return {
 				name: fieldName,
 				// TODO check if type is valid maybe?
 				type: fieldOption.type,
+				displayName: fieldOption.displayName || fieldName,
+				helperText: fieldOption.helperText || null,
 			}
-		})
+		}) as InputBlueprintField[]
 
 		try {
 			const createdBlueprint = await createOrUpdateBlueprint({

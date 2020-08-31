@@ -4,6 +4,13 @@ import {PaginationPosition} from '../../../constants/models/Pagination'
 
 import User from '../../../constants/User'
 
+export interface InputBlueprintField {
+	name: string
+	type: string
+	displayName: string
+	helperText: string | null
+}
+
 async function getBlueprint({
 	fileId,
 	dbClient,
@@ -19,7 +26,7 @@ async function getBlueprint({
 			blueprint.id, 
 			google_docs_id as "googleDocsId", 
 			blueprint.name,
-			json_agg(json_build_object('id', blueprint_field.id, 'name', blueprint_field.name, 'type', blueprint_field.type)) as fields,
+			json_agg(json_build_object('id', blueprint_field.id, 'name', blueprint_field.name, 'type', blueprint_field.type, 'display_name', blueprint_field.display_name, 'helperText', blueprint_field.helper_text)) as fields,
 			json_build_object('email', u.email, 'info', u.additional_info) as owner
 		from blueprint
 			left join blueprint_field on blueprint.id = blueprint_field.blueprint_id
@@ -48,7 +55,7 @@ export async function getBlueprintById({
 			blueprint.id, 
 			google_docs_id as "googleDocsId", 
 			blueprint.name,
-			json_agg(json_build_object('id', blueprint_field.id, 'name', blueprint_field.name, 'type', blueprint_field.type)) as fields,
+			json_agg(json_build_object('id', blueprint_field.id, 'name', blueprint_field.name, 'type', blueprint_field.type, 'display_name', blueprint_field.display_name, 'helperText', blueprint_field.helper_text)) as fields,
 			json_build_object('email', u.email, 'info', u.additional_info) as owner
 		from blueprint
 			left join blueprint_field on blueprint.id = blueprint_field.blueprint_id
@@ -68,7 +75,7 @@ async function createOrUpdateFields({
 	blueprintId,
 	dbClient,
 }: {
-	fields: {name: string; type: string}[]
+	fields: InputBlueprintField[]
 	blueprintId: string
 	dbClient: PoolClient
 }) {
@@ -82,18 +89,27 @@ async function createOrUpdateFields({
 
 	await dbClient.query(
 		`
-		insert into blueprint_field (blueprint_id, name, type)
+		insert into blueprint_field (blueprint_id, name, type, display_name, helper_text)
 		values
 			${fields
 				.map(
-					(field, index) => `($1::int, $${index * 2 + 2}, $${index * 2 + 3})`
+					(field, index) =>
+						`($1::int, $${index * 4 + 2}, $${index * 4 + 3}, $${
+							index * 4 + 4
+						}, $${index * 4 + 5})`
 				)
 				.join(', ')}
 	`,
 		[
 			Number(blueprintId),
-			...fields.reduce<string[]>(
-				(prev, current) => [...prev, current.name, current.type],
+			...fields.reduce<(string | null)[]>(
+				(prev, current) => [
+					...prev,
+					current.name,
+					current.type,
+					current.displayName,
+					current.helperText,
+				],
 				[]
 			),
 		]
@@ -111,7 +127,7 @@ async function updateBlueprint({
 	fileId: string
 	blueprintId: string
 	fileName: string
-	fields: {name: string; type: string}[]
+	fields: InputBlueprintField[]
 	user: User
 	dbClient: PoolClient
 }): Promise<Blueprint | null> {
@@ -145,7 +161,7 @@ async function createBlueprint({
 }: {
 	fileId: string
 	fileName: string
-	fields: {name: string; type: string}[]
+	fields: InputBlueprintField[]
 	user: User
 	dbClient: PoolClient
 }): Promise<Blueprint | null> {
@@ -180,7 +196,7 @@ export async function createOrUpdateBlueprint({
 }: {
 	fileId: string
 	fileName: string
-	fields: {name: string; type: string}[]
+	fields: InputBlueprintField[]
 	dbClient: PoolClient
 	user: User
 }): Promise<{blueprint: Blueprint; performedAction: 'update' | 'create'}> {
@@ -229,7 +245,7 @@ export async function listBlueprintsForUser({
 		select
 			blueprint.id,
 			blueprint.name,
-			json_agg(json_build_object('id', blueprint_field.id, 'name', blueprint_field.name, 'type', blueprint_field.type)) as fields,
+			json_agg(json_build_object('id', blueprint_field.id, 'name', blueprint_field.name, 'type', blueprint_field.type, 'display_name', blueprint_field.display_name, 'helperText', blueprint_field.helper_text)) as fields,
 			json_build_object('email', u.email, 'info', u.additional_info) as owner
 		from blueprint
 			left join blueprint_field on blueprint.id = blueprint_field.blueprint_id
@@ -259,7 +275,7 @@ export async function listBlueprintsForCustomer({
 		select
 			blueprint.id,
 			blueprint.name,
-			json_agg(json_build_object('id', blueprint_field.id, 'name', blueprint_field.name, 'type', blueprint_field.type)) as fields,
+			json_agg(json_build_object('id', blueprint_field.id, 'name', blueprint_field.name, 'type', blueprint_field.type, 'display_name', blueprint_field.display_name, 'helperText', blueprint_field.helper_text)) as fields,
 			json_build_object('email', u.email, 'info', u.additional_info) as owner
 		from blueprint
 			left join blueprint_field on blueprint.id = blueprint_field.blueprint_id
@@ -291,7 +307,7 @@ export async function searchBlueprintsForCustomer({
 		select
 			blueprint.id,
 			blueprint.name,
-			json_agg(json_build_object('id', blueprint_field.id, 'name', blueprint_field.name, 'type', blueprint_field.type)) as fields,
+			json_agg(json_build_object('id', blueprint_field.id, 'name', blueprint_field.name, 'type', blueprint_field.type, 'display_name', blueprint_field.display_name, 'helperText', blueprint_field.helper_text)) as fields,
 			json_build_object('email', u.email, 'info', u.additional_info) as owner
 		from blueprint
 			left join blueprint_field on blueprint.id = blueprint_field.blueprint_id
@@ -322,7 +338,7 @@ export async function searchBlueprintsForUser({
 		select
 			blueprint.id,
 			blueprint.name,
-			json_agg(json_build_object('id', blueprint_field.id, 'name', blueprint_field.name, 'type', blueprint_field.type)) as fields,
+			json_agg(json_build_object('id', blueprint_field.id, 'name', blueprint_field.name, 'type', blueprint_field.type, 'display_name', blueprint_field.display_name, 'helperText', blueprint_field.helper_text)) as fields,
 			json_build_object('email', u.email, 'info', u.additional_info) as owner
 		from blueprint
 			left join blueprint_field on blueprint.id = blueprint_field.blueprint_id

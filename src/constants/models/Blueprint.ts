@@ -3,7 +3,9 @@ import {OwnerInfo} from './OwnerInfo'
 export interface BlueprintField {
 	id: string
 	name: string
-	type: 'string'
+	type: 'string' | 'id'
+	displayName: string
+	helperText: string
 }
 
 export interface Blueprint {

@@ -7,34 +7,6 @@ import StringField from './StringField'
 import IncrementingField from './IncrementingField'
 import {useCustomerInfo} from '../../CustomerInfoProvider'
 
-// const disabledFields = [
-// 	'Supplier_DIC',
-// 	'Supplier_ICO',
-// 	'Supplier_Name',
-// 	'Supplier_Office',
-// ]
-
-// const PRICE_FIELD_NAME = 'Order_Price_VAT'
-// const PRICE_FIELD_LIMIT = 200000
-
-// const SUPPLIERS_LIST = [
-// 	{
-// 		name: 'cd1',
-
-// 		'Supplier_DIC': 'dic1',
-// 		'Supplier_ICO': 'ico: 1',
-// 		'Supplier_Name': 'name1',
-// 		'Supplier_Office': 'office1',
-// 	},
-// 	{
-// 		name: 'cd2',
-// 		'Supplier_DIC': 'dic2',
-// 		'Supplier_ICO': 'ico: 2',
-// 		'Supplier_Name': 'name2',
-// 		'Supplier_Office': 'office2',
-// 	},
-// ]
-
 interface Props {
 	fields: GroupField[]
 	values: {[key: string]: string}
@@ -101,43 +73,47 @@ function FillValuesScreenCD({fields, values, onChange, onSubmit}: Props) {
 						)}
 					/>
 				</Grid>
-				{[...ids, ...otherFields].map(({name, types}, i) => (
-					<Grid key={name} item xs={12}>
-						{types.length === 1 && types[0] === 'string' ? (
-							<>
-								<StringField
-									disabled={disabledFields.includes(name)}
-									helperText={
-										disabledFields.includes(name)
-											? t('CDSpecific.autofillFromEntity')
-											: undefined
-									}
-									autoFocus={i === 0}
-									label={name}
+				{[...ids, ...otherFields].map(
+					({name, types, displayName, helperText}, i) => (
+						<Grid key={name} item xs={12}>
+							{types.length === 1 && types[0] === 'string' ? (
+								<>
+									<StringField
+										disabled={disabledFields.includes(name)}
+										helperText={
+											disabledFields.includes(name)
+												? `${helperText ? `${helperText} ` : ''} ${t(
+														'CDSpecific.autofillFromEntity'
+												  )}`
+												: helperText || undefined
+										}
+										autoFocus={i === 0}
+										label={displayName}
+										value={values[name]}
+										onChange={(e) => {
+											const {value} = e.target
+											onChange({...values, [name]: value})
+										}}
+									/>
+									{priceFieldLimit &&
+										priceFieldName &&
+										name === priceFieldName &&
+										Number(values[priceFieldName]) >= priceFieldLimit && (
+											<Typography color="secondary">
+												{t('CDSpecific.priceExceeded')}
+											</Typography>
+										)}
+								</>
+							) : (
+								<IncrementingField
+									label={displayName}
+									type={types[0]}
 									value={values[name]}
-									onChange={(e) => {
-										const {value} = e.target
-										onChange({...values, [name]: value})
-									}}
 								/>
-								{priceFieldLimit &&
-									priceFieldName &&
-									name === priceFieldName &&
-									Number(values[priceFieldName]) >= priceFieldLimit && (
-										<Typography color="secondary">
-											{t('CDSpecific.priceExceeded')}
-										</Typography>
-									)}
-							</>
-						) : (
-							<IncrementingField
-								label={name}
-								type={types[0]}
-								value={values[name]}
-							/>
-						)}
-					</Grid>
-				))}
+							)}
+						</Grid>
+					)
+				)}
 				<Grid item xs={12}>
 					<Button fullWidth type="submit" variant="contained" color="primary">
 						{t('common.submit')}
