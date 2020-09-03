@@ -715,6 +715,7 @@ export async function getDataForSpreadsheetExport({
 		blueprints_group.name,
 		bgs.submitted_at as "submittedAt",
 		bgs.submitted_by_email as "submittedBy",
+		blueprints_group.project_name as "projectName",
 		coalesce(
 						json_agg(json_build_object('value', fbf.value, 'name', fbf.name))
 						filter (where fbf.id is not null), json_build_array()
@@ -738,7 +739,7 @@ export async function getDataForSpreadsheetExport({
 	left join blueprint_field bf on blueprint.id = bf.blueprint_id
 	left join filled_blueprint_field fbf on bgs.id = fbf.blueprints_group_submit_id and fbf.name = bf.name
 	where domain.customer_id = $1 and bgs.submitted_at is not null
-	group by blueprints_group.name,blueprints_group.id, bgs.submitted_at, bgs.submitted_by_email
+	group by blueprints_group.name,blueprints_group.project_name,blueprints_group.id, bgs.submitted_at, bgs.submitted_by_email
 	order by bgs.submitted_at asc
 
 	`,

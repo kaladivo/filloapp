@@ -287,12 +287,13 @@ export async function exportToSpreadsheet({
 	]
 
 	const values = [
-		['name', 'submittedAt', 'submittedBy', ...allFields],
+		['name', 'submittedAt', 'submittedBy', 'projectName', ...allFields],
 		...submits.map((oneSubmit) => {
 			return [
 				oneSubmit.name || '',
 				oneSubmit.submittedAt || '',
 				oneSubmit.submittedBy || '',
+				oneSubmit.projectName || '',
 				...allFields.map(
 					(fieldName) =>
 						oneSubmit.values.find((one: any) => one.name === fieldName)
