@@ -80,7 +80,7 @@ export default {
 	'CreateBlueprintGroupScreen': {
 		'title': 'Create new Document ',
 		'name': 'Name',
-		'nameHelp': 'Name of the customer',
+		'nameHelp': 'Name of the document',
 		'selectBlueprintsToGenerate': 'Select templates to generate',
 		'dontSeeBlueprint': 'Dont see your template?',
 		'createBlueprint': 'Add a new one',
