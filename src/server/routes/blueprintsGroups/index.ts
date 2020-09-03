@@ -471,7 +471,9 @@ router.post(
 			)
 		}
 
-		const generatedValues: {[key: string]: {value: string; type: string}} = {}
+		const generatedValues: {[key: string]: {value: string; type: string}} = {
+			'project_name': {type: 'string', value: blueprintGroup.projectName},
+		}
 
 		// TODO start transition
 		for (const valueName of Object.keys(values)) {
