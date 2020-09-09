@@ -15,9 +15,7 @@ import {ApiService} from '../api'
 import {setUser} from '../utils/auth'
 import User from '../../constants/User'
 import errorCodes from '../../constants/errorCodes'
-
-// const CLIENT_ID = String(process.env.REACT_APP_GOOGLE_CLIENT_ID)
-// const SCOPES = String(process.env.REACT_APP_GOOGLE_SCOPES)
+import {WaitForEnvInfo} from './EnvInfoProvider'
 
 const useStyles = makeStyles((theme) =>
 	createStyles({
@@ -48,7 +46,7 @@ async function loginPromise([{apiService, googleAccessToken}]: [
 	return null
 }
 
-export default function LoginPage() {
+function LoginPage() {
 	const {t} = useTranslation()
 	const apiService = useApiService()
 	const classes = useStyles({})
@@ -117,5 +115,13 @@ export default function LoginPage() {
 				/> */}
 			</div>
 		</Container>
+	)
+}
+
+export default function LoginPageWithEnvInfo() {
+	return (
+		<WaitForEnvInfo>
+			<LoginPage />
+		</WaitForEnvInfo>
 	)
 }

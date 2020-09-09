@@ -2,8 +2,6 @@ import {useState, useEffect, useCallback} from 'react'
 import sysend from 'sysend'
 import UserInfo from '../../constants/User'
 
-// const CLIENT_ID = String(process.env.REACT_APP_GOOGLE_CLIENT_ID)
-
 const KEY_BROADCAST_AUTH = 'AUTH_BROADCAST'
 const KEY_LOCAL_STORAGE = 'AUTH_LOCAL_STORAGE'
 

@@ -3,12 +3,14 @@ import AuthService from './auth'
 import BlueprintsService from './Blueprints'
 import BlueprintsGroupsService from './BlueprintsGroups'
 import CustomerInfoService from './customerInfo'
+import EnvInfo from './envInfo'
 
 export class ApiService {
 	auth: AuthService
 	blueprints: BlueprintsService
 	blueprintsGroups: BlueprintsGroupsService
 	customerInfo: CustomerInfoService
+	envInfo: EnvInfo
 
 	constructor({
 		getBearer,
@@ -22,5 +24,6 @@ export class ApiService {
 		this.blueprints = new BlueprintsService(axiosInstance)
 		this.blueprintsGroups = new BlueprintsGroupsService(axiosInstance)
 		this.customerInfo = new CustomerInfoService(axiosInstance)
+		this.envInfo = new EnvInfo(axiosInstance)
 	}
 }

@@ -4,6 +4,7 @@ import form from './form'
 import blueprints from './blueprints'
 import blueprintsGroups from './blueprintsGroups'
 import customerInfo from './customerInfo'
+import envInfo from './envInfo'
 
 const router = new Router()
 
@@ -23,5 +24,6 @@ router.use(form.routes(), form.allowedMethods())
 router.use(blueprints.routes(), blueprints.allowedMethods())
 router.use(blueprintsGroups.routes(), blueprintsGroups.allowedMethods())
 router.use(customerInfo.routes(), customerInfo.allowedMethods())
+router.use(envInfo.routes(), envInfo.allowedMethods())
 
 export default router
