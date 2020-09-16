@@ -28,3 +28,4 @@ yarn-error.log*
 .env
 temp-files
 .dev
+.env.stage
