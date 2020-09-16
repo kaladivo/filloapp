@@ -29,7 +29,7 @@ deploy:stage:
     - tags
   stage: deploy
   script:
-    - curl "$WEBHOOK_DEPLOY_STAGE=$CI_BUILD_TAG" -f
+    - curl "$WEBHOOK_DEPLOY_STAGE$CI_BUILD_TAG" -f
 
 deploy:prod:
   image: curlimages/curl:7.72.0
@@ -38,4 +38,4 @@ deploy:prod:
   when: manual
   stage: deploy
   script:
-    - curl "$WEBHOOK_DEPLOY_PROD=$CI_BUILD_TAG" -f
+    - curl "$WEBHOOK_DEPLOY_PROD$CI_BUILD_TAG" -f
