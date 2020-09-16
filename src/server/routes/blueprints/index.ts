@@ -8,7 +8,10 @@ import * as errorCodes from '../../../constants/errorCodes'
 import * as blueprintsRoutes from '../../../constants/api/blueprints'
 import validateBodyMiddleware from '../../utils/validateBodyMiddleware'
 import {withValidUserMiddleware, extractUser} from '../../utils/auth'
-import {withDriveApiMiddleware, extractDriveApi} from '../../utils/googleApis'
+import {
+	withUserDriveApiMiddleware,
+	extractUserDriveApi,
+} from '../../utils/googleApis'
 import {getBlueprintFields, getFileMetadata} from './utils'
 import SendableError from '../../utils/SendableError'
 import {
@@ -51,10 +54,10 @@ router.post(
 	blueprintsRoutes.createBlueprint,
 	validateBodyMiddleware(createBlueprintSchema),
 	withValidUserMiddleware,
-	withDriveApiMiddleware,
+	withUserDriveApiMiddleware,
 	withDataDbMiddleware,
 	async (ctx, next) => {
-		const drive = extractDriveApi(ctx)
+		const drive = extractUserDriveApi(ctx)
 		const user = extractUser(ctx)
 		const dbClient = extractDbClient(ctx)
 		const {fileId, fieldsOptions} = ctx.request.body

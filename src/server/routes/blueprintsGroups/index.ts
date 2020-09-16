@@ -39,10 +39,10 @@ import withPaginationMiddleware, {
 	extractPagination,
 } from '../../utils/withPaginationMiddleware'
 import {
-	withDriveApiMiddleware,
-	extractDriveApi,
-	withGoogleDocsApiMiddleware,
-	extractGoogleDocsApi,
+	withUserDriveApiMiddleware,
+	extractUserDriveApi,
+	withUserGoogleDocsApiMiddleware,
+	extractUserGoogleDocsApi,, withServiceAccountDriveApiMiddleware, extractDriveApiForServiceAccount
 } from '../../utils/googleApis'
 import {
 	canUserRead,
@@ -65,11 +65,9 @@ router.get(
 	blueprintsGroupsUrls.getBlueprintGroup,
 	withValidUserMiddleware,
 	withDataDbMiddleware,
-	withDriveApiMiddleware,
 	async (ctx, next) => {
 		const user = extractUser(ctx)
 		const dbClient = extractDbClient(ctx)
-		const drive = extractDriveApi(ctx)
 		const {groupId} = ctx.params
 		const group: BlueprintGroup | null = await getGroup({
 			dbClient,
@@ -110,10 +108,12 @@ router.get(
 
 		const enhancedSubmits = await Promise.all(
 			submits.map(async (submit: any) => {
+				// eslint-disable-next-line @typescript-eslint/no-unused-vars
 				const {folderId, ...rest} = submit
 				return {
 					...rest,
-					folder: await getFolderInfo({folderId, drive}),
+					// TODO handle folder
+					folder: null,
 				}
 			})
 		)
@@ -389,8 +389,9 @@ router.post(
 	withValidUserMiddleware,
 	validateBodyMiddleware(submitGroupSchema),
 	withDataDbMiddleware,
-	withDriveApiMiddleware,
-	withGoogleDocsApiMiddleware,
+	withUserDriveApiMiddleware,
+	withUserGoogleDocsApiMiddleware,
+	withServiceAccountDriveApiMiddleware,
 	withCustomerInfoMiddleware,
 	async (ctx, next) => {
 		const {
@@ -405,8 +406,9 @@ router.post(
 		} = ctx.request.body
 		const dbClient = extractDbClient(ctx)
 		const user = extractUser(ctx)
-		const drive = extractDriveApi(ctx)
-		const docs = extractGoogleDocsApi(ctx)
+		const userDrive = extractUserDriveApi(ctx)
+		const serviceAccountDrive = extractDriveApiForServiceAccount(ctx)
+		const userDocs = extractUserGoogleDocsApi(ctx)
 		const customerInfo = extractCustomerInfo(ctx)
 		const {groupId} = ctx.params
 
@@ -429,7 +431,7 @@ router.post(
 			})
 		}
 
-		if (!(await canUserRead({drive, fileId: outputFolderId}))) {
+		if (!(await canUserRead({drive: userDrive, fileId: outputFolderId}))) {
 			throw new SendableError(
 				'Output folder can not be accessed current user.',
 				{
@@ -443,7 +445,7 @@ router.post(
 			await Promise.all(
 				blueprintGroup.blueprints.map(async (blueprint) => {
 					const hasPermissions = await canUserRead({
-						drive,
+						drive: serviceAccountDrive,
 						fileId: blueprint.googleDocsId,
 					})
 

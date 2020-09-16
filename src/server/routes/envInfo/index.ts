@@ -9,6 +9,9 @@ router.get(envInfoRoutes.getEnvInfo, async (ctx, next) => {
 		googlePickerDeveloperKey: String(process.env.GOOGLE_PICKER_DEVELOPER_KEY),
 		googleClientId: String(process.env.GOOGLEAPIS_CLIENT_ID),
 		googleScopes: String(process.env.GOOGLE_SCOPES),
+		googleSharingServiceAccount: String(
+			process.env.GOOGLE_SHARING_SERVICE_ACCOUNT
+		),
 	}
 	ctx.body = envInfo
 	await next()

@@ -5,7 +5,7 @@ import unique from 'array-unique'
 import {CustomerInfo} from '../../../constants/models/customerInfo'
 import {Blueprint} from '../../../constants/models/Blueprint'
 import sendMail from '../../utils/sendMail'
-import {getOAuth2Client} from '../../utils/googleApis'
+import {getOauth2ClientForServiceAccount} from '../../utils/googleApis'
 import {getDataForSpreadsheetExport} from './db'
 
 // const TEMP_FOLDER: string = String(process.env.TEMP_FOLDER)
@@ -257,13 +257,11 @@ export async function sendPriceAlertIfLimitExceeded({
 
 export async function exportToSpreadsheet({
 	dbClient,
-	refreshTokenOfWriter,
 	customerId,
 	sheetId,
 }: {
 	dbClient: PoolClient
 	customerId: string
-	refreshTokenOfWriter: string
 	sheetId: string
 }) {
 	const submits = await getDataForSpreadsheetExport({
@@ -271,9 +269,7 @@ export async function exportToSpreadsheet({
 		dbClient,
 	})
 
-	const auth = getOAuth2Client({
-		refreshToken: refreshTokenOfWriter,
-	})
+	const auth = await getOauth2ClientForServiceAccount()
 
 	const sheets = google.sheets({version: 'v4', auth})
 
