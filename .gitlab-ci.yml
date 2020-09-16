@@ -1,8 +1,3 @@
-before_script:
-  # Setup SSH deploy keys
-  # - echo "$ENV" | tr -d '\r' > .env
-  - echo "VERSION=$CI_COMMIT_SHORT_SHA" > .env
-
 stages:
   - build
   - deploy
@@ -15,6 +10,7 @@ build_app:
   services:
     - docker:dind
   script:
+    - echo "VERSION=$CI_COMMIT_SHORT_SHA" > .env
     # push only for tags
     - '[[ -z $CI_BUILD_TAG ]] && exit 0'
     - docker build -t $CI_REGISTRY_IMAGE:latest .
@@ -29,6 +25,7 @@ deploy:stage:
     - tags
   stage: deploy
   script:
+    - echo "$WEBHOOK_DEPLOY_STAGE$CI_BUILD_TAG"
     - curl "$WEBHOOK_DEPLOY_STAGE$CI_BUILD_TAG" -f
 
 deploy:prod:
