@@ -25,7 +25,6 @@ deploy:stage:
     - tags
   stage: deploy
   script:
-    - echo "$WEBHOOK_DEPLOY_STAGE$CI_BUILD_TAG"
     - curl "$WEBHOOK_DEPLOY_STAGE$CI_BUILD_TAG" -f
 
 deploy:prod:
