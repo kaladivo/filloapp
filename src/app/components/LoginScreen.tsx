@@ -72,6 +72,7 @@ function LoginPage() {
 	// 	gapi.
 	// }, [])
 
+	// @ts-ignore
 	const loginTask = useAsync({
 		deferFn: loginPromise,
 		onReject: setLoginError,
