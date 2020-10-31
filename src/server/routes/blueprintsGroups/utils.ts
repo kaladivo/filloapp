@@ -9,32 +9,11 @@ import {getOauth2ClientForServiceAccount} from '../../utils/googleApis'
 import {getDataForSpreadsheetExport} from './db'
 
 // const TEMP_FOLDER: string = String(process.env.TEMP_FOLDER)
+const SERVICE_ACCOUNT_EMAIL = String(process.env.SERVICE_ACCOUNT_EMAIL)
 
 export interface Tokens {
 	accessToken?: string
 	refreshToken?: string
-}
-
-async function copyFile({
-	sourceId,
-	name,
-	targetFolderId,
-	drive,
-}: {
-	sourceId: string
-	name: string
-	targetFolderId: string
-	drive: driveV3.Drive
-}): Promise<string> {
-	const result = await drive.files.copy({
-		fileId: sourceId,
-		requestBody: {
-			name,
-			parents: [targetFolderId],
-		},
-	})
-
-	return result.data.id || '0'
 }
 
 export async function canUserRead({
@@ -78,35 +57,75 @@ async function replaceTemplateStrings({
 	})
 }
 
+export async function createEmptyFolderAndShareItToSA({
+	name,
+	userDrive,
+	parent,
+}: {
+	name: string
+	userDrive: driveV3.Drive
+	parent: string
+}): Promise<string> {
+	const newFolderResponse = await userDrive.files.create({
+		requestBody: {
+			name,
+			mimeType: 'application/vnd.google-apps.folder',
+			parents: [parent],
+		},
+	})
+	const folderId = newFolderResponse.data.id
+
+	// @ts-ignore This is tested  and works
+	await userDrive.permissions.create({
+		fileId: folderId,
+		sendNotificationEmail: false,
+		requestBody: {
+			role: 'writer',
+			type: 'user',
+			emailAddress: SERVICE_ACCOUNT_EMAIL,
+		},
+	})
+
+	return folderId || '' // todo Should not happen catch and report
+}
+
 export async function generateFilledDocument({
 	blueprint,
 	targetFolderId,
 	fileName,
 	values,
-	drive,
-	docs,
+	saDrive,
+	saDocs,
 }: {
 	blueprint: Blueprint
 	fileName: string
 	values: any
 	targetFolderId: string
-	drive: driveV3.Drive
-	docs: docsV1.Docs
+	saDrive: driveV3.Drive
+	saDocs: docsV1.Docs
 }): Promise<string> {
-	const createdFileId = await copyFile({
-		drive,
-		name: fileName,
-		sourceId: blueprint.googleDocsId,
-		targetFolderId,
+	// This process is quite tough and obstruct. But it is the only way that I was
+	// able to successfully test and it works. The result is folder with all of the documents
+
+	// Copy the blueprint
+	const copyResponse = await saDrive.files.copy({
+		fileId: blueprint.googleDocsId,
+		requestBody: {parents: [targetFolderId], name: fileName},
 	})
+	const copyId = copyResponse.data.id || '' // TODO catch and report
 
 	await replaceTemplateStrings({
-		documentId: createdFileId,
-		docs,
+		documentId: copyId,
 		keyMap: values,
+		docs: saDocs,
 	})
 
-	return createdFileId
+	// @ts-ignore - tested and it works
+	const getLinkResponse = await saDrive.files.get({
+		fileId: copyId,
+	})
+
+	return getLinkResponse.data.id || '' // TODO catch and report
 }
 
 export async function saveDocumentAsPdf({

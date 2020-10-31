@@ -17,6 +17,8 @@ const emptyContextValue: EnvInfoContext = {
 		googleClientId: '',
 		googlePickerDeveloperKey: '',
 		googleScopes: '',
+		googleSharingServiceAccount: '',
+		googleAppId: '',
 	},
 	envInfoStatus: 'loading',
 }

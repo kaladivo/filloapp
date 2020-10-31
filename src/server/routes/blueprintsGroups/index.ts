@@ -42,17 +42,20 @@ import {
 	withUserDriveApiMiddleware,
 	extractUserDriveApi,
 	withUserGoogleDocsApiMiddleware,
-	extractUserGoogleDocsApi,, withServiceAccountDriveApiMiddleware, extractDriveApiForServiceAccount
+	withServiceAccountDriveApiMiddleware,
+	extractDriveApiForServiceAccount,
+	extractDocsApiForServiceAccount,
+	withServiceAccountDocsApiMiddleware,
 } from '../../utils/googleApis'
 import {
 	canUserRead,
 	generateFilledDocument,
 	saveDocumentAsPdf,
 	replaceTemplatesInFileName,
-	getFolderInfo,
-	silentlyDeleteFile,
 	sendPriceAlertIfLimitExceeded,
 	exportToSpreadsheet,
+	createEmptyFolderAndShareItToSA,
+	silentlyDeleteFile,
 } from './utils'
 import {
 	withCustomerInfoMiddleware,
@@ -390,6 +393,7 @@ router.post(
 	validateBodyMiddleware(submitGroupSchema),
 	withDataDbMiddleware,
 	withUserDriveApiMiddleware,
+	withServiceAccountDocsApiMiddleware,
 	withUserGoogleDocsApiMiddleware,
 	withServiceAccountDriveApiMiddleware,
 	withCustomerInfoMiddleware,
@@ -401,14 +405,15 @@ router.post(
 				generatePdfs,
 				outputFolder: {id: outputFolderId},
 				generateDocuments,
-				removeOldVersion,
+				// removeOldVersion,
 			},
 		} = ctx.request.body
 		const dbClient = extractDbClient(ctx)
 		const user = extractUser(ctx)
 		const userDrive = extractUserDriveApi(ctx)
 		const serviceAccountDrive = extractDriveApiForServiceAccount(ctx)
-		const userDocs = extractUserGoogleDocsApi(ctx)
+		const saDocs = extractDocsApiForServiceAccount(ctx)
+		// const userDocs = extractUserGoogleDocsApi(ctx)
 		const customerInfo = extractCustomerInfo(ctx)
 		const {groupId} = ctx.params
 
@@ -417,12 +422,14 @@ router.post(
 			customerId: user.customer.id,
 			dbClient,
 		})
+
 		if (!blueprintGroup) {
 			throw new SendableError('Group not found', {
 				status: httpStatus.NOT_FOUND,
 				errorCode: NOT_FOUND,
 			})
 		}
+
 		// Can user access group?
 		if (!user.customerAdmin && blueprintGroup.owner.email !== user.email) {
 			throw new SendableError('Can not access to blueprint group', {
@@ -498,6 +505,14 @@ router.post(
 		}
 		// TODO finish transition
 
+		const targetFolderId = await createEmptyFolderAndShareItToSA({
+			name: blueprintGroup.name,
+			userDrive,
+			parent: outputFolderId,
+		})
+
+		console.log('created target folder')
+
 		const generateBlueprintTasks = blueprintGroup.blueprints.map(
 			async (blueprint) => {
 				const fileNameRaw = `${outputName ? `${outputName} -` : ''}${
@@ -511,32 +526,40 @@ router.post(
 
 				const googleDocId = await generateFilledDocument({
 					blueprint,
-					targetFolderId: outputFolderId,
+					targetFolderId,
 					fileName,
 					values: Object.keys(generatedValues).reduce<any>(
 						(prev, key) => ({...prev, [key]: generatedValues[key].value}),
 						{}
 					),
-					docs,
-					drive,
+					saDrive: serviceAccountDrive,
+					saDocs,
 				})
 
+				// TODO reenable pdf generation
 				let pdfId: string | null = null
 				if (generatePdfs) {
 					pdfId = await saveDocumentAsPdf({
 						name: fileName,
 						fileId: googleDocId,
-						folderId: outputFolderId,
-						drive,
+						folderId: targetFolderId,
+						drive: serviceAccountDrive,
 					})
 				}
 
+				console.log('TTTEST', {generateDocuments, googleDocId})
+
 				if (!generateDocuments) {
-					await silentlyDeleteFile({fileId: googleDocId, drive})
+					// TODO maybe can not do this
+					await silentlyDeleteFile({
+						fileId: googleDocId,
+						drive: serviceAccountDrive,
+					})
 				}
+
 				return {
 					blueprint,
-					googleDocsId: generateDocuments ? googleDocId : null,
+					googleDocId: generateDocuments ? googleDocId : null,
 					pdfId,
 					name: fileName,
 				}
@@ -544,18 +567,18 @@ router.post(
 		)
 
 		try {
-			const oldSubmits = user.customerAdmin
-				? await listSubmitsForCustomer({
-						blueprintsGroupId: groupId,
-						customerId: user.customer.id,
-						dbClient,
-				  })
-				: await listSubmitsForUser({
-						blueprintsGroupId: groupId,
-						customerId: user.customer.id,
-						dbClient,
-						user,
-				  })
+			// const oldSubmits = user.customerAdmin
+			// 	? await listSubmitsForCustomer({
+			// 			blueprintsGroupId: groupId,
+			// 			customerId: user.customer.id,
+			// 			dbClient,
+			// 	  })
+			// 	: await listSubmitsForUser({
+			// 			blueprintsGroupId: groupId,
+			// 			customerId: user.customer.id,
+			// 			dbClient,
+			// 			user,
+			// 	  })
 
 			const generated = await Promise.all(generateBlueprintTasks)
 			const insertedId = await insertSubmit({
@@ -567,23 +590,24 @@ router.post(
 				user,
 			})
 
-			if (removeOldVersion && oldSubmits.length > 0) {
-				await Promise.all(
-					oldSubmits[0].generatedFiles.map(
-						async ({
-							pdfId,
-							googleDocId,
-						}: {
-							pdfId: string
-							googleDocId: string
-						}) => {
-							if (pdfId) await silentlyDeleteFile({fileId: pdfId, drive})
-							if (googleDocId)
-								await silentlyDeleteFile({fileId: googleDocId, drive})
-						}
-					)
-				)
-			}
+			// wont be possible now
+			// if (removeOldVersion && oldSubmits.length > 0) {
+			// 	await Promise.all(
+			// 		oldSubmits[0].generatedFiles.map(
+			// 			async ({
+			// 				pdfId,
+			// 				googleDocId,
+			// 			}: {
+			// 				pdfId: string
+			// 				googleDocId: string
+			// 			}) => {
+			// 				if (pdfId) await silentlyDeleteFile({fileId: pdfId, drive})
+			// 				if (googleDocId)
+			// 					await silentlyDeleteFile({fileId: googleDocId, drive})
+			// 			}
+			// 		)
+			// 	)
+			// }
 
 			const submit = await getSubmit({
 				submitId: insertedId,
@@ -611,8 +635,6 @@ router.post(
 				await exportToSpreadsheet({
 					dbClient,
 					customerId: user.customer.id,
-					refreshTokenOfWriter:
-						customerInfo.spreadsheetExport.refreshTokenOfWriter,
 					sheetId: customerInfo.spreadsheetExport.spreadsheetId,
 				})
 			}
@@ -620,6 +642,7 @@ router.post(
 			await submit
 			ctx.body = submit
 		} catch (e) {
+			console.log(e.error)
 			throw new SendableError(
 				'Error while generating documents',
 				{
@@ -680,7 +703,7 @@ router.post(
 		await exportToSpreadsheet({
 			dbClient,
 			customerId: user.customer.id,
-			refreshTokenOfWriter: customerInfo.spreadsheetExport.refreshTokenOfWriter,
+			// refreshTokenOfWriter: customerInfo.spreadsheetExport.refreshTokenOfWriter,
 			sheetId: customerInfo.spreadsheetExport.spreadsheetId,
 		})
 

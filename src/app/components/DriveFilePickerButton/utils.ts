@@ -11,7 +11,7 @@ export interface PickedDocument {
 export type PickerMode = 'documents' | 'folders' | 'any'
 
 export function useShowFilePicker() {
-	const {googlePickerDeveloperKey} = useEnvInfo()
+	const {googlePickerDeveloperKey, googleAppId} = useEnvInfo()
 
 	return useCallback(
 		async ({
@@ -58,6 +58,7 @@ export function useShowFilePicker() {
 					.setTitle(title)
 					.setDeveloperKey(googlePickerDeveloperKey)
 					.enableFeature(picker.Feature.MINE_ONLY)
+					.setAppId(googleAppId)
 					.setCallback(pickerCallback)
 					.setOrigin(`${window.location.protocol}//${window.location.host}`)
 
@@ -88,6 +89,6 @@ export function useShowFilePicker() {
 				builtPicker.setVisible(true)
 			})
 		},
-		[googlePickerDeveloperKey]
+		[googlePickerDeveloperKey, googleAppId]
 	)
 }

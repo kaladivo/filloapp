@@ -128,7 +128,7 @@ export async function withServiceAccountDriveApiMiddleware(
 	const auth = await getOauth2ClientForServiceAccount()
 	ctx.state.SADrive = google.drive({version: 'v3', auth})
 
-	await next
+	await next()
 }
 
 export function extractDriveApiForServiceAccount(ctx: Context): driveV3.Drive {
@@ -142,7 +142,7 @@ export async function withServiceAccountDocsApiMiddleware(
 	const auth = await getOauth2ClientForServiceAccount()
 	ctx.state.SADocs = google.docs({version: 'v1', auth})
 
-	await next
+	await next()
 }
 
 export function extractDocsApiForServiceAccount(ctx: Context): docsV1.Docs {
@@ -156,7 +156,7 @@ export async function withServiceAccountSheetsApiMiddleware(
 	const auth = await getOauth2ClientForServiceAccount()
 	ctx.state.SASheets = google.sheets({version: 'v4', auth})
 
-	await next
+	await next()
 }
 
 export function extractSheetsApiForServiceAccount(

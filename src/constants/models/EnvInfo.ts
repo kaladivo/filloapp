@@ -3,4 +3,5 @@ export interface EnvInfo {
 	googleScopes: string
 	googleClientId: string
 	googleSharingServiceAccount: string
+	googleAppId: string
 }
