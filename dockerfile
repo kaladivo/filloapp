@@ -18,4 +18,5 @@ RUN mkdir temp_files
 
 EXPOSE 8080
 
+CMD ["yarn", "migrate"]
 CMD [ "yarn", "serve" ]
