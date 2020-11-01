@@ -1,9 +1,3 @@
-create schema public;
-
-comment on schema public is 'standard public schema';
-
-alter schema public owner to postgres;
-
 create table customer
 (
 	id char(20) default random_string(20) not null
@@ -12,8 +6,6 @@ create table customer
 	name text not null,
 	info jsonb default json_build_object() not null
 );
-
-alter table customer owner to postgres;
 
 create unique index customer_id_uindex
 	on customer (id);
@@ -28,8 +20,6 @@ create table domain
 			references customer
 				on update cascade on delete restrict
 );
-
-alter table domain owner to postgres;
 
 create unique index domains_domain_uindex
 	on domain (domain);
@@ -49,8 +39,6 @@ create table "user"
 	additional_info json not null
 );
 
-alter table "user" owner to postgres;
-
 create unique index user_email_uindex
 	on "user" (email);
 
@@ -66,8 +54,6 @@ create table blueprint
 			primary key,
 	name text not null
 );
-
-alter table blueprint owner to postgres;
 
 create unique index blueprint_google_docs_id_user_email_uindex
 	on blueprint (google_docs_id, user_email);
@@ -90,8 +76,6 @@ create table blueprint_field
 	helper_text text
 );
 
-alter table blueprint_field owner to postgres;
-
 create unique index blueprint_field_id_uindex
 	on blueprint_field (id);
 
@@ -108,8 +92,6 @@ create table blueprints_group
 	project_name text not null
 );
 
-alter table blueprints_group owner to postgres;
-
 create unique index blueprints_group_id_uindex
 	on blueprints_group (id);
 
@@ -124,8 +106,6 @@ create table blueprint_blueprints_group
 			references blueprints_group
 				on update cascade on delete restrict
 );
-
-alter table blueprint_blueprints_group owner to postgres;
 
 create unique index blueprint_blueprints_group_blueprint_id_blueprint_group_id_uind
 	on blueprint_blueprints_group (blueprint_id, blueprint_group_id);
@@ -147,8 +127,6 @@ create table blueprints_group_submit
 	folder_id text not null
 );
 
-alter table blueprints_group_submit owner to postgres;
-
 create table document
 (
 	id bigserial not null
@@ -164,8 +142,6 @@ create table document
 			references blueprints_group_submit
 				on update cascade on delete restrict
 );
-
-alter table document owner to postgres;
 
 create unique index document_id_uindex
 	on document (id);
@@ -187,8 +163,6 @@ create table filled_blueprint_field
 	type text not null
 );
 
-alter table filled_blueprint_field owner to postgres;
-
 create unique index filled_blueprint_field_id_uindex
 	on filled_blueprint_field (id);
 
@@ -204,8 +178,6 @@ create table generated_document
 		constraint submitted_blueprint_blueprints_group_submit_id_fk
 			references blueprints_group_submit
 );
-
-alter table generated_document owner to postgres;
 
 create unique index submitted_blueprint_id_uindex
 	on generated_document (id);
@@ -225,8 +197,6 @@ create table incrementing_field_type
 		unique (customer_id, name)
 );
 
-alter table incrementing_field_type owner to postgres;
-
 create unique index incrementing_field_type_id_uindex
 	on incrementing_field_type (id);
 
@@ -242,8 +212,6 @@ create table incrementing_field_value
 			references blueprints_group
 				on update cascade on delete set null
 );
-
-alter table incrementing_field_value owner to postgres;
 
 create function random_string(randomlength integer) returns text
 	leakproof
@@ -262,6 +230,3 @@ SELECT array_to_string(
            , ''
            )
 $$;
-
-alter function random_string(integer) owner to postgres;
-
