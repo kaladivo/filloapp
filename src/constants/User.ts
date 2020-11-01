@@ -1,7 +1,6 @@
 /* eslint-disable camelcase */
 export default interface User {
 	email: string
-	domain: string
 	googleAccessToken: string
 	customerAdmin: boolean
 	customer: {

@@ -13,12 +13,11 @@ const CLIENT_SECRET = String(process.env.GOOGLEAPIS_CLIENT_SECRET)
 const CALLBACK_URI = String(process.env.GOOGLEAPIS_CALLBACK_URI)
 
 export async function createJwtForUser(user: User) {
-	const token = await jwt.sign(user, secret, {
+	return jwt.sign(user, secret, {
 		subject: user.email,
 		issuer: publicUrl,
 		expiresIn: '10 days',
 	})
-	return token
 }
 
 export async function checkGoogleAccessToken(googleAccessToken: string) {
@@ -46,7 +45,6 @@ export async function withValidUserMiddleware(ctx: Context, next: Next) {
 		const bearer = authorization.replace('Bearer ', '')
 		const {
 			email,
-			domain,
 			googleAccessToken,
 			customerAdmin,
 			additionalInfo,
@@ -55,7 +53,6 @@ export async function withValidUserMiddleware(ctx: Context, next: Next) {
 
 		if (
 			!email ||
-			!domain ||
 			!googleAccessToken ||
 			!additionalInfo ||
 			!(await checkGoogleAccessToken(googleAccessToken))
@@ -65,7 +62,6 @@ export async function withValidUserMiddleware(ctx: Context, next: Next) {
 
 		const user: User = {
 			email,
-			domain,
 			googleAccessToken,
 			customerAdmin,
 			additionalInfo,

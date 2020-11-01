@@ -174,6 +174,8 @@ router.get(
 		const dbClient = extractDbClient(ctx)
 		const {blueprintId} = ctx.params
 
+		console.log('userInfo', user)
+
 		const blueprint = await getBlueprintById({
 			blueprintId,
 			dbClient,

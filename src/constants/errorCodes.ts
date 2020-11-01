@@ -1,5 +1,5 @@
 export type ErrorCode =
-	| 'no_customer_for_email'
+	| 'user_does_not_exist'
 	| 'unknown'
 	| 'unable_to_get_user_info'
 	| 'unable_to_get_google_file'
@@ -14,7 +14,7 @@ export type ErrorCode =
 	| 'unable_to_access_output_folder'
 	| 'error_generating_documents'
 
-export const NO_CUSTOMER_FOR_EMAIL: ErrorCode = 'no_customer_for_email'
+export const USER_DOES_NOT_EXIST: ErrorCode = 'user_does_not_exist'
 export const UNABLE_TO_GET_USER_INFO: ErrorCode = 'unable_to_get_user_info'
 export const UNAUTHORIZED: ErrorCode = 'unauthorized'
 export const UNKNOWN: ErrorCode = 'unknown'
@@ -32,7 +32,6 @@ export const UNABLE_TO_ACCESS_OUTPUT_FOLDER: ErrorCode =
 	'unable_to_access_output_folder'
 
 const errorCodes: {[key: string]: ErrorCode} = {
-	NO_CUSTOMER_FOR_EMAIL,
 	UNABLE_TO_GET_USER_INFO,
 	UNAUTHORIZED,
 	UNKNOWN,
