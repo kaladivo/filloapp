@@ -1,8 +1,9 @@
-/* eslint-disable camelcase */
+/* eslint-disable @typescript-eslint/camelcase */
+import {MigrationBuilder, ColumnDefinitions} from 'node-pg-migrate'
 
-exports.shorthands = undefined
+export const shorthands: ColumnDefinitions | undefined = undefined
 
-exports.up = (pgm) => {
+export async function up(pgm: MigrationBuilder): Promise<void> {
 	pgm.sql(`
 		create function random_string(randomlength integer) returns text
 				leakproof
@@ -240,6 +241,6 @@ exports.up = (pgm) => {
     `)
 }
 
-exports.down = () => {
+export async function down(): Promise<void> {
 	throw new Error('Initial migration can not be rolled back')
 }
