@@ -12,11 +12,12 @@ USER node
 RUN yarn install
 
 COPY --chown=node:node . .
+RUN chmod +x /entrypoint.sh
 
 RUN yarn build
 RUN mkdir temp_files
 
 EXPOSE 8080
 
-CMD ["yarn", "migrate"]
+ENTRYPOINT ["/entrypoint.sh"]
 CMD [ "yarn", "serve" ]
