@@ -19,5 +19,5 @@ RUN mkdir temp_files
 
 EXPOSE 8080
 
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["utils/entrypoint.sh"]
 CMD [ "yarn", "serve" ]
