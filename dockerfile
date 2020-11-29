@@ -12,7 +12,7 @@ USER node
 RUN yarn install
 
 COPY --chown=node:node . .
-RUN chmod +x /entrypoint.sh
+RUN chmod +x utils/entrypoint.sh
 
 RUN yarn build
 RUN mkdir temp_files
