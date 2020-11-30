@@ -10,7 +10,7 @@ import validateBodyMiddleware from '../../utils/validateBodyMiddleware'
 import {withValidUserMiddleware, extractUser} from '../../utils/auth'
 import {
 	withUserDriveApiMiddleware,
-	extractUserDriveApi,
+	extractDriveApiForServiceAccount,
 } from '../../utils/googleApis'
 import {getBlueprintFields, getFileMetadata} from './utils'
 import SendableError from '../../utils/SendableError'
@@ -57,7 +57,7 @@ router.post(
 	withUserDriveApiMiddleware,
 	withDataDbMiddleware,
 	async (ctx, next) => {
-		const drive = extractUserDriveApi(ctx)
+		const drive = extractDriveApiForServiceAccount(ctx)
 		const user = extractUser(ctx)
 		const dbClient = extractDbClient(ctx)
 		const {fileId, fieldsOptions} = ctx.request.body
