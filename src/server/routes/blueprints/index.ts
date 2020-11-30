@@ -9,8 +9,8 @@ import * as blueprintsRoutes from '../../../constants/api/blueprints'
 import validateBodyMiddleware from '../../utils/validateBodyMiddleware'
 import {withValidUserMiddleware, extractUser} from '../../utils/auth'
 import {
-	withUserDriveApiMiddleware,
 	extractDriveApiForServiceAccount,
+	withServiceAccountDriveApiMiddleware,
 } from '../../utils/googleApis'
 import {getBlueprintFields, getFileMetadata} from './utils'
 import SendableError from '../../utils/SendableError'
@@ -54,7 +54,7 @@ router.post(
 	blueprintsRoutes.createBlueprint,
 	validateBodyMiddleware(createBlueprintSchema),
 	withValidUserMiddleware,
-	withUserDriveApiMiddleware,
+	withServiceAccountDriveApiMiddleware,
 	withDataDbMiddleware,
 	async (ctx, next) => {
 		const drive = extractDriveApiForServiceAccount(ctx)
