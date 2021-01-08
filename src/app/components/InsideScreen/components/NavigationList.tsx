@@ -9,7 +9,7 @@ import {
 	makeStyles,
 	createStyles,
 } from '@material-ui/core'
-import {Section} from '../../../sections'
+import {Section} from '../../../insideSections'
 
 const useStyles = makeStyles((theme) =>
 	createStyles({

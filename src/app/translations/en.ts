@@ -10,6 +10,7 @@ export default {
 		'retry': 'Retry',
 		'delete': 'Delete',
 		'loading': 'loading...',
+		'signIn': 'Sign in',
 	},
 	'AuthChecker': {
 		'unableToCheckUser':
@@ -95,5 +96,57 @@ export default {
 		'syncWithSpreadsheet': 'Sync with spreadsheet',
 		'syncWithSpreadsheetSuccess': 'Sync was successful',
 		'syncWithSpreadsheetError': 'Error while syncing. Try again later.',
+	},
+	'Presentation': {
+		'menu': {
+			'about': 'About',
+			'faq': 'FAQ',
+		},
+		'common': {
+			'createAccount': 'Create an account',
+		},
+		'hero': {
+			'title': 'Let your documents be filled',
+			'subtitle': 'And get time for what really matters',
+		},
+		'about': {
+			'1': {
+				'title': 'Select your document templates',
+				'subtitle':
+					'Mark all field by puting them between curly brackets {{}}. For example {{name}} will be changed to Paul, Kate and other participants.',
+			},
+			'2': {
+				'title': 'Let the participants fill the fields',
+				'subtitle': 'Fill in your fields and start the magic.',
+			},
+			'3': {
+				'title': 'All documents get filled',
+				'subtitle':
+					'All documents will be created and filled with the requested fields',
+			},
+			'integrations': 'Works best on your Google Drive',
+		},
+		'faq': {
+			'title': 'FAQ',
+			'1': {
+				'title': 'some title',
+				'text': 'lorem shit',
+			},
+			'2': {
+				'title': 'some title',
+				'text': 'lorem shit',
+			},
+			'3': {
+				'title': 'some title',
+				'text': 'lorem shit',
+			},
+		},
+		'footer': {
+			'menu': {
+				'contactUs': 'Contact Us',
+				'terms': 'Terms of Use',
+				'privacyPolicy': 'Privacy Policy',
+			},
+		},
 	},
 }

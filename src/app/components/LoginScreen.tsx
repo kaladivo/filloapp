@@ -16,6 +16,7 @@ import {setUser} from '../utils/auth'
 import User from '../../constants/User'
 import errorCodes from '../../constants/errorCodes'
 import {WaitForEnvInfo} from './EnvInfoProvider'
+import PresentationTemplate from './PresentationTemplate'
 
 const useStyles = makeStyles((theme) =>
 	createStyles({
@@ -79,25 +80,26 @@ function LoginPage() {
 	})
 
 	return (
-		<Container component="main" maxWidth="xs" className={classes.root}>
-			<div className={classes.paper}>
-				<Typography className={classes.label} variant="h4" align="center">
-					{t('appName')}
-				</Typography>
-				<GoogleButton
-					onClick={async () => {
-						const authInstance = gapi.auth2.getAuthInstance()
-						const user = await authInstance.signIn()
-						const {access_token: googleAccessToken} = user.getAuthResponse()
+		<PresentationTemplate>
+			<Container component="main" maxWidth="xs" className={classes.root}>
+				<div className={classes.paper}>
+					<Typography className={classes.label} variant="h4" align="center">
+						{t('appName')}
+					</Typography>
+					<GoogleButton
+						onClick={async () => {
+							const authInstance = gapi.auth2.getAuthInstance()
+							const user = await authInstance.signIn()
+							const {access_token: googleAccessToken} = user.getAuthResponse()
 
-						// TODO check scopes
+							// TODO check scopes
 
-						loginTask.run({apiService, googleAccessToken})
-					}}
-				>
-					{t('LoginScreen.loginWithGoogle')}
-				</GoogleButton>
-				{/* <GoogleLogin
+							loginTask.run({apiService, googleAccessToken})
+						}}
+					>
+						{t('LoginScreen.loginWithGoogle')}
+					</GoogleButton>
+					{/* <GoogleLogin
 					// onRequest={signOut}
 					cookiePolicy="none"
 					clientId={CLIENT_ID}
@@ -114,8 +116,9 @@ function LoginPage() {
 					// accessType="online"
 					buttonText={t('LoginScreen.loginWithGoogle')}
 				/> */}
-			</div>
-		</Container>
+				</div>
+			</Container>
+		</PresentationTemplate>
 	)
 }
 

@@ -23,7 +23,7 @@ function AuthSensitiveRoute({mode, path, children}: Props) {
 				render={() => {
 					if (mode === 'onlyLogged') {
 						if (isLoggedIn) return children
-						return <Redirect to="/login" />
+						return <Redirect to="/presentation" />
 					}
 
 					if (mode === 'onlyNotLogged') {
