@@ -1,5 +1,10 @@
-import React from 'react'
-import {createStyles, makeStyles, Typography} from '@material-ui/core'
+import React, {useCallback} from 'react'
+import {
+	createStyles,
+	makeStyles,
+	Typography,
+	Link as MuiLink,
+} from '@material-ui/core'
 import {useTranslation} from 'react-i18next'
 import RootContainer from '../../RootContainer'
 import Link from '../../Link'
@@ -41,6 +46,10 @@ function Footer({className}: {className?: string}) {
 
 	const {t} = useTranslation()
 
+	const scrollToTop = useCallback(() => {
+		window.scrollTo(0, 0)
+	}, [])
+
 	return (
 		<div className={`${classes.root} ${className}`}>
 			<RootContainer maxWidth="lg" className={classes.innerContainer}>
@@ -48,13 +57,13 @@ function Footer({className}: {className?: string}) {
 					<Typography className={classes.leftText}>{t('appName')}</Typography>
 				</div>
 				<div className={classes.menu}>
-					<Link to="/contact-us">
+					<MuiLink href="mailto:hynjin@gmail.com">
 						{t('Presentation.footer.menu.contactUs')}
-					</Link>
-					<Link to="/privacy-policy">
+					</MuiLink>
+					<Link to="/privacy-policy" onClick={scrollToTop}>
 						{t('Presentation.footer.menu.privacyPolicy')}
 					</Link>
-					<Link to="/terms-of-service">
+					<Link to="/terms-of-service" onClick={scrollToTop}>
 						{t('Presentation.footer.menu.terms')}
 					</Link>
 				</div>

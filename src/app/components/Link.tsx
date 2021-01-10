@@ -6,11 +6,17 @@ interface Props {
 	to: string
 	children: React.ReactNode
 	className?: string
+	onClick?: () => void
 }
 
-function Link({to, children, className}: Props) {
+function Link({to, children, className, onClick}: Props) {
 	return (
-		<MuiLink className={className} to={to} component={RouterLink}>
+		<MuiLink
+			className={className}
+			to={to}
+			onClick={onClick}
+			component={RouterLink}
+		>
 			{children}
 		</MuiLink>
 	)
