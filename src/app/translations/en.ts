@@ -26,6 +26,8 @@ export default {
 		'blueprintsGroups': 'Documents',
 	},
 	'LoginScreen': {
+		'title': 'Sign into FilloApp',
+		'text': 'Sign in with your google account',
 		'loginWithGoogle': 'Sign in with google',
 		'canNotSignIn': 'Can not sign you in.',
 		'badDomain':
@@ -101,9 +103,18 @@ export default {
 		'menu': {
 			'about': 'About',
 			'faq': 'FAQ',
+			'getStarted': 'Get started',
 		},
 		'common': {
 			'createAccount': 'Create an account',
+		},
+		'createAccountDialog': {
+			'title': 'Contact us and well get back to you',
+			'text': 'Contact us on email below, and we get back to you asap',
+			'yes': 'Open in email app',
+			'no': 'Close',
+			'mailLink':
+				'mailto:hynjin@gmail.com?subject=I am interested in using FolloApp',
 		},
 		'hero': {
 			'title': 'Let your documents be filled',
@@ -144,7 +155,7 @@ export default {
 		'footer': {
 			'menu': {
 				'contactUs': 'Contact Us',
-				'terms': 'Terms of Use',
+				'terms': 'Terms of Service',
 				'privacyPolicy': 'Privacy Policy',
 			},
 		},

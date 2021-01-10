@@ -4,6 +4,8 @@ import AuthSensitiveRoute from './AuthSensitiveRoute'
 import LoginScreen from './LoginScreen'
 import InsideScreen from './InsideScreen'
 import Presentation from './Presentation'
+import PrivacyPolicy from './PrivacyPolicy'
+import TermsOfService from './TermsOfService'
 
 function RootRouter() {
 	return (
@@ -13,10 +15,10 @@ function RootRouter() {
 					<Presentation />
 				</Route>
 				<Route path="/terms-of-service">
-					<Presentation />
+					<TermsOfService />
 				</Route>
 				<Route path="/privacy-policy">
-					<Presentation />
+					<PrivacyPolicy />
 				</Route>
 				<AuthSensitiveRoute mode="onlyNotLogged" path="/login">
 					<LoginScreen />

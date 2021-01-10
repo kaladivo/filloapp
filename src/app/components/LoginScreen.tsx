@@ -22,7 +22,10 @@ const useStyles = makeStyles((theme) =>
 	createStyles({
 		root: {},
 		label: {
-			margin: theme.spacing(1),
+			margin: theme.spacing(0, 0, 2),
+		},
+		text: {
+			margin: theme.spacing(0, 0, 4),
 		},
 		paper: {
 			marginTop: theme.spacing(8),
@@ -52,8 +55,7 @@ function LoginPage() {
 	const apiService = useApiService()
 	const classes = useStyles({})
 	const {enqueueSnackbar} = useSnackbar()
-	// const {signOut} = useGoogleLogout({clientId: CLIENT_ID})
-	// TODO use provider context instead of getting gapi from window
+
 	// @ts-ignore
 	const gapi = useMemo(() => window.gapi, [])
 
@@ -69,10 +71,6 @@ function LoginPage() {
 		[enqueueSnackbar, t]
 	)
 
-	// useEffect(() => {
-	// 	gapi.
-	// }, [])
-
 	// @ts-ignore
 	const loginTask = useAsync({
 		deferFn: loginPromise,
@@ -84,7 +82,10 @@ function LoginPage() {
 			<Container component="main" maxWidth="xs" className={classes.root}>
 				<div className={classes.paper}>
 					<Typography className={classes.label} variant="h4" align="center">
-						{t('appName')}
+						{t('LoginScreen.title')}
+					</Typography>
+					<Typography className={classes.text} variant="body1" align="center">
+						{t('LoginScreen.text')}
 					</Typography>
 					<GoogleButton
 						onClick={async () => {
@@ -99,23 +100,6 @@ function LoginPage() {
 					>
 						{t('LoginScreen.loginWithGoogle')}
 					</GoogleButton>
-					{/* <GoogleLogin
-					// onRequest={signOut}
-					cookiePolicy="none"
-					clientId={CLIENT_ID}
-					onAutoLoadFinished={(aha) => console.log('autoload', aha)}
-					onSuccess={(response: GoogleLoginResponseOffline) => {
-						console.log('hey beautiful', response)
-						loginTask.run({apiService, code: response.code})
-					}}
-					onFailure={setLoginError}
-					scope={SCOPES}
-					redirectUri="http://localhost:3000/login/redirect"
-					uxMode="redirect"
-					// responseType="code"
-					// accessType="online"
-					buttonText={t('LoginScreen.loginWithGoogle')}
-				/> */}
 				</div>
 			</Container>
 		</PresentationTemplate>

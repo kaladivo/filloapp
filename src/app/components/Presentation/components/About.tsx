@@ -42,7 +42,9 @@ const useStyles = makeStyles((theme) =>
 			display: 'flex',
 			justifyContent: 'space-between',
 			width: theme.spacing(93),
+			maxWidth: '100%',
 			margin: '0 auto',
+			flexWrap: 'wrap',
 		},
 		buttonContainer: {
 			display: 'flex',
@@ -57,7 +59,7 @@ function About() {
 	const classes = useStyles()
 	const {t} = useTranslation()
 	return (
-		<Container maxWidth="lg" className={classes.root}>
+		<Container id="about" maxWidth="lg" className={classes.root}>
 			<div className={classes.items}>
 				<AboutBlock
 					title={t('Presentation.about.1.title')}

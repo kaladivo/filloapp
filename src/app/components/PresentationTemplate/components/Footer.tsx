@@ -15,6 +15,9 @@ const useStyles = makeStyles((theme) =>
 			display: 'flex',
 			justifyContent: 'space-between',
 			alignItems: 'baseline',
+			[theme.breakpoints.down(700)]: {
+				flexDirection: 'column',
+			},
 		},
 		leftText: {
 			fontSize: theme.typography.h5.fontSize,
@@ -22,6 +25,10 @@ const useStyles = makeStyles((theme) =>
 		menu: {
 			margin: theme.spacing(0, -1, 0, 0),
 			'& > *': {
+				[theme.breakpoints.down(700)]: {
+					display: 'block',
+					margin: theme.spacing(0, 0),
+				},
 				margin: theme.spacing(0, 1),
 				color: '#5B5C5F',
 			},

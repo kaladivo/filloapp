@@ -16,28 +16,32 @@ const useStyles = makeStyles((theme) =>
 		menuItems: {
 			margin: theme.spacing(0, 2),
 		},
+		logo: {
+			color: 'inherit',
+			textDecoration: 'none',
+		},
 		filler: {
 			flex: 1,
 		},
 	})
 )
 
-function useNavigationItems() {
-	const {t} = useTranslation()
+function useNavigationItems(): Array<{name: string; href: string}> {
+	// const {t} = useTranslation()
 
 	return [
-		{
-			name: t('Presentation.menu.about'),
-			href: 'ble',
-		},
-		{
-			name: t('Presentation.menu.faq'),
-			href: 'ble',
-		},
-		{
-			name: t('Presentation.common.getStarted'),
-			href: 'ble',
-		},
+		// {
+		// 	name: t('Presentation.menu.about'),
+		// 	href: '/presentation#about',
+		// },
+		// {
+		// 	name: t('Presentation.menu.faq'),
+		// 	href: 'ble',
+		// },
+		// {
+		// 	name: t('Presentation.menu.getStarted'),
+		// 	href: 'ble',
+		// },
 	]
 }
 
@@ -47,15 +51,26 @@ function TopBar({className}: {className?: string}) {
 	const navigationItems = useNavigationItems()
 
 	return (
-		<AppBar className={className} position="static">
+		<AppBar className={className} position="fixed">
 			<Toolbar>
-				<Typography variant="h6" noWrap>
+				<Typography
+					className={classes.logo}
+					component={Link}
+					to="/presentation"
+					variant="h6"
+					noWrap
+				>
 					{t('appName')}
 				</Typography>
 				<Hidden xsDown>
 					<div className={classes.menuItems}>
 						{navigationItems.map((one) => (
-							<Button key={one.name} color="inherit" href={one.href}>
+							<Button
+								key={one.name}
+								component={Link}
+								color="inherit"
+								to={one.href}
+							>
 								{one.name}
 							</Button>
 						))}
