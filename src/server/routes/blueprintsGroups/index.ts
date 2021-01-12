@@ -505,16 +505,32 @@ router.post(
 		}
 		// TODO finish transition
 
+		console.info('Submitting filled blueprint', 'Starting', {
+			groupId,
+			generatedValues,
+			outputFolderId,
+		})
+
 		const targetFolderId = await createEmptyFolderAndShareItToSA({
 			name: blueprintGroup.name,
 			userDrive,
 			parent: outputFolderId,
 		})
 
-		console.log('created target folder')
+		console.info('Submitting filled blueprint', 'Created target folder', {
+			targetFolderId,
+		})
+
+		console.info('Submitting filled blueprint', {
+			totalFilesToGenerate: blueprintGroup.blueprints.length,
+		})
 
 		const generateBlueprintTasks = blueprintGroup.blueprints.map(
 			async (blueprint) => {
+				console.info('Submitting filled blueprint', 'Generating document', {
+					blueprint,
+				})
+
 				const fileNameRaw = `${outputName ? `${outputName} -` : ''}${
 					blueprint.name
 				}`
@@ -547,8 +563,6 @@ router.post(
 					})
 				}
 
-				console.log('TTTEST', {generateDocuments, googleDocId})
-
 				if (!generateDocuments) {
 					// TODO maybe can not do this
 					await silentlyDeleteFile({
@@ -556,6 +570,10 @@ router.post(
 						drive: serviceAccountDrive,
 					})
 				}
+
+				console.info('Submitting filled blueprint', 'Document generated', {
+					googleDocId,
+				})
 
 				return {
 					blueprint,
@@ -567,19 +585,7 @@ router.post(
 		)
 
 		try {
-			// const oldSubmits = user.customerAdmin
-			// 	? await listSubmitsForCustomer({
-			// 			blueprintsGroupId: groupId,
-			// 			customerId: user.customer.id,
-			// 			dbClient,
-			// 	  })
-			// 	: await listSubmitsForUser({
-			// 			blueprintsGroupId: groupId,
-			// 			customerId: user.customer.id,
-			// 			dbClient,
-			// 			user,
-			// 	  })
-
+			console.info('Submitting filled blueprint', 'Inserting submits')
 			const generated = await Promise.all(generateBlueprintTasks)
 			const insertedId = await insertSubmit({
 				blueprintsGroupId: blueprintGroup.id,
@@ -590,32 +596,18 @@ router.post(
 				user,
 			})
 
-			// wont be possible now
-			// if (removeOldVersion && oldSubmits.length > 0) {
-			// 	await Promise.all(
-			// 		oldSubmits[0].generatedFiles.map(
-			// 			async ({
-			// 				pdfId,
-			// 				googleDocId,
-			// 			}: {
-			// 				pdfId: string
-			// 				googleDocId: string
-			// 			}) => {
-			// 				if (pdfId) await silentlyDeleteFile({fileId: pdfId, drive})
-			// 				if (googleDocId)
-			// 					await silentlyDeleteFile({fileId: googleDocId, drive})
-			// 			}
-			// 		)
-			// 	)
-			// }
-
 			const submit = await getSubmit({
 				submitId: insertedId,
 				customerId: user.customer.id,
 				dbClient,
 			})
 
-			sendPriceAlertIfLimitExceeded({
+			console.info(
+				'Submitting filled blueprint',
+				'Sending price limit if exceeded'
+			)
+
+			await sendPriceAlertIfLimitExceeded({
 				values: Object.keys(generatedValues).reduce(
 					(prev, valKey) => ({
 						...prev,
@@ -632,6 +624,7 @@ router.post(
 			})
 
 			if (customerInfo.spreadsheetExport) {
+				console.info('Submitting filled blueprint', 'Exporting to spreadsheet')
 				await exportToSpreadsheet({
 					dbClient,
 					customerId: user.customer.id,
