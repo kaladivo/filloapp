@@ -6,6 +6,7 @@ export interface BlueprintField {
 	type: 'string' | 'id'
 	displayName: string
 	helperText: string
+	options: any
 }
 
 export interface Blueprint {

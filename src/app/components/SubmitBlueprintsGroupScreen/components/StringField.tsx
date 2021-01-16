@@ -8,6 +8,7 @@ function StringField({
 	autoFocus,
 	disabled,
 	helperText,
+	multiline,
 }: {
 	label: string
 	value: string
@@ -15,6 +16,7 @@ function StringField({
 	autoFocus?: boolean
 	disabled?: boolean
 	helperText?: string
+	multiline?: boolean
 }) {
 	return (
 		<TextField
@@ -26,6 +28,9 @@ function StringField({
 			value={value}
 			helperText={helperText}
 			onChange={onChange}
+			multiline={multiline}
+			rows={multiline ? 2 : 1}
+			rowsMax={20}
 		/>
 	)
 }

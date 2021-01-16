@@ -46,6 +46,12 @@ const createBlueprintSchema = new Schema({
 			type: {type: String, required: true},
 			helperText: String,
 			displayName: String,
+			options: {
+				multiline: {
+					required: false,
+					type: Boolean,
+				},
+			},
 		},
 	},
 })
@@ -99,6 +105,7 @@ router.post(
 				type: fieldOption.type,
 				displayName: fieldOption.displayName || fieldName,
 				helperText: fieldOption.helperText || null,
+				options: fieldOption.options || {},
 			}
 		}) as InputBlueprintField[]
 

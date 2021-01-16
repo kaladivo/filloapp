@@ -77,7 +77,7 @@ function FillValuesScreen({fields, values, onChange, onSubmit}: Props) {
 					/>
 				</Grid>
 				{[...ids, ...otherFields].map(
-					({name, types, displayName, helperText}, i) => (
+					({name, types, displayName, helperText, options}, i) => (
 						<Grid key={name} item xs={12}>
 							{types.length === 1 && types[0] === 'string' ? (
 								<>
@@ -93,6 +93,7 @@ function FillValuesScreen({fields, values, onChange, onSubmit}: Props) {
 										autoFocus={i === 0}
 										label={displayName}
 										value={values[name]}
+										multiline={!!options.multiline}
 										onChange={(e) => {
 											const {value} = e.target
 											onChange({...values, [name]: value})

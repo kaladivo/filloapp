@@ -7,6 +7,7 @@ export interface GroupField {
 	types: string[]
 	displayName: string
 	helperText: string | null
+	options: any
 }
 
 export interface BlueprintGroup {
