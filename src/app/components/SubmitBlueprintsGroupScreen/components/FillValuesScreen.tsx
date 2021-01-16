@@ -1,9 +1,11 @@
-import React from 'react'
-import {Button, Grid} from '@material-ui/core'
+import React, {useState, useEffect, useRef} from 'react'
+import {Button, Grid, TextField, Typography} from '@material-ui/core'
 import {useTranslation} from 'react-i18next'
+import Autocomplete from '@material-ui/lab/Autocomplete'
 import {GroupField} from '../../../../constants/models/BlueprintsGroup'
 import StringField from './StringField'
 import IncrementingField from './IncrementingField'
+import {useCustomerInfo} from '../../CustomerInfoProvider'
 
 interface Props {
 	fields: GroupField[]
@@ -14,9 +16,39 @@ interface Props {
 
 function FillValuesScreen({fields, values, onChange, onSubmit}: Props) {
 	const {t} = useTranslation()
+	const [selectedEntity, setSelectedEntity] = useState<any | null>(null)
+	const customerInfo = useCustomerInfo()
+
+	const disabledFields = customerInfo.entityFields?.disabledFields || []
+	const suppliersList = customerInfo.entityFields?.suppliersList || []
+	const priceFieldLimit = customerInfo.priceLimit?.limit
+	const priceFieldName = customerInfo.priceLimit?.fieldName
 
 	const ids = fields.filter((one) => !one.types.includes('string'))
 	const otherFields = fields.filter((one) => one.types.includes('string'))
+
+	const valuesRef = useRef(values)
+	useEffect(() => {
+		valuesRef.current = values
+	}, [values])
+
+	// Populate values when entity changes
+	useEffect(() => {
+		// If no entity selected, make sure to empty disabled fields that depends on the entity.
+		if (!selectedEntity) {
+			onChange({
+				...valuesRef.current,
+				...disabledFields.reduce((prev, cur) => ({...prev, [cur]: ''}), {}),
+			})
+			return
+		}
+
+		// Populate fields based on selected entity
+		const valuesToChange = disabledFields.reduce((prev, fieldName) => {
+			return {...prev, [fieldName]: selectedEntity[fieldName] || ''}
+		}, {})
+		onChange({...valuesRef.current, ...valuesToChange})
+	}, [selectedEntity, disabledFields, onChange, valuesRef])
 
 	return (
 		<form
@@ -26,27 +58,65 @@ function FillValuesScreen({fields, values, onChange, onSubmit}: Props) {
 			}}
 		>
 			<Grid container spacing={2}>
-				{[...ids, ...otherFields].map(({name, types}, i) => (
-					<Grid key={name} item xs={12}>
-						{types.length === 1 && types[0] === 'string' ? (
-							<StringField
-								autoFocus={i === 0}
-								label={name}
-								value={values[name]}
-								onChange={(e) => {
-									const {value} = e.target
-									onChange({...values, [name]: value})
-								}}
-							/>
-						) : (
-							<IncrementingField
-								label={name}
-								type={types[0]}
-								value={values[name]}
+				<Grid item xs={12}>
+					<Autocomplete
+						options={suppliersList}
+						getOptionLabel={(option) => option.name}
+						onChange={(e: any, newValue: any | null) => {
+							setSelectedEntity(newValue)
+						}}
+						value={selectedEntity}
+						renderInput={(params) => (
+							<TextField
+								margin="normal"
+								{...params}
+								label={t('CDSpecific.selectEntityLabel')}
+								variant="outlined"
 							/>
 						)}
-					</Grid>
-				))}
+					/>
+				</Grid>
+				{[...ids, ...otherFields].map(
+					({name, types, displayName, helperText}, i) => (
+						<Grid key={name} item xs={12}>
+							{types.length === 1 && types[0] === 'string' ? (
+								<>
+									<StringField
+										disabled={disabledFields.includes(name)}
+										helperText={
+											disabledFields.includes(name)
+												? `${helperText ? `${helperText} ` : ''} ${t(
+														'CDSpecific.autofillFromEntity'
+												  )}`
+												: helperText || undefined
+										}
+										autoFocus={i === 0}
+										label={displayName}
+										value={values[name]}
+										onChange={(e) => {
+											const {value} = e.target
+											onChange({...values, [name]: value})
+										}}
+									/>
+									{priceFieldLimit &&
+										priceFieldName &&
+										name === priceFieldName &&
+										Number(values[priceFieldName]) >= priceFieldLimit && (
+											<Typography color="secondary">
+												{t('CDSpecific.priceExceeded')}
+											</Typography>
+										)}
+								</>
+							) : (
+								<IncrementingField
+									label={displayName}
+									type={types[0]}
+									value={values[name]}
+								/>
+							)}
+						</Grid>
+					)
+				)}
 				<Grid item xs={12}>
 					<Button fullWidth type="submit" variant="contained" color="primary">
 						{t('common.submit')}

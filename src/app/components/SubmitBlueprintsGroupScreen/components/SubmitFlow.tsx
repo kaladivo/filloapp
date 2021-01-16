@@ -5,7 +5,7 @@ import {useAsync} from 'react-async'
 import {useHistory} from 'react-router-dom'
 import {useSnackbar} from 'notistack'
 import {BlueprintGroup} from '../../../../constants/models/BlueprintsGroup'
-import FillValuesScreenCD from './FillValuesScreenCD'
+import FillValuesScreen from './FillValuesScreen'
 import SettingsScreen, {SettingsValues} from './SettingsScreen'
 import {useApiService} from '../../../api/apiContext'
 import LoadingIndicator from '../../LoadingIndicator'
@@ -119,7 +119,7 @@ function SubmitFlow({blueprintsGroup}: Props) {
 			</Typography>
 			{step === 'values' && (
 				<>
-					<FillValuesScreenCD
+					<FillValuesScreen
 						fields={blueprintsGroup.fields}
 						values={values}
 						onChange={setValues}
