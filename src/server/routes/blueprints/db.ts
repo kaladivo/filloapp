@@ -103,7 +103,7 @@ async function createOrUpdateFields({
 					(field, index) =>
 						`($1::int, $${index * 5 + 2}, $${index * 5 + 3}, $${
 							index * 5 + 4
-						}, $${index * 5 + 5}) $${index * 5 + 6}`
+						}, $${index * 5 + 5}, $${index * 5 + 6})`
 				)
 				.join(', ')}
 	`,
@@ -116,7 +116,7 @@ async function createOrUpdateFields({
 					current.type,
 					current.displayName,
 					current.helperText,
-					JSON.stringify(current.options),
+					JSON.stringify(current.options || {}),
 				],
 				[]
 			),
