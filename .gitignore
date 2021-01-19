@@ -24,8 +24,7 @@ yarn-debug.log*
 yarn-error.log*
 
 .idea
-
-.env
-temp-files
+temp-files/
+*.env
+!test.env
 .dev
-.env.stage

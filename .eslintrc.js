@@ -2,6 +2,7 @@ module.exports = {
 	env: {
 		browser: true,
 		es6: true,
+		jest: true,
 	},
 	extends: ['airbnb', 'prettier'],
 	globals: {
@@ -16,7 +17,7 @@ module.exports = {
 		ecmaVersion: 2018,
 		sourceType: 'module',
 	},
-	plugins: ['react', '@typescript-eslint'],
+	plugins: ['react', '@typescript-eslint', 'eslint-plugin-jest'],
 	rules: {
 		semi: [2, 'never'],
 		'object-curly-spacing': [2, 'never'],
