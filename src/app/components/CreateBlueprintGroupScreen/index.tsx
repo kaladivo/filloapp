@@ -60,7 +60,10 @@ function CreateBlueprintGroupScreen() {
 	})
 
 	const canBeSubmitted =
-		name && selected.length > 0 && !createGroupTask.isLoading && projectName
+		name &&
+		selected.length > 0 &&
+		!createGroupTask.isLoading &&
+		(!customerInfo.projectsList || projectName)
 
 	const handleSubmit = useCallback(
 		(e) => {
@@ -119,7 +122,6 @@ function CreateBlueprintGroupScreen() {
 					variant="contained"
 					type="submit"
 					color="primary"
-					onClick={() => console.log(selected)}
 				>
 					{createGroupTask.isLoading ? (
 						<CircularProgress size={20} color="inherit" />
