@@ -13,6 +13,8 @@ import MenuIcon from '@material-ui/icons/Menu'
 import {useTranslation} from 'react-i18next'
 import {useLogout} from '../../../utils/auth'
 
+const logo = require('../../../images/logo.png')
+
 const useStyles = makeStyles<Theme, {drawerWidth: string | number}>((theme) =>
 	createStyles({
 		appBar: (props) => ({
@@ -26,8 +28,20 @@ const useStyles = makeStyles<Theme, {drawerWidth: string | number}>((theme) =>
 				display: 'none',
 			},
 		},
-		title: {
+		logoText: {
+			color: 'inherit',
+			textDecoration: 'none',
+		},
+		logoImg: {
+			width: theme.spacing(4),
+			height: 'auto',
+			marginRight: theme.spacing(1),
+		},
+		logo: {
 			flexGrow: 1,
+			display: 'flex',
+			flexDirection: 'row',
+			alignItems: 'center',
 		},
 	})
 )
@@ -53,9 +67,12 @@ function TopBar({drawerWidth, onMenuButtonClicked}: Props) {
 				>
 					<MenuIcon />
 				</IconButton>
-				<Typography className={classes.title} variant="h6" noWrap>
-					{t('appName')}
-				</Typography>
+				<div className={classes.logo}>
+					<img src={logo} className={classes.logoImg} alt="" />
+					<Typography className={classes.logoText} variant="h6" noWrap>
+						{t('appName')}
+					</Typography>
+				</div>
 				<Button onClick={logout} color="inherit">
 					{t('TopBar.logout')}
 				</Button>

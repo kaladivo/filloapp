@@ -11,14 +11,26 @@ import {
 import {Link} from 'react-router-dom'
 import {useTranslation} from 'react-i18next'
 
+const logo = require('../../../images/logo.png')
+
 const useStyles = makeStyles((theme) =>
 	createStyles({
 		menuItems: {
 			margin: theme.spacing(0, 2),
 		},
-		logo: {
+		logoText: {
 			color: 'inherit',
 			textDecoration: 'none',
+		},
+		logoImg: {
+			width: theme.spacing(4),
+			height: 'auto',
+			marginRight: theme.spacing(1),
+		},
+		logo: {
+			display: 'flex',
+			flexDirection: 'row',
+			alignItems: 'center',
 		},
 		filler: {
 			flex: 1,
@@ -53,15 +65,18 @@ function TopBar({className}: {className?: string}) {
 	return (
 		<AppBar className={className} position="fixed">
 			<Toolbar>
-				<Typography
-					className={classes.logo}
-					component={Link}
-					to="/presentation"
-					variant="h6"
-					noWrap
-				>
-					{t('appName')}
-				</Typography>
+				<div className={classes.logo}>
+					<img className={classes.logoImg} src={logo} alt="" />
+					<Typography
+						className={classes.logoText}
+						component={Link}
+						to="/presentation"
+						variant="h6"
+						noWrap
+					>
+						{t('appName')}
+					</Typography>
+				</div>
 				<Hidden xsDown>
 					<div className={classes.menuItems}>
 						{navigationItems.map((one) => (
