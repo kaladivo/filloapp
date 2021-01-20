@@ -138,7 +138,7 @@ const createOrEditGroupSchema = new Schema({
 	},
 	projectName: {
 		type: String,
-		required: true,
+		required: false,
 	},
 })
 
@@ -151,7 +151,8 @@ router.post(
 		const user = extractUser(ctx)
 		const dbClient = extractDbClient(ctx)
 
-		const {name, projectName} = ctx.request.body
+		// TODO - Allow project name to be null in table
+		const {name, projectName = ''} = ctx.request.body
 		const blueprintsIds: string[] = unique(ctx.request.body.blueprintsIds)
 
 		if (
