@@ -29,7 +29,6 @@ function FillValuesScreen({fields, values, onChange, onSubmit}: Props) {
 
 	const valuesRef = useRef(values)
 	useEffect(() => {
-		console.log('changing values ref')
 		valuesRef.current = values
 	}, [values])
 
