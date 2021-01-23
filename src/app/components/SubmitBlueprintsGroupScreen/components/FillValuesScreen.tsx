@@ -19,8 +19,8 @@ function FillValuesScreen({fields, values, onChange, onSubmit}: Props) {
 	const [selectedEntity, setSelectedEntity] = useState<any | null>(null)
 	const customerInfo = useCustomerInfo()
 
-	const disabledFields = customerInfo.entityFields?.disabledFields || []
-	const suppliersList = customerInfo.entityFields?.suppliersList || []
+	const disabledFields = customerInfo.entityFields?.disabledFields
+	const suppliersList = customerInfo.entityFields?.suppliersList
 	const priceFieldLimit = customerInfo.priceLimit?.limit
 	const priceFieldName = customerInfo.priceLimit?.fieldName
 
@@ -29,11 +29,13 @@ function FillValuesScreen({fields, values, onChange, onSubmit}: Props) {
 
 	const valuesRef = useRef(values)
 	useEffect(() => {
+		console.log('changing values ref')
 		valuesRef.current = values
 	}, [values])
 
-	// Populate values when entity changes
+	// // Populate values when entity changes
 	useEffect(() => {
+		if (!disabledFields) return
 		// If no entity selected, make sure to empty disabled fields that depends on the entity.
 		if (!selectedEntity) {
 			onChange({
@@ -58,33 +60,35 @@ function FillValuesScreen({fields, values, onChange, onSubmit}: Props) {
 			}}
 		>
 			<Grid container spacing={2}>
-				<Grid item xs={12}>
-					<Autocomplete
-						options={suppliersList}
-						getOptionLabel={(option) => option.name}
-						onChange={(e: any, newValue: any | null) => {
-							setSelectedEntity(newValue)
-						}}
-						value={selectedEntity}
-						renderInput={(params) => (
-							<TextField
-								margin="normal"
-								{...params}
-								label={t('CDSpecific.selectEntityLabel')}
-								variant="outlined"
-							/>
-						)}
-					/>
-				</Grid>
+				{!!suppliersList && (
+					<Grid item xs={12}>
+						<Autocomplete
+							options={suppliersList}
+							getOptionLabel={(option) => option.name}
+							onChange={(e: any, newValue: any | null) => {
+								setSelectedEntity(newValue)
+							}}
+							value={selectedEntity}
+							renderInput={(params) => (
+								<TextField
+									margin="normal"
+									{...params}
+									label={t('CDSpecific.selectEntityLabel')}
+									variant="outlined"
+								/>
+							)}
+						/>
+					</Grid>
+				)}
 				{[...ids, ...otherFields].map(
 					({name, types, displayName, helperText, options}, i) => (
 						<Grid key={name} item xs={12}>
 							{types.length === 1 && types[0] === 'string' ? (
 								<>
 									<StringField
-										disabled={disabledFields.includes(name)}
+										disabled={(disabledFields || []).includes(name)}
 										helperText={
-											disabledFields.includes(name)
+											(disabledFields || []).includes(name)
 												? `${helperText ? `${helperText} ` : ''} ${t(
 														'CDSpecific.autofillFromEntity'
 												  )}`
