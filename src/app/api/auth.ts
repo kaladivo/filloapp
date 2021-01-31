@@ -1,6 +1,7 @@
 import {AxiosResponse, AxiosInstance} from 'axios'
 
 import * as authRoutes from '../../constants/api/auth'
+import Customer from '../../constants/models/Customer'
 
 export default class ImportExportService {
 	apiService: AxiosInstance
@@ -19,5 +20,16 @@ export default class ImportExportService {
 		return this.apiService.get<any>(authRoutes.checkUser, {
 			headers: {Authentication: `Bearer ${request.bearer}`},
 		})
+	}
+
+	listUserCustomers = () => {
+		return this.apiService.get<Customer[]>(authRoutes.listUserCustomers)
+	}
+
+	selectCustomer = ({customerId}: {customerId: string}) => {
+		return this.apiService.post<{newBearer: string}>(
+			authRoutes.selectCustomer,
+			{customerId}
+		)
 	}
 }

@@ -1,12 +1,10 @@
 /* eslint-disable camelcase */
-export default interface User {
+
+import Customer from './models/Customer'
+
+interface UserWithoutCustomer {
 	email: string
 	googleAccessToken: string
-	customerAdmin: boolean
-	customer: {
-		name: string
-		id: string
-	}
 	additionalInfo: {
 		verified_email: boolean
 		name?: string
@@ -15,4 +13,12 @@ export default interface User {
 		picture?: string
 		locale?: string
 	}
+}
+
+export default interface User extends UserWithoutCustomer {
+	selectedCustomer?: Customer
+}
+
+export interface UserWithSelectedCustomer extends UserWithoutCustomer {
+	selectedCustomer: Customer
 }

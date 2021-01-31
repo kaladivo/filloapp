@@ -32,7 +32,10 @@ import {
 } from './db'
 import * as blueprintsGroupsUrls from '../../../constants/api/blueprintsGroups'
 import validateBodyMiddleware from '../../utils/validateBodyMiddleware'
-import {withValidUserMiddleware, extractUser} from '../../utils/auth'
+import {
+	withValidUserWithCustomerMiddleware,
+	extractUserWithCustomer,
+} from '../../utils/auth'
 import {withDataDbMiddleware, extractDbClient} from '../../dbService'
 import SendableError from '../../utils/SendableError'
 import withPaginationMiddleware, {
@@ -66,16 +69,16 @@ const router = new Router()
 
 router.get(
 	blueprintsGroupsUrls.getBlueprintGroup,
-	withValidUserMiddleware,
+	withValidUserWithCustomerMiddleware,
 	withDataDbMiddleware,
 	async (ctx, next) => {
-		const user = extractUser(ctx)
+		const user = extractUserWithCustomer(ctx)
 		const dbClient = extractDbClient(ctx)
 		const {groupId} = ctx.params
 		const group: BlueprintGroup | null = await getGroup({
 			dbClient,
 			groupId,
-			customerId: user.customer.id,
+			customerId: user.selectedCustomer.customerId,
 		})
 		if (!group) {
 			throw new SendableError('Group not found', {
@@ -86,7 +89,10 @@ router.get(
 
 		// TODO if user is domain admin
 
-		if (group.owner.email !== user.email && !user.customerAdmin) {
+		if (
+			group.owner.email !== user.email &&
+			!user.selectedCustomer.permissions.admin
+		) {
 			throw new SendableError('Insufficient permissions', {
 				status: httpStatus.FORBIDDEN,
 				errorCode: FORBIDDEN,
@@ -94,16 +100,16 @@ router.get(
 		}
 
 		let submits = []
-		if (user.customerAdmin) {
+		if (user.selectedCustomer.permissions.admin) {
 			submits = await listSubmitsForCustomer({
 				blueprintsGroupId: groupId,
-				customerId: user.customer.id,
+				customerId: user.selectedCustomer.customerId,
 				dbClient,
 			})
 		} else {
 			submits = await listSubmitsForUser({
 				blueprintsGroupId: groupId,
-				customerId: user.customer.id,
+				customerId: user.selectedCustomer.customerId,
 				dbClient,
 				user,
 			})
@@ -144,11 +150,11 @@ const createOrEditGroupSchema = new Schema({
 
 router.post(
 	blueprintsGroupsUrls.createGroup,
-	withValidUserMiddleware,
+	withValidUserWithCustomerMiddleware,
 	validateBodyMiddleware(createOrEditGroupSchema),
 	withDataDbMiddleware,
 	async (ctx, next) => {
-		const user = extractUser(ctx)
+		const user = extractUserWithCustomer(ctx)
 		const dbClient = extractDbClient(ctx)
 
 		// TODO - Allow project name to be null in table
@@ -192,17 +198,17 @@ router.post(
 router.put(
 	blueprintsGroupsUrls.editBlueprint,
 	validateBodyMiddleware(createOrEditGroupSchema),
-	withValidUserMiddleware,
+	withValidUserWithCustomerMiddleware,
 	withDataDbMiddleware,
 	async (ctx, next) => {
-		const user = extractUser(ctx)
+		const user = extractUserWithCustomer(ctx)
 		const dbClient = extractDbClient(ctx)
 		const {name, blueprintsIds} = ctx.request.body
 		const {groupId} = ctx.params
 		const group: BlueprintGroup | null = await getGroup({
 			dbClient,
 			groupId,
-			customerId: user.customer.id,
+			customerId: user.selectedCustomer.customerId,
 		})
 
 		if (!group) {
@@ -214,7 +220,10 @@ router.put(
 
 		// TODO if user is domain admin
 
-		if (group.owner.email !== user.email && !user.customerAdmin) {
+		if (
+			group.owner.email !== user.email &&
+			!user.selectedCustomer.permissions.admin
+		) {
 			throw new SendableError('Insufficient permissions', {
 				status: httpStatus.FORBIDDEN,
 				errorCode: FORBIDDEN,
@@ -222,16 +231,16 @@ router.put(
 		}
 
 		let submits = []
-		if (user.customerAdmin) {
+		if (user.selectedCustomer.permissions.admin) {
 			submits = await listSubmitsForCustomer({
 				blueprintsGroupId: groupId,
-				customerId: user.customer.id,
+				customerId: user.selectedCustomer.customerId,
 				dbClient,
 			})
 		} else {
 			submits = await listSubmitsForUser({
 				blueprintsGroupId: groupId,
-				customerId: user.customer.id,
+				customerId: user.selectedCustomer.customerId,
 				dbClient,
 				user,
 			})
@@ -245,7 +254,11 @@ router.put(
 		})
 
 		ctx.body = {
-			...(await getGroup({groupId, dbClient, customerId: user.customer.id})),
+			...(await getGroup({
+				groupId,
+				dbClient,
+				customerId: user.selectedCustomer.userCustomerId,
+			})),
 			submits,
 		}
 		await next()
@@ -254,11 +267,11 @@ router.put(
 
 router.get(
 	blueprintsGroupsUrls.search,
-	withValidUserMiddleware,
+	withValidUserWithCustomerMiddleware,
 	withPaginationMiddleware,
 	withDataDbMiddleware,
 	async (ctx, next) => {
-		const user = extractUser(ctx)
+		const user = extractUserWithCustomer(ctx)
 		const dbClient = extractDbClient(ctx)
 		const pagination = extractPagination(ctx)
 		const {query} = ctx.request.query
@@ -270,9 +283,9 @@ router.get(
 			})
 		}
 
-		if (user.customerAdmin) {
+		if (user.selectedCustomer.permissions.admin) {
 			ctx.body = await searchCustomersBlueprintsGroups({
-				customerId: user.customer.id,
+				customerId: user.selectedCustomer.customerId,
 				pagination,
 				query,
 				dbClient,
@@ -292,17 +305,17 @@ router.get(
 
 router.get(
 	blueprintsGroupsUrls.listBlueprintGroup,
-	withValidUserMiddleware,
+	withValidUserWithCustomerMiddleware,
 	withPaginationMiddleware,
 	withDataDbMiddleware,
 	async (ctx, next) => {
-		const user = extractUser(ctx)
+		const user = extractUserWithCustomer(ctx)
 		const dbClient = extractDbClient(ctx)
 		const pagination = extractPagination(ctx)
 
-		if (user.customerAdmin) {
+		if (user.selectedCustomer.permissions.admin) {
 			ctx.body = await listBlueprintsGroupsForCustomer({
-				customerId: user.customer.id,
+				customerId: user.selectedCustomer.customerId,
 				pagination,
 				dbClient,
 			})
@@ -316,16 +329,16 @@ router.get(
 
 router.delete(
 	blueprintsGroupsUrls.deleteBlueprintGroup,
-	withValidUserMiddleware,
+	withValidUserWithCustomerMiddleware,
 	withDataDbMiddleware,
 	async (ctx, next) => {
-		const user = extractUser(ctx)
+		const user = extractUserWithCustomer(ctx)
 		const dbClient = extractDbClient(ctx)
 		const {groupId} = ctx.params
 		const group: BlueprintGroup | null = await getGroup({
 			dbClient,
 			groupId,
-			customerId: user.customer.id,
+			customerId: user.selectedCustomer.customerId,
 		})
 
 		if (!group) {
@@ -335,7 +348,10 @@ router.delete(
 			})
 		}
 
-		if (group.owner.email !== user.email && !user.customerAdmin) {
+		if (
+			group.owner.email !== user.email &&
+			!user.selectedCustomer.permissions.admin
+		) {
 			throw new SendableError('Insufficient permissions', {
 				status: httpStatus.FORBIDDEN,
 				errorCode: FORBIDDEN,
@@ -390,7 +406,7 @@ const submitGroupSchema = new Schema({
 
 router.post(
 	blueprintsGroupsUrls.submit,
-	withValidUserMiddleware,
+	withValidUserWithCustomerMiddleware,
 	validateBodyMiddleware(submitGroupSchema),
 	withDataDbMiddleware,
 	withUserDriveApiMiddleware,
@@ -410,7 +426,7 @@ router.post(
 			},
 		} = ctx.request.body
 		const dbClient = extractDbClient(ctx)
-		const user = extractUser(ctx)
+		const user = extractUserWithCustomer(ctx)
 		const userDrive = extractUserDriveApi(ctx)
 		const serviceAccountDrive = extractDriveApiForServiceAccount(ctx)
 		const saDocs = extractDocsApiForServiceAccount(ctx)
@@ -420,7 +436,7 @@ router.post(
 
 		const blueprintGroup = await getGroup({
 			groupId,
-			customerId: user.customer.id,
+			customerId: user.selectedCustomer.customerId,
 			dbClient,
 		})
 
@@ -432,7 +448,10 @@ router.post(
 		}
 
 		// Can user access group?
-		if (!user.customerAdmin && blueprintGroup.owner.email !== user.email) {
+		if (
+			!user.selectedCustomer.permissions.admin &&
+			blueprintGroup.owner.email !== user.email
+		) {
 			throw new SendableError('Can not access to blueprint group', {
 				status: httpStatus.FORBIDDEN,
 				errorCode: FORBIDDEN,
@@ -494,7 +513,7 @@ router.post(
 					value: await prepareIncFieldTypeForSubmit({
 						blueprintGroupId: groupId,
 						fieldType: value.type,
-						customerId: user.customer.id,
+						customerId: user.selectedCustomer.customerId,
 						dbClient,
 					}),
 					type: value.type,
@@ -599,7 +618,7 @@ router.post(
 
 			const submit = await getSubmit({
 				submitId: insertedId,
-				customerId: user.customer.id,
+				customerId: user.selectedCustomer.customerId,
 				dbClient,
 			})
 
@@ -628,7 +647,7 @@ router.post(
 				console.info('Submitting filled blueprint', 'Exporting to spreadsheet')
 				await exportToSpreadsheet({
 					dbClient,
-					customerId: user.customer.id,
+					customerId: user.selectedCustomer.customerId,
 					sheetId: customerInfo.spreadsheetExport.spreadsheetId,
 				})
 			}
@@ -641,7 +660,7 @@ router.post(
 				'Error while generating documents',
 				{
 					status: httpStatus.INTERNAL_SERVER_ERROR,
-					errorCode: errorCodes.ERROR_GENERATING_DOCUMENTS,
+					errorCode: errorCodes.ERROR_GENERATING_DOCUMENT,
 				},
 				{error: e}
 			)
@@ -653,17 +672,17 @@ router.post(
 
 router.get(
 	blueprintsGroupsUrls.getFieldValue,
-	withValidUserMiddleware,
+	withValidUserWithCustomerMiddleware,
 	withDataDbMiddleware,
 	async (ctx, next) => {
 		const dbClient = extractDbClient(ctx)
-		const user = extractUser(ctx)
+		const user = extractUserWithCustomer(ctx)
 
 		const {fieldType} = ctx.params
 
 		const nextValue = await nextIdFieldValue({
 			fieldType,
-			customerId: user.customer.id,
+			customerId: user.selectedCustomer.customerId,
 			dbClient,
 		})
 
@@ -680,12 +699,12 @@ router.get(
 
 router.post(
 	blueprintsGroupsUrls.triggerSpreadsheetExport,
-	withValidUserMiddleware,
+	withValidUserWithCustomerMiddleware,
 	withDataDbMiddleware,
 	withCustomerInfoMiddleware,
 	async (ctx, next) => {
 		const dbClient = extractDbClient(ctx)
-		const user = extractUser(ctx)
+		const user = extractUserWithCustomer(ctx)
 		const customerInfo = extractCustomerInfo(ctx)
 
 		if (!customerInfo.spreadsheetExport) {
@@ -696,7 +715,7 @@ router.post(
 
 		await exportToSpreadsheet({
 			dbClient,
-			customerId: user.customer.id,
+			customerId: user.selectedCustomer.customerId,
 			// refreshTokenOfWriter: customerInfo.spreadsheetExport.refreshTokenOfWriter,
 			sheetId: customerInfo.spreadsheetExport.spreadsheetId,
 		})

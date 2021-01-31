@@ -2,24 +2,13 @@ import {useEffect, useCallback} from 'react'
 import {useSnackbar} from 'notistack'
 import {useTranslation} from 'react-i18next'
 import {cleanUser, getUser, User} from '../utils/auth'
-import apiService from '../api'
+import {useApiService, ApiService} from '../api'
 
-// async function refreshUser(): Promise<User | null> {
-// 	try {
-// 		const validateUserResponse = await apiService.auth.checkUser({
-// 			bearer: getUser().accessToken,
-// 		})
-
-// 		return validateUserResponse.data
-// 	} catch (e) {
-// 		if (e?.response?.status === 401 || e?.response?.status === 403) {
-// 			return null
-// 		}
-// 		throw e
-// 	}
-// }
-
-async function checkUser(user: User): Promise<boolean> {
+async function checkUser(
+	user: User | null,
+	apiService: ApiService
+): Promise<boolean> {
+	if (!user) return false
 	try {
 		await apiService.auth.checkUser({bearer: user.accessToken})
 		return true
@@ -34,8 +23,9 @@ async function checkUser(user: User): Promise<boolean> {
 function AuthChecker() {
 	const snackbar = useSnackbar()
 	const {t} = useTranslation()
+	const api = useApiService()
 	const checkAuth = useCallback(() => {
-		checkUser(getUser())
+		checkUser(getUser(), api)
 			.then((valid) => {
 				if (!valid) cleanUser() // TODO try to refresh
 			})

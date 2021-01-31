@@ -6,14 +6,12 @@ import {useAsync} from 'react-async'
 // 	GoogleLoginResponseOffline,
 // 	useGoogleLogout,
 // } from 'react-google-login'
-import jwt from 'jsonwebtoken'
 import {useTranslation} from 'react-i18next'
 import {useSnackbar} from 'notistack'
 import GoogleButton from 'react-google-button'
-import {useApiService} from '../api/apiContext'
 import {ApiService} from '../api'
-import {setUser} from '../utils/auth'
-import User from '../../constants/User'
+import {useApiService} from '../api/apiContext'
+import {parseTokenAndSetUser} from '../utils/auth'
 import errorCodes from '../../constants/errorCodes'
 import {WaitForEnvInfo} from './EnvInfoProvider'
 import PresentationTemplate from './PresentationTemplate'
@@ -40,12 +38,9 @@ async function loginPromise([{apiService, googleAccessToken}]: [
 	{apiService: ApiService; googleAccessToken: string}
 ]) {
 	const result = await apiService.auth.loginWithAccessToken({googleAccessToken})
-
 	const accessToken = result.data.bearer
-	const userInfo: User = jwt.decode(accessToken) as User
-	const user = {accessToken, userInfo}
 
-	setUser(user)
+	parseTokenAndSetUser(accessToken)
 
 	return null
 }

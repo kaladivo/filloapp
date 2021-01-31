@@ -1,7 +1,12 @@
 import {google} from 'googleapis'
 import statusCodes from 'http-status-codes'
+import jwt from 'jsonwebtoken'
 import SendableError from '../../utils/SendableError'
 import * as errorCodes from '../../../constants/errorCodes'
+import User from '../../../constants/User'
+
+const secret = process.env.SERVER_SECRET || 'secret'
+const publicUrl = process.env.JWT_ISS || 'https://filloapp.cz'
 
 const CLIENT_ID = String(process.env.GOOGLEAPIS_CLIENT_ID)
 const CLIENT_SECRET = String(process.env.GOOGLEAPIS_CLIENT_SECRET)
@@ -49,4 +54,12 @@ export async function accessTokenToUser(googleAccessToken: string) {
 			},
 		})
 	}
+}
+
+export async function createJwtForUser(user: User) {
+	return jwt.sign(user, secret, {
+		subject: user.email,
+		issuer: publicUrl,
+		expiresIn: '10 days',
+	})
 }

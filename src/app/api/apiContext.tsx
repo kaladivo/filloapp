@@ -2,12 +2,12 @@ import React, {createContext, ReactNode, useMemo, useContext} from 'react'
 import {ApiService} from '.'
 import {useLogout, getUser} from '../utils/auth'
 
-const apiContext = createContext<ApiService>(
-	new ApiService({
-		getBearer: () => 'dummy',
-		onBearerRefused: () => null,
-	})
-)
+const dummyValue = new ApiService({
+	getBearer: () => 'dummy',
+	onBearerRefused: () => null,
+})
+
+const apiContext = createContext<ApiService>(dummyValue)
 
 export function ApiProvider({children}: {children: ReactNode}) {
 	const logout = useLogout()
