@@ -1,19 +1,21 @@
 import {Next, Context} from 'koa'
 import {CustomerInfo} from '../../constants/models/customerInfo'
-import {extractUser} from './auth'
+import {extractUserWithCustomer} from './auth'
 import {extractDbClient} from '../dbService'
 
 export async function withCustomerInfoMiddleware(ctx: Context, next: Next) {
 	const dataDb = extractDbClient(ctx)
-	const user = extractUser(ctx)
+	const user = extractUserWithCustomer(ctx)
+
+	console.log(user)
 
 	const result = await dataDb.query(
 		`
-		select info 
-		from customer 
-		where customer.id = $1
-	`,
-		[user.customer.id]
+              select info
+              from customer
+              where customer.id = $1
+    `,
+		[user.selectedCustomer.customerId]
 	)
 
 	// eslint-disable-next-line prefer-destructuring

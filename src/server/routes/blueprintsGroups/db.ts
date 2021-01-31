@@ -4,7 +4,10 @@ import {
 	BlueprintGroup,
 	BlueprintsGroupPreview,
 } from '../../../constants/models/BlueprintsGroup'
-import User from '../../../constants/User'
+import {
+	UserWithSelectedCustomer,
+	UserWithSelectedCustomer as User,
+} from '../../../constants/User'
 
 export async function getFields({
 	groupId,
@@ -15,19 +18,19 @@ export async function getFields({
 }) {
 	const result = await dbClient.query(
 		`
-                select bf.name,
-                       json_agg(distinct bf.type) as types,
-                       json_agg(bf.display_name)  as "displayName",
-                       json_agg(bf.helper_text)   as "helperText",
-                       json_agg(bf.options) 			as "options"
-                from blueprint_field bf
-                         left join blueprint b on bf.blueprint_id = b.id
-                         left join blueprint_blueprints_group bbg on b.id = bbg.blueprint_id
-                         left join blueprints_group bg on bbg.blueprint_group_id = bg.id
-                where bg.id = $1
-                group by bf.name
-                order by bf.name
-        `,
+              select bf.name,
+                     json_agg(distinct bf.type) as types,
+                     json_agg(bf.display_name)  as "displayName",
+                     json_agg(bf.helper_text)   as "helperText",
+                     json_agg(bf.options)       as "options"
+              from blueprint_field bf
+                       left join blueprint b on bf.blueprint_id = b.id
+                       left join blueprint_blueprints_group bbg on b.id = bbg.blueprint_id
+                       left join blueprints_group bg on bbg.blueprint_group_id = bg.id
+              where bg.id = $1
+              group by bf.name
+              order by bf.name
+    `,
 		[groupId]
 	)
 
@@ -50,29 +53,31 @@ export async function getGroup({
 }): Promise<BlueprintGroup | null> {
 	const result = await dbClient.query(
 		`
-                select blueprints_group.id,
-                       blueprints_group.name,
-                       blueprints_group.created_at                                                      as "createdAt",
-                       blueprints_group.project_name                                                    as "projectName",
-                       coalesce(
-                                       json_agg(
-                                       json_build_object('id', b.id, 'googleDocsId', google_docs_id, 'name', b.name,
-                                                         'owner',
-                                                         json_build_object('email', blueprintOwner.email, 'info',
-                                                                           blueprintOwner.additional_info)))
-                                       filter (where b.id is not null), json_build_array()
-                           )                                                                            as blueprints,
-                       json_build_object('email', groupOwner.email, 'info', groupOwner.additional_info) as owner
-                from blueprints_group
-                         left join blueprint_blueprints_group
-                                   on blueprints_group.id = blueprint_blueprints_group.blueprint_group_id
-                         left join blueprint b on blueprint_blueprints_group.blueprint_id = b.id
-                         left join "user" blueprintOwner on b.user_email = blueprintOwner.email
-                         left join "user" groupOwner on blueprints_group.created_by = groupOwner.email
-                where blueprints_group.id = $1::int
-                  and groupOwner.customer_id = $2
-                group by blueprints_group.id, groupOwner.email
-        `,
+              select blueprints_group.id,
+                     blueprints_group.name,
+                     blueprints_group.created_at                                                      as "createdAt",
+                     blueprints_group.project_name                                                    as "projectName",
+                     coalesce(
+                                     json_agg(
+                                     json_build_object('id', b.id, 'googleDocsId', google_docs_id, 'name', b.name,
+                                                       'owner',
+                                                       json_build_object('email', blueprintOwner.email, 'info',
+                                                                         blueprintOwner.additional_info)))
+                                     filter (where b.id is not null), json_build_array()
+                         )                                                                            as blueprints,
+                     json_build_object('email', groupOwner.email, 'info', groupOwner.additional_info) as owner
+              from blueprints_group
+                       left join blueprint_blueprints_group
+                                 on blueprints_group.id = blueprint_blueprints_group.blueprint_group_id
+                       left join blueprint b on blueprint_blueprints_group.blueprint_id = b.id
+                       left join user_customer blueprintOwnerUc on b.user_customer_id = blueprintOwnerUc.id
+                       left join "user" blueprintOwner on blueprintOwnerUc.user_email = blueprintOwner.email
+                       left join user_customer groupOwnerUc on blueprints_group.user_customer_id = groupOwnerUc.id
+                       left join "user" groupOwner on groupOwnerUc.user_email = groupOwner.email
+              where blueprints_group.id = $1::int
+                and groupOwnerUc.customer_id = $2
+              group by blueprints_group.id, groupOwner.email
+    `,
 		[groupId, customerId]
 	)
 
@@ -94,7 +99,7 @@ export async function createGroup({
 }: {
 	name: string
 	blueprintsIds: string[]
-	user: User
+	user: UserWithSelectedCustomer
 	projectName: string
 	dbClient: PoolClient
 }) {
@@ -102,11 +107,11 @@ export async function createGroup({
 		await dbClient.query(`begin`)
 		const createdGroupResult = await dbClient.query(
 			`
-                    insert into blueprints_group (name, created_by, project_name)
-                    values ($1, $2, $3)
-                    returning id
-            `,
-			[name, user.email, projectName]
+                insert into blueprints_group (name, user_customer_id, project_name)
+                values ($1, $2, $3)
+                returning id
+      `,
+			[name, user.selectedCustomer.userCustomerId, projectName]
 		)
 
 		const createdGroupId = createdGroupResult.rows[0].id
@@ -123,7 +128,7 @@ export async function createGroup({
 		return getGroup({
 			groupId: createdGroupId,
 			dbClient,
-			customerId: user.customer.id,
+			customerId: user.selectedCustomer.customerId,
 		})
 	} catch (e) {
 		await dbClient.query(`rollback`)
@@ -137,31 +142,30 @@ export async function checkIfUserHasAccessToBlueprints({
 	dbClient,
 }: {
 	blueprintsIds: string[]
-	user: User
+	user: UserWithSelectedCustomer
 	dbClient: PoolClient
 }) {
-	if (user.customerAdmin) {
+	if (user.selectedCustomer.permissions.admin) {
 		const result = await dbClient.query(
 			`
-                    select *
-                    from blueprint
-                             left join "user" u on blueprint.user_email = u.email
-                    where u.customer_id = $1
-                      and blueprint.id = any ($2::int[])
-            `,
-			[user.customer.id, blueprintsIds]
+                select *
+                from blueprint
+                where blueprint.user_customer_id = $1
+                  and blueprint.id = any ($2::int[])
+      `,
+			[user.selectedCustomer.userCustomerId, blueprintsIds]
 		)
 
 		return result.rowCount === blueprintsIds.length
 	}
 	const result = await dbClient.query(
 		`
-                select *
-                from blueprint
-                where blueprint.user_email = $1
-                  and blueprint.id = any ($2::int[])
-        `,
-		[user.email, blueprintsIds]
+              select *
+              from blueprint
+              where blueprint.user_customer_id = $1
+                and blueprint.id = any ($2::int[])
+    `,
+		[user.selectedCustomer.userCustomerId, blueprintsIds]
 	)
 
 	return result.rowCount === blueprintsIds.length
@@ -172,24 +176,25 @@ export async function listBlueprintsGroupsForUser({
 	pagination,
 	dbClient,
 }: {
-	user: User
+	user: UserWithSelectedCustomer
 	pagination: PaginationPosition
 	dbClient: PoolClient
 }): Promise<BlueprintsGroupPreview[]> {
 	const result = await dbClient.query(
 		`
-                select blueprints_group.id,
-                       blueprints_group.name,
-                       blueprints_group.created_at                                              as "createdAt",
-                       blueprints_group.project_name                                            as "projectName",
-                       json_build_object('email', "user".email, 'info', "user".additional_info) as owner
-                from blueprints_group
-                         left join "user" on blueprints_group.created_by = "user".email
-                where "user".email = $1
-                order by blueprints_group.created_at desc
-                limit $2 offset $3
-        `,
-		[user.email, pagination.limit, pagination.skip]
+              select blueprints_group.id,
+                     blueprints_group.name,
+                     blueprints_group.created_at                                              as "createdAt",
+                     blueprints_group.project_name                                            as "projectName",
+                     json_build_object('email', "user".email, 'info', "user".additional_info) as owner
+              from blueprints_group
+                       left join user_customer on blueprints_group.user_customer_id = user_customer.id
+                       left join "user" on user_customer.user_email = "user".email
+              where user_customer.id = $1
+              order by blueprints_group.created_at desc
+              limit $2 offset $3
+    `,
+		[user.selectedCustomer.userCustomerId, pagination.limit, pagination.skip]
 	)
 
 	return result.rows
@@ -206,17 +211,18 @@ export async function listBlueprintsGroupsForCustomer({
 }): Promise<BlueprintsGroupPreview[]> {
 	const result = await dbClient.query(
 		`
-                select blueprints_group.id,
-                       blueprints_group.name,
-                       blueprints_group.created_at                                              as "createdAt",
-                       blueprints_group.project_name                                            as "projectName",
-                       json_build_object('email', "user".email, 'info', "user".additional_info) as owner
-                from blueprints_group
-                         left join "user" on blueprints_group.created_by = "user".email
-                where "user".customer_id = $1
-                order by blueprints_group.created_at desc
-                limit $2 offset $3
-        `,
+              select blueprints_group.id,
+                     blueprints_group.name,
+                     blueprints_group.created_at                                              as "createdAt",
+                     blueprints_group.project_name                                            as "projectName",
+                     json_build_object('email', "user".email, 'info', "user".additional_info) as owner
+              from blueprints_group
+                       left join user_customer uc on blueprints_group.user_customer_id = uc.id
+                       left join "user" on uc.user_email = "user".email
+              where uc.customer_id = $1
+              order by blueprints_group.created_at desc
+              limit $2 offset $3
+    `,
 		[customerId, pagination.limit, pagination.skip]
 	)
 
@@ -229,26 +235,32 @@ export async function searchUsersBlueprintsGroups({
 	pagination,
 	dbClient,
 }: {
-	user: User
+	user: UserWithSelectedCustomer
 	query: string
 	pagination: PaginationPosition
 	dbClient: PoolClient
 }) {
 	const result = await dbClient.query(
 		`
-                select blueprints_group.id,
-                       blueprints_group.name,
-                       blueprints_group.created_at                                              as "createdAt",
-                       blueprints_group.project_name                                            as "projectName",
-                       json_build_object('email', "user".email, 'info', "user".additional_info) as owner
-                from blueprints_group
-                         left join "user" on blueprints_group.created_by = "user".email
-                where "user".email = $1
-                  and (lower(blueprints_group.name) like $2 or lower(blueprints_group.project_name) like $2)
-                order by blueprints_group.created_at desc
-                limit $3 offset $4
-        `,
-		[user.email, `%${query.toLowerCase()}%`, pagination.limit, pagination.skip]
+              select blueprints_group.id,
+                     blueprints_group.name,
+                     blueprints_group.created_at                                              as "createdAt",
+                     blueprints_group.project_name                                            as "projectName",
+                     json_build_object('email', "user".email, 'info', "user".additional_info) as owner
+              from blueprints_group
+                       left join user_customer on blueprints_group.user_customer_id = user_customer.id
+                       left join "user" on user_customer.user_email = "user".email
+              where user_customer.id = $1
+                and (lower(blueprints_group.name) like $2 or lower(blueprints_group.project_name) like $2)
+              order by blueprints_group.created_at desc
+              limit $3 offset $4
+    `,
+		[
+			user.selectedCustomer.userCustomerId,
+			`%${query.toLowerCase()}%`,
+			pagination.limit,
+			pagination.skip,
+		]
 	)
 
 	return result.rows
@@ -267,18 +279,19 @@ export async function searchCustomersBlueprintsGroups({
 }) {
 	const result = await dbClient.query(
 		`
-                select blueprints_group.id,
-                       blueprints_group.name,
-                       blueprints_group.created_at                                              as "createdAt",
-                       blueprints_group.project_name                                            as "projectName",
-                       json_build_object('email', "user".email, 'info', "user".additional_info) as owner
-                from blueprints_group
-                         left join "user" on blueprints_group.created_by = "user".email
-                where "user".customer_id = $1
-                  and (lower(blueprints_group.name) like $2 or lower(blueprints_group.project_name) like $2)
-                order by blueprints_group.created_at desc
-                limit $3 offset $4
-        `,
+              select blueprints_group.id,
+                     blueprints_group.name,
+                     blueprints_group.created_at                                              as "createdAt",
+                     blueprints_group.project_name                                            as "projectName",
+                     json_build_object('email', "user".email, 'info', "user".additional_info) as owner
+              from blueprints_group
+                       left join user_customer uc on blueprints_group.user_customer_id = uc.id
+                       left join "user" on uc.user_email = "user".email
+              where uc.customer_id = $1
+                and (lower(blueprints_group.name) like $2 or lower(blueprints_group.project_name) like $2)
+              order by blueprints_group.created_at desc
+              limit $3 offset $4
+    `,
 		[customerId, `%${query.toLowerCase()}%`, pagination.limit, pagination.skip]
 	)
 
@@ -298,56 +311,56 @@ export async function deleteBlueprintGroup({
 		const blueprintsSubmitsIds = (
 			await dbClient.query(
 				`
-                        select id
-                        from blueprints_group_submit bgs
-                        where bgs.blueprints_group_id = $1
-                `,
+                  select id
+                  from blueprints_group_submit bgs
+                  where bgs.blueprints_group_id = $1
+        `,
 				[blueprintGroupId]
 			)
 		).rows.map((one) => one.id)
 
 		await dbClient.query(
 			`
-                    delete
-                    from filled_blueprint_field fbf
-                    where fbf.blueprints_group_submit_id = any ($1::int[])
-            `,
+                delete
+                from filled_blueprint_field fbf
+                where fbf.blueprints_group_submit_id = any ($1::int[])
+      `,
 			[blueprintsSubmitsIds]
 		)
 
 		await dbClient.query(
 			`
-                    delete
-                    from generated_document fbf
-                    where fbf.blueprints_group_submit_id = any ($1::int[])
-            `,
+                delete
+                from generated_document fbf
+                where fbf.blueprints_group_submit_id = any ($1::int[])
+      `,
 			[blueprintsSubmitsIds]
 		)
 
 		await dbClient.query(
 			`
-                    delete
-                    from blueprints_group_submit bgs
-                    where bgs.blueprints_group_id = $1
-            `,
+                delete
+                from blueprints_group_submit bgs
+                where bgs.blueprints_group_id = $1
+      `,
 			[blueprintGroupId]
 		)
 
 		await dbClient.query(
 			`
-                    delete
-                    from blueprint_blueprints_group
-                    where blueprint_group_id = $1
-            `,
+                delete
+                from blueprint_blueprints_group
+                where blueprint_group_id = $1
+      `,
 			[blueprintGroupId]
 		)
 
 		await dbClient.query(
 			`
-                    delete
-                    from blueprints_group
-                    where blueprints_group.id = $1
-            `,
+                delete
+                from blueprints_group
+                where blueprints_group.id = $1
+      `,
 			[blueprintGroupId]
 		)
 		await dbClient.query('commit')
@@ -374,11 +387,11 @@ export async function modifyBlueprint({
 			rows: [{id: updatedId}],
 		} = await dbClient.query(
 			`
-                    update blueprints_group
-                    set name = $1
-                    where blueprints_group.id = $2
-                    returning blueprints_group.id
-            `,
+                update blueprints_group
+                set name = $1
+                where blueprints_group.id = $2
+                returning blueprints_group.id
+      `,
 			[name, blueprintsGroupId]
 		)
 
@@ -386,10 +399,10 @@ export async function modifyBlueprint({
 
 		await dbClient.query(
 			`
-                    delete
-                    from blueprint_blueprints_group
-                    where blueprint_group_id = $1::int
-            `,
+                delete
+                from blueprint_blueprints_group
+                where blueprint_group_id = $1::int
+      `,
 			[updatedId]
 		)
 
@@ -430,24 +443,25 @@ export async function getSubmit({
 }) {
 	const submitResult = await dbClient.query(
 		`
-                select bgs.id,
-                       bgs.submitted_at                                               as "submittedAt",
-                       bgs.folder_id                                                  as "folderId",
-                       json_build_object('email', u.email, 'info', u.additional_info) as "byUser",
-                       json_agg(distinct jsonb_build_object('name', fbf.name, 'type', fbf.type, 'value',
-                                                            fbf.value))               as "filledValues",
-                       json_agg(distinct
-                                jsonb_build_object('id', gd.id, 'name', gd.name, 'googleDocId', gd.google_doc_id,
-                                                   'pdfId',
-                                                   gd.pdf_id))                        as "generatedFiles"
-                from blueprints_group_submit bgs
-                         left join filled_blueprint_field fbf on bgs.id = fbf.blueprints_group_submit_id
-                         left join generated_document gd on bgs.id = gd.blueprints_group_submit_id
-                         left join "user" u on bgs.submitted_by_email = u.email
-                where u.customer_id = $1
-                  and bgs.id = $2::int
-                group by bgs.id, u.email
-        `,
+              select bgs.id,
+                     bgs.submitted_at                                               as "submittedAt",
+                     bgs.folder_id                                                  as "folderId",
+                     json_build_object('email', u.email, 'info', u.additional_info) as "byUser",
+                     json_agg(distinct jsonb_build_object('name', fbf.name, 'type', fbf.type, 'value',
+                                                          fbf.value))               as "filledValues",
+                     json_agg(distinct
+                              jsonb_build_object('id', gd.id, 'name', gd.name, 'googleDocId', gd.google_doc_id,
+                                                 'pdfId',
+                                                 gd.pdf_id))                        as "generatedFiles"
+              from blueprints_group_submit bgs
+                       left join filled_blueprint_field fbf on bgs.id = fbf.blueprints_group_submit_id
+                       left join generated_document gd on bgs.id = gd.blueprints_group_submit_id
+                       left join user_customer uc on bgs.submitted_by_user_customer_id = uc.id
+                       left join "user" u on uc.user_email = u.email
+              where uc.customer_id = $1
+                and bgs.id = $2::int
+              group by bgs.id, u.email
+    `,
 		[customerId, submitId]
 	)
 
@@ -468,27 +482,28 @@ export async function listSubmitsForUser({
 }) {
 	const submitResult = await dbClient.query(
 		`
-                select bgs.id,
-                       bgs.submitted_at                                               as "submittedAt",
-                       bgs.folder_id                                                  as "folderId",
-                       json_build_object('email', u.email, 'info', u.additional_info) as "byUser",
-                       json_agg(distinct jsonb_build_object('name', fbf.name, 'type', fbf.type, 'value',
-                                                            fbf.value))               as "filledValues",
-                       json_agg(distinct
-                                jsonb_build_object('id', gd.id, 'name', gd.name, 'googleDocId', gd.google_doc_id,
-                                                   'pdfId',
-                                                   gd.pdf_id))                        as "generatedFiles"
-                from blueprints_group_submit bgs
-                         left join blueprints_group b on bgs.blueprints_group_id = b.id
-                         left join filled_blueprint_field fbf on bgs.id = fbf.blueprints_group_submit_id
-                         left join generated_document gd on bgs.id = gd.blueprints_group_submit_id
-                         left join "user" u on bgs.submitted_by_email = u.email
-                where u.customer_id = $1
-                  and b.id = $2::int
-                  and u.email = $3
-                group by bgs.id, u.email, bgs.submitted_at
-                order by bgs.submitted_at desc
-        `,
+              select bgs.id,
+                     bgs.submitted_at                                               as "submittedAt",
+                     bgs.folder_id                                                  as "folderId",
+                     json_build_object('email', u.email, 'info', u.additional_info) as "byUser",
+                     json_agg(distinct jsonb_build_object('name', fbf.name, 'type', fbf.type, 'value',
+                                                          fbf.value))               as "filledValues",
+                     json_agg(distinct
+                              jsonb_build_object('id', gd.id, 'name', gd.name, 'googleDocId', gd.google_doc_id,
+                                                 'pdfId',
+                                                 gd.pdf_id))                        as "generatedFiles"
+              from blueprints_group_submit bgs
+                       left join blueprints_group b on bgs.blueprints_group_id = b.id
+                       left join filled_blueprint_field fbf on bgs.id = fbf.blueprints_group_submit_id
+                       left join generated_document gd on bgs.id = gd.blueprints_group_submit_id
+                       left join user_customer uc on bgs.submitted_by_user_customer_id = uc.id
+                       left join "user" u on uc.user_email = u.email
+              where uc.customer_id = $1
+                and b.id = $2::int
+                and u.email = $3
+              group by bgs.id, u.email, bgs.submitted_at
+              order by bgs.submitted_at desc
+    `,
 		[customerId, blueprintsGroupId, user.email]
 	)
 
@@ -506,26 +521,27 @@ export async function listSubmitsForCustomer({
 }) {
 	const submitResult = await dbClient.query(
 		`
-                select bgs.id,
-                       bgs.submitted_at                                               as "submittedAt",
-                       bgs.folder_id                                                  as "folderId",
-                       json_build_object('email', u.email, 'info', u.additional_info) as "byUser",
-                       json_agg(distinct jsonb_build_object('name', fbf.name, 'type', fbf.type, 'value',
-                                                            fbf.value))               as "filledValues",
-                       json_agg(distinct
-                                jsonb_build_object('id', gd.id, 'name', gd.name, 'googleDocId', gd.google_doc_id,
-                                                   'pdfId',
-                                                   gd.pdf_id))                        as "generatedFiles"
-                from blueprints_group_submit bgs
-                         left join blueprints_group b on bgs.blueprints_group_id = b.id
-                         left join filled_blueprint_field fbf on bgs.id = fbf.blueprints_group_submit_id
-                         left join generated_document gd on bgs.id = gd.blueprints_group_submit_id
-                         left join "user" u on bgs.submitted_by_email = u.email
-                where u.customer_id = $1
-                  and b.id = $2::int
-                group by bgs.id, u.email, bgs.submitted_at
-                order by bgs.submitted_at desc
-        `,
+              select bgs.id,
+                     bgs.submitted_at                                               as "submittedAt",
+                     bgs.folder_id                                                  as "folderId",
+                     json_build_object('email', u.email, 'info', u.additional_info) as "byUser",
+                     json_agg(distinct jsonb_build_object('name', fbf.name, 'type', fbf.type, 'value',
+                                                          fbf.value))               as "filledValues",
+                     json_agg(distinct
+                              jsonb_build_object('id', gd.id, 'name', gd.name, 'googleDocId', gd.google_doc_id,
+                                                 'pdfId',
+                                                 gd.pdf_id))                        as "generatedFiles"
+              from blueprints_group_submit bgs
+                       left join blueprints_group b on bgs.blueprints_group_id = b.id
+                       left join filled_blueprint_field fbf on bgs.id = fbf.blueprints_group_submit_id
+                       left join generated_document gd on bgs.id = gd.blueprints_group_submit_id
+                       left join user_customer uc on bgs.submitted_by_user_customer_id = uc.id
+                       left join "user" u on uc.user_email = u.email
+              where uc.customer_id = $1
+                and b.id = $2::int
+              group by bgs.id, u.email, bgs.submitted_at
+              order by bgs.submitted_at desc
+    `,
 		[customerId, blueprintsGroupId]
 	)
 
@@ -555,11 +571,11 @@ export async function insertSubmit({
 		rows: [{id: submitId}],
 	} = await dbClient.query(
 		`
-                insert into blueprints_group_submit (submitted_by_email, blueprints_group_id, folder_id)
-                values ($1, $2, $3)
-                returning id
-        `,
-		[user.email, blueprintsGroupId, folderId]
+              insert into blueprints_group_submit (submitted_by_user_customer_id, blueprints_group_id, folder_id)
+              values ($1, $2, $3)
+              returning id
+    `,
+		[user.selectedCustomer.userCustomerId, blueprintsGroupId, folderId]
 	)
 
 	await dbClient.query(
@@ -618,15 +634,15 @@ export async function nextIdFieldValue({
 }) {
 	const result = await dbClient.query(
 		`
-                select coalesce(value, 0) + 1 as new_value, template, name, id
-                from incrementing_field_type
-                         left join incrementing_field_value ifv
-                                   on incrementing_field_type.id = ifv.incrementing_field_type_id
-                where incrementing_field_type.name = $1
-                  and customer_id = $2
-                order by value desc
-                limit 1
-        `,
+              select coalesce(value, 0) + 1 as new_value, template, name, id
+              from incrementing_field_type
+                       left join incrementing_field_value ifv
+                                 on incrementing_field_type.id = ifv.incrementing_field_type_id
+              where incrementing_field_type.name = $1
+                and customer_id = $2
+              order by value desc
+              limit 1
+    `,
 		[fieldType, customerId]
 	)
 
@@ -651,13 +667,13 @@ export async function prepareIncFieldTypeForSubmit({
 	// First try to get existing value
 	const existingValue = await dbClient.query(
 		`
-                select ifv.value, ift.template, ift.name
-                from incrementing_field_type ift
-                         left join incrementing_field_value ifv on ifv.incrementing_field_type_id = ift.id
-                where ift.name = $1
-                  and ift.customer_id = $2
-                  and ifv.blueprints_group_id = $3
-        `,
+              select ifv.value, ift.template, ift.name
+              from incrementing_field_type ift
+                       left join incrementing_field_value ifv on ifv.incrementing_field_type_id = ift.id
+              where ift.name = $1
+                and ift.customer_id = $2
+                and ifv.blueprints_group_id = $3
+    `,
 		[fieldType, customerId, blueprintGroupId]
 	)
 	if (existingValue.rows.length > 0) {
@@ -676,9 +692,9 @@ export async function prepareIncFieldTypeForSubmit({
 
 		await dbClient.query(
 			`
-                    insert into incrementing_field_value (incrementing_field_type_id, value, blueprints_group_id)
-                    values ($1, $2, $3)
-            `,
+                insert into incrementing_field_value (incrementing_field_type_id, value, blueprints_group_id)
+                values ($1, $2, $3)
+      `,
 			[nextValue.id, nextValue.newValue, blueprintGroupId]
 		)
 
@@ -700,41 +716,41 @@ export async function getDataForSpreadsheetExport({
 }) {
 	const {rows: groupsWithFields} = await dbClient.query(
 		`
-                select blueprints_group.id,
-                       blueprints_group.name,
-                       bgs.submitted_at              as "submittedAt",
-                       bgs.submitted_by_email        as "submittedBy",
-                       blueprints_group.project_name as "projectName",
-                       coalesce(
-                                       json_agg(json_build_object('value', fbf.value, 'name', fbf.name))
-                                       filter (where fbf.id is not null), json_build_array()
-                           )                         as values,
-                       coalesce(
-                                       json_agg(bf.name)
-                                       filter (where bf.name is not null), json_build_array()
-                           )                         as fields
-                from blueprints_group
-                         left join blueprint_blueprints_group
-                                   on blueprints_group.id = blueprint_blueprints_group.blueprint_group_id
-                         left join blueprint on blueprint_blueprints_group.blueprint_id = blueprint.id
-                         left join "user" u on blueprint.user_email = u.email
-                         left join blueprints_group_submit bgs
-                                   on blueprints_group.id = bgs.blueprints_group_id
-                                       and bgs.submitted_at = (
-                                           select MAX(submitted_at)
-                                           from blueprints_group_submit
-                                           where blueprints_group_submit.blueprints_group_id = blueprints_group.id
-                                       )
-                         left join blueprint_field bf on blueprint.id = bf.blueprint_id
-                         left join filled_blueprint_field fbf
-                                   on bgs.id = fbf.blueprints_group_submit_id and fbf.name = bf.name
-                where u.customer_id = $1
-                  and bgs.submitted_at is not null
-                group by blueprints_group.name, blueprints_group.project_name, blueprints_group.id, bgs.submitted_at,
-                         bgs.submitted_by_email
-                order by bgs.submitted_at
+              select blueprints_group.id,
+                     blueprints_group.name,
+                     bgs.submitted_at              as "submittedAt",
+                     uc.user_email                 as "submittedBy",
+                     blueprints_group.project_name as "projectName",
+                     coalesce(
+                                     json_agg(json_build_object('value', fbf.value, 'name', fbf.name))
+                                     filter (where fbf.id is not null), json_build_array()
+                         )                         as values,
+                     coalesce(
+                                     json_agg(bf.name)
+                                     filter (where bf.name is not null), json_build_array()
+                         )                         as fields
+              from blueprints_group
+                       left join blueprint_blueprints_group
+                                 on blueprints_group.id = blueprint_blueprints_group.blueprint_group_id
+                       left join blueprint on blueprint_blueprints_group.blueprint_id = blueprint.id
+                       left join user_customer uc on blueprint.user_customer_id = uc.id
+                       left join blueprints_group_submit bgs
+                                 on blueprints_group.id = bgs.blueprints_group_id
+                                     and bgs.submitted_at = (
+                                         select MAX(submitted_at)
+                                         from blueprints_group_submit
+                                         where blueprints_group_submit.blueprints_group_id = blueprints_group.id
+                                     )
+                       left join blueprint_field bf on blueprint.id = bf.blueprint_id
+                       left join filled_blueprint_field fbf
+                                 on bgs.id = fbf.blueprints_group_submit_id and fbf.name = bf.name
+              where uc.customer_id = $1
+                and bgs.submitted_at is not null
+              group by blueprints_group.name, blueprints_group.project_name, blueprints_group.id, bgs.submitted_at,
+                       uc.user_email
+              order by bgs.submitted_at
 
-        `,
+    `,
 		[customerId]
 	)
 

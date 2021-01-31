@@ -4,7 +4,7 @@ import {
 	extractCustomerInfo,
 } from '../../utils/customerInfo'
 import * as customerInfoUrls from '../../../constants/api/customerInfo'
-import {withValidUserMiddleware} from '../../utils/auth'
+import {withValidUserWithCustomerMiddleware} from '../../utils/auth'
 import {withDataDbMiddleware} from '../../dbService'
 
 const router = new Router()
@@ -12,7 +12,7 @@ const router = new Router()
 router.get(
 	customerInfoUrls.getCustomerInfo,
 	withDataDbMiddleware,
-	withValidUserMiddleware,
+	withValidUserWithCustomerMiddleware,
 	withCustomerInfoMiddleware,
 	async (ctx, next) => {
 		const customerInfo = extractCustomerInfo(ctx)

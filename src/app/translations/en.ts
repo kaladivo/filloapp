@@ -19,6 +19,10 @@ export default {
 	'DriveFilePicker': {
 		'nothingSelected': 'No files selected. Picker was closed.',
 	},
+	'CustomerSelect': {
+		'title': 'Select customer',
+		'loading': 'Loading customers list',
+	},
 	'TopBar': {
 		'logout': 'Logout',
 	},

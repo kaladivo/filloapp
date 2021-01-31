@@ -2,7 +2,7 @@ import {PoolClient} from 'pg'
 import {TinyBlueprint, Blueprint} from '../../../constants/models/Blueprint'
 import {PaginationPosition} from '../../../constants/models/Pagination'
 
-import User from '../../../constants/User'
+import {UserWithSelectedCustomer} from '../../../constants/User'
 
 export interface InputBlueprintField {
 	name: string
@@ -12,32 +12,34 @@ export interface InputBlueprintField {
 	options: {}
 }
 
-async function getBlueprint({
+async function getBlueprintByFileIdAndUser({
 	fileId,
 	dbClient,
 	user,
 }: {
 	fileId: string
 	dbClient: PoolClient
-	user: User
+	user: UserWithSelectedCustomer
 }): Promise<Blueprint | null> {
 	const result = await dbClient.query(
 		`
-                select blueprint.id,
-                       google_docs_id                                                         as "googleDocsId",
-                       blueprint.name,
-                       json_agg(json_build_object('id', blueprint_field.id, 'name', blueprint_field.name, 'type',
-                                                  blueprint_field.type, 'display_name', blueprint_field.display_name,
-                                                  'helperText', blueprint_field.helper_text, 'options', blueprint_field.options)) as fields,
-                       json_build_object('email', u.email, 'info', u.additional_info)         as owner
-                from blueprint
-                         left join blueprint_field on blueprint.id = blueprint_field.blueprint_id
-                         left join "user" u on blueprint.user_email = u.email
-                where google_docs_id = $1
-                  and user_email = $2
-                group by blueprint.id, u.email
-        `,
-		[fileId, user.email]
+              select blueprint.id,
+                     google_docs_id                                                 as "googleDocsId",
+                     blueprint.name,
+                     json_agg(json_build_object('id', blueprint_field.id, 'name', blueprint_field.name, 'type',
+                                                blueprint_field.type, 'display_name', blueprint_field.display_name,
+                                                'helperText', blueprint_field.helper_text, 'options',
+                                                blueprint_field.options))           as fields,
+                     json_build_object('email', u.email, 'info', u.additional_info) as owner
+              from blueprint
+                       left join blueprint_field on blueprint.id = blueprint_field.blueprint_id
+                       left join user_customer on blueprint.user_customer_id = user_customer.id
+                       left join "user" u on user_customer.user_email = u.email
+              where google_docs_id = $1
+                and blueprint.user_customer_id = $2
+              group by blueprint.id, u.email
+    `,
+		[fileId, user.selectedCustomer.userCustomerId]
 	)
 	if (result.rows.length === 0) return null
 	return result.rows[0]
@@ -54,20 +56,23 @@ export async function getBlueprintById({
 }): Promise<Blueprint | null> {
 	const result = await dbClient.query(
 		`
-                select blueprint.id,
-                       google_docs_id                                                         as "googleDocsId",
-                       blueprint.name,
-                       json_agg(json_build_object('id', blueprint_field.id, 'name', blueprint_field.name, 'type',
-                                                  blueprint_field.type, 'display_name', blueprint_field.display_name,
-                                                  'helperText', blueprint_field.helper_text, 'options', blueprint_field.options)) as fields,
-                       json_build_object('email', u.email, 'info', u.additional_info)         as owner
-                from blueprint
-                         left join blueprint_field on blueprint.id = blueprint_field.blueprint_id
-                         left join "user" u on blueprint.user_email = u.email
-                where blueprint.id = $1::int
-                  and u.customer_id = $2
-                group by blueprint.id, u.email
-        `,
+              select blueprint.id,
+                     google_docs_id                                                 as "googleDocsId",
+                     blueprint.name,
+                     json_agg(json_build_object('id', blueprint_field.id, 'name', blueprint_field.name, 'type',
+                                                blueprint_field.type, 'display_name', blueprint_field.display_name,
+                                                'helperText', blueprint_field.helper_text, 'options',
+                                                blueprint_field.options))           as fields,
+                     json_build_object('email', u.email, 'info', u.additional_info) as owner
+              from blueprint
+                       left join blueprint_field on blueprint.id = blueprint_field.blueprint_id
+                       left join user_customer on blueprint.user_customer_id = user_customer.id
+                       left join "user" u on user_customer.user_email = u.email
+                       left join user_customer uc on u.email = uc.user_email
+              where blueprint.id = $1::int
+                and uc.customer_id = $2
+              group by blueprint.id, u.email
+    `,
 		[blueprintId, customerId]
 	)
 
@@ -88,10 +93,10 @@ async function createOrUpdateFields({
 }) {
 	await dbClient.query(
 		`
-                delete
-                from blueprint_field
-                where blueprint_id = $1::int
-        `,
+              delete
+              from blueprint_field
+              where blueprint_id = $1::int
+    `,
 		[blueprintId]
 	)
 
@@ -136,23 +141,23 @@ async function updateBlueprint({
 	blueprintId: string
 	fileName: string
 	fields: InputBlueprintField[]
-	user: User
+	user: UserWithSelectedCustomer
 	dbClient: PoolClient
 }): Promise<Blueprint | null> {
 	try {
 		await dbClient.query(`begin`)
 		await dbClient.query(
 			`
-                    update blueprint
-                    set name = $1
-                    where id = $2::int
-            `,
+                update blueprint
+                set name = $1
+                where id = $2::int
+      `,
 			[fileName, blueprintId]
 		)
 		await createOrUpdateFields({fields, blueprintId, dbClient})
 
 		await dbClient.query(`commit`)
-		return await getBlueprint({fileId, dbClient, user})
+		return await getBlueprintByFileIdAndUser({fileId, dbClient, user})
 	} catch (e) {
 		await dbClient.query(`rollback`)
 		throw e
@@ -169,7 +174,7 @@ async function createBlueprint({
 	fileId: string
 	fileName: string
 	fields: InputBlueprintField[]
-	user: User
+	user: UserWithSelectedCustomer
 	dbClient: PoolClient
 }): Promise<Blueprint | null> {
 	try {
@@ -177,17 +182,21 @@ async function createBlueprint({
 
 		await dbClient.query(
 			`
-                    INSERT INTO blueprint (google_docs_id, user_email, name)
-                    values ($1, $2, $3)
-            `,
-			[fileId, user.email, fileName]
+                INSERT INTO blueprint (google_docs_id, user_customer_id, name)
+                values ($1, $2, $3)
+      `,
+			[fileId, user.selectedCustomer.userCustomerId, fileName]
 		)
-		const blueprint = await getBlueprint({fileId, user, dbClient})
+		const blueprint = await getBlueprintByFileIdAndUser({
+			fileId,
+			user,
+			dbClient,
+		})
 		if (!blueprint) throw new Error('Blueprint not created correctly.')
 
 		await createOrUpdateFields({fields, blueprintId: blueprint.id, dbClient})
 		await dbClient.query(`commit`)
-		return getBlueprint({fileId, user, dbClient})
+		return getBlueprintByFileIdAndUser({fileId, user, dbClient})
 	} catch (e) {
 		await dbClient.query(`rollback`)
 		throw e
@@ -205,9 +214,9 @@ export async function createOrUpdateBlueprint({
 	fileName: string
 	fields: InputBlueprintField[]
 	dbClient: PoolClient
-	user: User
+	user: UserWithSelectedCustomer
 }): Promise<{blueprint: Blueprint; performedAction: 'update' | 'create'}> {
-	let blueprint = await getBlueprint({fileId, dbClient, user})
+	let blueprint = await getBlueprintByFileIdAndUser({fileId, dbClient, user})
 	let performedAction: 'update' | 'create'
 
 	if (!blueprint) {
@@ -245,25 +254,27 @@ export async function listBlueprintsForUser({
 }: {
 	pagination: PaginationPosition
 	dbClient: PoolClient
-	user: User
+	user: UserWithSelectedCustomer
 }) {
 	const result = await dbClient.query(
 		`
-                select blueprint.id,
-                       blueprint.name,
-                       json_agg(json_build_object('id', blueprint_field.id, 'name', blueprint_field.name, 'type',
-                                                  blueprint_field.type, 'display_name', blueprint_field.display_name,
-                                                  'helperText', blueprint_field.helper_text, 'options', blueprint_field.options)) as fields,
-                       json_build_object('email', u.email, 'info', u.additional_info)         as owner
-                from blueprint
-                         left join blueprint_field on blueprint.id = blueprint_field.blueprint_id
-                         left join "user" u on blueprint.user_email = u.email
-                where u.email = $1
-                group by blueprint.id, u.email, blueprint.name
-                order by blueprint.name
-                limit $2 offset $3
-        `,
-		[user.email, pagination.limit, pagination.skip]
+              select blueprint.id,
+                     blueprint.name,
+                     json_agg(json_build_object('id', blueprint_field.id, 'name', blueprint_field.name, 'type',
+                                                blueprint_field.type, 'display_name', blueprint_field.display_name,
+                                                'helperText', blueprint_field.helper_text, 'options',
+                                                blueprint_field.options))           as fields,
+                     json_build_object('email', u.email, 'info', u.additional_info) as owner
+              from blueprint
+                       left join blueprint_field on blueprint.id = blueprint_field.blueprint_id
+                       left join user_customer on blueprint.user_customer_id = user_customer.id
+                       left join "user" u on user_customer.user_email = u.email
+              where user_customer.id = $1
+              group by blueprint.id, u.email, blueprint.name
+              order by blueprint.name
+              limit $2 offset $3
+    `,
+		[user.selectedCustomer.userCustomerId, pagination.limit, pagination.skip]
 	)
 
 	return result.rows
@@ -280,21 +291,24 @@ export async function listBlueprintsForCustomer({
 }) {
 	const result = await dbClient.query(
 		`
-                select blueprint.id,
-                       blueprint.name,
-                       json_agg(json_build_object('id', blueprint_field.id, 'name', blueprint_field.name, 'type',
-                                                  blueprint_field.type, 'display_name', blueprint_field.display_name,
-                                                  'helperText', blueprint_field.helper_text, 'options', blueprint_field.options)) as fields,
-                       json_build_object('email', u.email, 'info', u.additional_info)         as owner
-                from blueprint
-                         left join blueprint_field on blueprint.id = blueprint_field.blueprint_id
-                         left join "user" u on blueprint.user_email = u.email
-                         left join customer c on u.customer_id = c.id
-                where c.id = $1
-                group by blueprint.id, u.email, c.id, blueprint.name
-                order by blueprint.name
-                limit $2 offset $3
-        `,
+              select blueprint.id,
+                     blueprint.name,
+                     json_agg(json_build_object('id', blueprint_field.id, 'name', blueprint_field.name, 'type',
+                                                blueprint_field.type, 'display_name', blueprint_field.display_name,
+                                                'helperText', blueprint_field.helper_text, 'options',
+                                                blueprint_field.options))           as fields,
+                     json_build_object('email', u.email, 'info', u.additional_info) as owner
+              from blueprint
+                       left join blueprint_field on blueprint.id = blueprint_field.blueprint_id
+                       left join user_customer on blueprint.user_customer_id = user_customer.id
+                       left join "user" u on user_customer.user_email = u.email
+                       left join user_customer uc on u.email = uc.user_email
+                       left join customer c on uc.customer_id = c.id
+              where c.id = $1
+              group by blueprint.id, u.email, c.id, blueprint.name
+              order by blueprint.name
+              limit $2 offset $3
+    `,
 		[customerId, pagination.limit, pagination.skip]
 	)
 
@@ -312,21 +326,24 @@ export async function searchBlueprintsForCustomer({
 }) {
 	const result = await dbClient.query(
 		`
-                select blueprint.id,
-                       blueprint.name,
-                       json_agg(json_build_object('id', blueprint_field.id, 'name', blueprint_field.name, 'type',
-                                                  blueprint_field.type, 'display_name', blueprint_field.display_name,
-                                                  'helperText', blueprint_field.helper_text, blueprint_field.options)) as fields,
-                       json_build_object('email', u.email, 'info', u.additional_info)         as owner
-                from blueprint
-                         left join blueprint_field on blueprint.id = blueprint_field.blueprint_id
-                         left join "user" u on blueprint.user_email = u.email
-                         left join customer c on u.customer_id = c.id
-                where c.id = $1
-                  and lower(blueprint.name) like $2
-                group by blueprint.id, u.email, c.id, blueprint.name
-                order by blueprint.name
-        `,
+              select blueprint.id,
+                     blueprint.name,
+                     json_agg(json_build_object('id', blueprint_field.id, 'name', blueprint_field.name, 'type',
+                                                blueprint_field.type, 'display_name', blueprint_field.display_name,
+                                                'helperText', blueprint_field.helper_text,
+                                                blueprint_field.options))           as fields,
+                     json_build_object('email', u.email, 'info', u.additional_info) as owner
+              from blueprint
+                       left join blueprint_field on blueprint.id = blueprint_field.blueprint_id
+                       left join user_customer on blueprint.user_customer_id = user_customer.id
+                       left join "user" u on user_customer.user_email = u.email
+                       left join user_customer uc on u.email = uc.user_email
+                       left join customer c on uc.customer_id = c.id
+              where c.id = $1
+                and lower(blueprint.name) like $2
+              group by blueprint.id, u.email, c.id, blueprint.name
+              order by blueprint.name
+    `,
 		[customerId, `${query.toLowerCase()}%`]
 	)
 
@@ -340,25 +357,27 @@ export async function searchBlueprintsForUser({
 }: {
 	dbClient: PoolClient
 	query: string
-	user: User
+	user: UserWithSelectedCustomer
 }) {
 	const result = await dbClient.query(
 		`
-                select blueprint.id,
-                       blueprint.name,
-                       json_agg(json_build_object('id', blueprint_field.id, 'name', blueprint_field.name, 'type',
-                                                  blueprint_field.type, 'display_name', blueprint_field.display_name,
-                                                  'helperText', blueprint_field.helper_text, 'options', blueprint_field.options)) as fields,
-                       json_build_object('email', u.email, 'info', u.additional_info)         as owner
-                from blueprint
-                         left join blueprint_field on blueprint.id = blueprint_field.blueprint_id
-                         left join "user" u on blueprint.user_email = u.email
-                where u.email = $1
-                  and lower(blueprint.name) like $2
-                group by blueprint.id, u.email, blueprint.name
-                order by blueprint.name
-        `,
-		[user.email, `${query.toLowerCase()}%`]
+              select blueprint.id,
+                     blueprint.name,
+                     json_agg(json_build_object('id', blueprint_field.id, 'name', blueprint_field.name, 'type',
+                                                blueprint_field.type, 'display_name', blueprint_field.display_name,
+                                                'helperText', blueprint_field.helper_text, 'options',
+                                                blueprint_field.options))           as fields,
+                     json_build_object('email', u.email, 'info', u.additional_info) as owner
+              from blueprint
+                       left join blueprint_field on blueprint.id = blueprint_field.blueprint_id
+                       left join user_customer on blueprint.user_customer_id = user_customer.id
+                       left join "user" u on user_customer.user_email = u.email
+              where user_customer.id = $1
+                and lower(blueprint.name) like $2
+              group by blueprint.id, u.email, blueprint.name
+              order by blueprint.name
+    `,
+		[user.selectedCustomer.userCustomerId, `${query.toLowerCase()}%`]
 	)
 
 	return result.rows
@@ -375,19 +394,19 @@ export async function deleteBlueprint({
 		await dbClient.query(`begin`)
 		await dbClient.query(
 			`
-                    delete
-                    from blueprint_blueprints_group
-                    where blueprint_id = $1::int
-            `,
+                delete
+                from blueprint_blueprints_group
+                where blueprint_id = $1::int
+      `,
 			[blueprintId]
 		)
 
 		await dbClient.query(
 			`
-                    delete
-                    from blueprint_field
-                    where blueprint_field.blueprint_id = $1::int
-            `,
+                delete
+                from blueprint_field
+                where blueprint_field.blueprint_id = $1::int
+      `,
 			[blueprintId]
 		)
 
@@ -395,10 +414,10 @@ export async function deleteBlueprint({
 
 		const resultBlueprint = await dbClient.query(
 			`
-                    delete
-                    from blueprint
-                    where blueprint.id = $1::int
-            `,
+                delete
+                from blueprint
+                where blueprint.id = $1::int
+      `,
 			[blueprintId]
 		)
 		await dbClient.query(`commit`)
@@ -418,13 +437,15 @@ export async function listTinyBlueprintsForCustomer({
 }): Promise<TinyBlueprint[]> {
 	const result = await dbClient.query(
 		`
-                select blueprint.id,
-                       blueprint.name
-                from blueprint
-                         left join "user" u on blueprint.user_email = u.email
-                where u.customer_id = $1
-                order by blueprint.name
-        `,
+              select blueprint.id,
+                     blueprint.name
+              from blueprint
+                       left join user_customer on blueprint.user_customer_id = user_customer.id
+                       left join "user" u on user_customer.user_email = u.email
+                       left join user_customer uc on u.email = uc.user_email
+              where uc.customer_id = $1
+              order by blueprint.name
+    `,
 		[customerId]
 	)
 	return result.rows
@@ -434,19 +455,20 @@ export async function listTinyBlueprintsForUser({
 	user,
 	dbClient,
 }: {
-	user: User
+	user: UserWithSelectedCustomer
 	dbClient: PoolClient
 }) {
 	const result = await dbClient.query(
 		`
-                select blueprint.id,
-                       blueprint.name
-                from blueprint
-                         left join "user" u on blueprint.user_email = u.email
-                where u.email = $1
-                order by blueprint.name
-        `,
-		[user.email]
+              select blueprint.id,
+                     blueprint.name
+              from blueprint
+                       left join user_customer on blueprint.user_customer_id = user_customer.id
+                       left join "user" u on user_customer.user_email = u.email
+              where user_customer.id = $1
+              order by blueprint.name
+    `,
+		[user.selectedCustomer.userCustomerId]
 	)
 
 	return result.rows

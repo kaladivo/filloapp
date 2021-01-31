@@ -7,7 +7,10 @@ import {FORBIDDEN, NOT_DELETED} from '../../../constants/errorCodes'
 import * as errorCodes from '../../../constants/errorCodes'
 import * as blueprintsRoutes from '../../../constants/api/blueprints'
 import validateBodyMiddleware from '../../utils/validateBodyMiddleware'
-import {withValidUserMiddleware, extractUser} from '../../utils/auth'
+import {
+	withValidUserWithCustomerMiddleware,
+	extractUserWithCustomer,
+} from '../../utils/auth'
 import {
 	extractDriveApiForServiceAccount,
 	withServiceAccountDriveApiMiddleware,
@@ -22,9 +25,9 @@ import {
 	getBlueprintById,
 	searchBlueprintsForCustomer,
 	searchBlueprintsForUser,
+	InputBlueprintField,
 	listTinyBlueprintsForCustomer,
 	listTinyBlueprintsForUser,
-	InputBlueprintField,
 } from './db'
 import {withDataDbMiddleware, extractDbClient} from '../../dbService'
 import withPaginationMiddleware, {
@@ -59,12 +62,12 @@ const createBlueprintSchema = new Schema({
 router.post(
 	blueprintsRoutes.createBlueprint,
 	validateBodyMiddleware(createBlueprintSchema),
-	withValidUserMiddleware,
+	withValidUserWithCustomerMiddleware,
 	withServiceAccountDriveApiMiddleware,
 	withDataDbMiddleware,
 	async (ctx, next) => {
 		const drive = extractDriveApiForServiceAccount(ctx)
-		const user = extractUser(ctx)
+		const user = extractUserWithCustomer(ctx)
 		const dbClient = extractDbClient(ctx)
 		const {fileId, fieldsOptions} = ctx.request.body
 
@@ -140,10 +143,10 @@ router.post(
 
 router.get(
 	blueprintsRoutes.searchBlueprint,
-	withValidUserMiddleware,
+	withValidUserWithCustomerMiddleware,
 	withDataDbMiddleware,
 	async (ctx, next) => {
-		const user = extractUser(ctx)
+		const user = extractUserWithCustomer(ctx)
 		const dbClient = extractDbClient(ctx)
 
 		const {query} = ctx.request.query
@@ -155,11 +158,11 @@ router.get(
 			})
 		}
 
-		if (user.customerAdmin) {
+		if (user.selectedCustomer.permissions.admin) {
 			ctx.body = await searchBlueprintsForCustomer({
 				dbClient,
 				query,
-				customerId: user.customer.id,
+				customerId: user.selectedCustomer.customerId,
 			})
 		} else {
 			ctx.body = await searchBlueprintsForUser({
@@ -174,10 +177,10 @@ router.get(
 
 router.get(
 	blueprintsRoutes.getBlueprint,
-	withValidUserMiddleware,
+	withValidUserWithCustomerMiddleware,
 	withDataDbMiddleware,
 	async (ctx, next) => {
-		const user = extractUser(ctx)
+		const user = extractUserWithCustomer(ctx)
 		const dbClient = extractDbClient(ctx)
 		const {blueprintId} = ctx.params
 
@@ -186,7 +189,7 @@ router.get(
 		const blueprint = await getBlueprintById({
 			blueprintId,
 			dbClient,
-			customerId: user.customer.id,
+			customerId: user.selectedCustomer.customerId,
 		})
 
 		if (!blueprint) {
@@ -196,7 +199,10 @@ router.get(
 			})
 		}
 
-		if (blueprint.owner.email !== user.email && !user.customerAdmin) {
+		if (
+			blueprint.owner.email !== user.email &&
+			!user.selectedCustomer.permissions.admin
+		) {
 			throw new SendableError('Insufficient permissions', {
 				status: httpStatus.FORBIDDEN,
 				errorCode: FORBIDDEN,
@@ -211,18 +217,18 @@ router.get(
 
 router.get(
 	blueprintsRoutes.listBlueprints,
-	withValidUserMiddleware,
+	withValidUserWithCustomerMiddleware,
 	withPaginationMiddleware,
 	withDataDbMiddleware,
 	async (ctx, next) => {
-		const user = extractUser(ctx)
+		const user = extractUserWithCustomer(ctx)
 		const dbClient = extractDbClient(ctx)
 		const pagination = extractPagination(ctx)
 
-		if (user.customerAdmin) {
+		if (user.selectedCustomer.permissions.admin) {
 			ctx.body = await listBlueprintsForCustomer({
 				dbClient,
-				customerId: user.customer.id,
+				customerId: user.selectedCustomer.customerId,
 				pagination,
 			})
 		} else {
@@ -238,16 +244,16 @@ router.get(
 
 router.get(
 	blueprintsRoutes.listBlueprintsTiny,
-	withValidUserMiddleware,
+	withValidUserWithCustomerMiddleware,
 	withDataDbMiddleware,
 	async (ctx, next) => {
-		const user = extractUser(ctx)
+		const user = extractUserWithCustomer(ctx)
 		const dbClient = extractDbClient(ctx)
 
-		if (user.customerAdmin) {
+		if (user.selectedCustomer.permissions.admin) {
 			ctx.body = await listTinyBlueprintsForCustomer({
 				dbClient,
-				customerId: user.customer.id,
+				customerId: user.selectedCustomer.customerId,
 			})
 		} else {
 			ctx.body = await listTinyBlueprintsForUser({
@@ -261,17 +267,17 @@ router.get(
 
 router.delete(
 	blueprintsRoutes.deleteBlueprint,
-	withValidUserMiddleware,
+	withValidUserWithCustomerMiddleware,
 	withDataDbMiddleware,
 	async (ctx, next) => {
-		const user = extractUser(ctx)
+		const user = extractUserWithCustomer(ctx)
 		const dbClient = extractDbClient(ctx)
 		const {blueprintId} = ctx.params
 
 		const blueprintToDelete = await getBlueprintById({
 			blueprintId,
 			dbClient,
-			customerId: user.customer.id,
+			customerId: user.selectedCustomer.customerId,
 		})
 
 		if (!blueprintToDelete) {
@@ -284,7 +290,10 @@ router.delete(
 			)
 		}
 
-		if (blueprintToDelete.owner.email !== user.email && !user.customerAdmin) {
+		if (
+			blueprintToDelete.owner.email !== user.email &&
+			!user.selectedCustomer.permissions.admin
+		) {
 			throw new SendableError('Insufficient permissions', {
 				status: httpStatus.FORBIDDEN,
 				errorCode: FORBIDDEN,

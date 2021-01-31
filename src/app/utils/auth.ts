@@ -1,5 +1,6 @@
 import {useState, useEffect, useCallback} from 'react'
 import sysend from 'sysend'
+import jwt from 'jsonwebtoken'
 import UserInfo from '../../constants/User'
 
 const KEY_BROADCAST_AUTH = 'AUTH_BROADCAST'
@@ -29,10 +30,17 @@ export function setUser(user: User) {
 	onUserChange(user)
 }
 
+export function parseTokenAndSetUser(accessToken: string) {
+	const userInfo = jwt.decode(accessToken) as UserInfo
+	const user = {accessToken, userInfo}
+
+	setUser(user)
+}
+
 /**
  * Will clean user from local storage. Will not perform any api call!
  */
-function cleanUser() {
+export function cleanUser() {
 	localStorage.removeItem(KEY_LOCAL_STORAGE)
 	onUserChange(null)
 }
