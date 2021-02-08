@@ -19,15 +19,12 @@ import {getBlueprintFields, getFileMetadata} from './utils'
 import SendableError from '../../utils/SendableError'
 import {
 	createOrUpdateBlueprint,
-	listBlueprintsForUser,
-	listBlueprintsForCustomer,
+	listBlueprints,
 	deleteBlueprint,
 	getBlueprintById,
-	searchBlueprintsForCustomer,
-	searchBlueprintsForUser,
+	searchBlueprints,
 	InputBlueprintField,
-	listTinyBlueprintsForCustomer,
-	listTinyBlueprintsForUser,
+	listTinyBlueprints,
 } from './db'
 import {withDataDbMiddleware, extractDbClient} from '../../dbService'
 import withPaginationMiddleware, {
@@ -158,19 +155,12 @@ router.get(
 			})
 		}
 
-		if (user.selectedCustomer.permissions.admin) {
-			ctx.body = await searchBlueprintsForCustomer({
-				dbClient,
-				query,
-				customerId: user.selectedCustomer.customerId,
-			})
-		} else {
-			ctx.body = await searchBlueprintsForUser({
-				dbClient,
-				query,
-				user,
-			})
-		}
+		ctx.body = await searchBlueprints({
+			dbClient,
+			query,
+			user,
+			customerWide: user.selectedCustomer.permissions.canSeeAllBlueprints,
+		})
 		await next()
 	}
 )
@@ -183,8 +173,6 @@ router.get(
 		const user = extractUserWithCustomer(ctx)
 		const dbClient = extractDbClient(ctx)
 		const {blueprintId} = ctx.params
-
-		console.log('userInfo', user)
 
 		const blueprint = await getBlueprintById({
 			blueprintId,
@@ -201,7 +189,7 @@ router.get(
 
 		if (
 			blueprint.owner.email !== user.email &&
-			!user.selectedCustomer.permissions.admin
+			!user.selectedCustomer.permissions.canModifyAllBlueprints
 		) {
 			throw new SendableError('Insufficient permissions', {
 				status: httpStatus.FORBIDDEN,
@@ -225,19 +213,12 @@ router.get(
 		const dbClient = extractDbClient(ctx)
 		const pagination = extractPagination(ctx)
 
-		if (user.selectedCustomer.permissions.admin) {
-			ctx.body = await listBlueprintsForCustomer({
-				dbClient,
-				customerId: user.selectedCustomer.customerId,
-				pagination,
-			})
-		} else {
-			ctx.body = await listBlueprintsForUser({
-				dbClient,
-				user,
-				pagination,
-			})
-		}
+		ctx.body = await listBlueprints({
+			dbClient,
+			user,
+			pagination,
+			customerWide: user.selectedCustomer.permissions.canSeeAllBlueprints,
+		})
 		await next()
 	}
 )
@@ -250,17 +231,11 @@ router.get(
 		const user = extractUserWithCustomer(ctx)
 		const dbClient = extractDbClient(ctx)
 
-		if (user.selectedCustomer.permissions.admin) {
-			ctx.body = await listTinyBlueprintsForCustomer({
-				dbClient,
-				customerId: user.selectedCustomer.customerId,
-			})
-		} else {
-			ctx.body = await listTinyBlueprintsForUser({
-				dbClient,
-				user,
-			})
-		}
+		ctx.body = await listTinyBlueprints({
+			dbClient,
+			user,
+			customerWide: user.selectedCustomer.permissions.canSeeAllBlueprints,
+		})
 		await next()
 	}
 )
@@ -292,7 +267,7 @@ router.delete(
 
 		if (
 			blueprintToDelete.owner.email !== user.email &&
-			!user.selectedCustomer.permissions.admin
+			!user.selectedCustomer.permissions.canModifyAllBlueprints
 		) {
 			throw new SendableError('Insufficient permissions', {
 				status: httpStatus.FORBIDDEN,

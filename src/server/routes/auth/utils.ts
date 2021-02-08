@@ -12,6 +12,33 @@ const CLIENT_ID = String(process.env.GOOGLEAPIS_CLIENT_ID)
 const CLIENT_SECRET = String(process.env.GOOGLEAPIS_CLIENT_SECRET)
 const CALLBACK_URI = String(process.env.GOOGLEAPIS_CALLBACK_URI)
 
+export async function generateCorrectPermissions(permissions: any) {
+	const generated = {...permissions}
+	if (permissions.canModifyAllBlueprints) {
+		generated.canSeeAllBlueprints = true
+	}
+
+	if (permissions.canSeeAllBlueprintsGroups) {
+		generated.canSeeAllBlueprints = true
+		generated.canModifyAllBlueprints = true
+	}
+
+	if (permissions.canModifyAllBlueprintsGroups) {
+		generated.canSeeAllBlueprints = true
+		generated.canModifyAllBlueprints = true
+		generated.canSeeAllBlueprintsGroups = true
+	}
+
+	if (permissions.canSeeAllBlueprintsGroupsSubmits) {
+		generated.canSeeAllBlueprints = true
+		generated.canModifyAllBlueprints = true
+		generated.canModifyAllBlueprintsGroups = true
+		generated.canSeeAllBlueprintsGroups = true
+	}
+
+	return generated
+}
+
 export async function accessTokenToUser(googleAccessToken: string) {
 	try {
 		const oauth2Client = new google.auth.OAuth2(

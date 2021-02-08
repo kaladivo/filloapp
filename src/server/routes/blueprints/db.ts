@@ -247,14 +247,16 @@ export async function createOrUpdateBlueprint({
 	return {blueprint, performedAction}
 }
 
-export async function listBlueprintsForUser({
+export async function listBlueprints({
 	pagination,
 	dbClient,
 	user,
+	customerWide,
 }: {
 	pagination: PaginationPosition
 	dbClient: PoolClient
 	user: UserWithSelectedCustomer
+	customerWide: boolean
 }) {
 	const result = await dbClient.query(
 		`
@@ -269,60 +271,35 @@ export async function listBlueprintsForUser({
                        left join blueprint_field on blueprint.id = blueprint_field.blueprint_id
                        left join user_customer on blueprint.user_customer_id = user_customer.id
                        left join "user" u on user_customer.user_email = u.email
-              where user_customer.id = $1
+              where ${
+								customerWide ? 'user_customer.customer_id' : 'user_customer.id'
+							} = $1
               group by blueprint.id, u.email, blueprint.name
               order by blueprint.name
               limit $2 offset $3
     `,
-		[user.selectedCustomer.userCustomerId, pagination.limit, pagination.skip]
+		[
+			customerWide
+				? user.selectedCustomer.customerId
+				: user.selectedCustomer.userCustomerId,
+			pagination.limit,
+			pagination.skip,
+		]
 	)
 
 	return result.rows
 }
 
-export async function listBlueprintsForCustomer({
-	dbClient,
-	pagination,
-	customerId,
-}: {
-	pagination: PaginationPosition
-	dbClient: PoolClient
-	customerId: string
-}) {
-	const result = await dbClient.query(
-		`
-              select blueprint.id,
-                     blueprint.name,
-                     json_agg(json_build_object('id', blueprint_field.id, 'name', blueprint_field.name, 'type',
-                                                blueprint_field.type, 'display_name', blueprint_field.display_name,
-                                                'helperText', blueprint_field.helper_text, 'options',
-                                                blueprint_field.options))           as fields,
-                     json_build_object('email', u.email, 'info', u.additional_info) as owner
-              from blueprint
-                       left join blueprint_field on blueprint.id = blueprint_field.blueprint_id
-                       left join user_customer on blueprint.user_customer_id = user_customer.id
-                       left join "user" u on user_customer.user_email = u.email
-                       left join user_customer uc on u.email = uc.user_email
-                       left join customer c on uc.customer_id = c.id
-              where c.id = $1
-              group by blueprint.id, u.email, c.id, blueprint.name
-              order by blueprint.name
-              limit $2 offset $3
-    `,
-		[customerId, pagination.limit, pagination.skip]
-	)
-
-	return result.rows
-}
-
-export async function searchBlueprintsForCustomer({
+export async function searchBlueprints({
 	dbClient,
 	query,
-	customerId,
+	user,
+	customerWide,
 }: {
 	dbClient: PoolClient
 	query: string
-	customerId: string
+	user: UserWithSelectedCustomer
+	customerWide: boolean
 }) {
 	const result = await dbClient.query(
 		`
@@ -338,46 +315,19 @@ export async function searchBlueprintsForCustomer({
                        left join user_customer on blueprint.user_customer_id = user_customer.id
                        left join "user" u on user_customer.user_email = u.email
                        left join user_customer uc on u.email = uc.user_email
-                       left join customer c on uc.customer_id = c.id
-              where c.id = $1
-                and lower(blueprint.name) like $2
-              group by blueprint.id, u.email, c.id, blueprint.name
-              order by blueprint.name
-    `,
-		[customerId, `${query.toLowerCase()}%`]
-	)
-
-	return result.rows
-}
-
-export async function searchBlueprintsForUser({
-	dbClient,
-	query,
-	user,
-}: {
-	dbClient: PoolClient
-	query: string
-	user: UserWithSelectedCustomer
-}) {
-	const result = await dbClient.query(
-		`
-              select blueprint.id,
-                     blueprint.name,
-                     json_agg(json_build_object('id', blueprint_field.id, 'name', blueprint_field.name, 'type',
-                                                blueprint_field.type, 'display_name', blueprint_field.display_name,
-                                                'helperText', blueprint_field.helper_text, 'options',
-                                                blueprint_field.options))           as fields,
-                     json_build_object('email', u.email, 'info', u.additional_info) as owner
-              from blueprint
-                       left join blueprint_field on blueprint.id = blueprint_field.blueprint_id
-                       left join user_customer on blueprint.user_customer_id = user_customer.id
-                       left join "user" u on user_customer.user_email = u.email
-              where user_customer.id = $1
+              where ${
+								customerWide ? 'user_customer.customer_id' : 'user_customer.id'
+							} = $1
                 and lower(blueprint.name) like $2
               group by blueprint.id, u.email, blueprint.name
               order by blueprint.name
     `,
-		[user.selectedCustomer.userCustomerId, `${query.toLowerCase()}%`]
+		[
+			customerWide
+				? user.selectedCustomer.customerId
+				: user.selectedCustomer.userCustomerId,
+			`${query.toLowerCase()}%`,
+		]
 	)
 
 	return result.rows
@@ -428,11 +378,13 @@ export async function deleteBlueprint({
 	}
 }
 
-export async function listTinyBlueprintsForCustomer({
-	customerId,
+export async function listTinyBlueprints({
+	user,
+	customerWide,
 	dbClient,
 }: {
-	customerId: string
+	user: UserWithSelectedCustomer
+	customerWide: UserWithSelectedCustomer
 	dbClient: PoolClient
 }): Promise<TinyBlueprint[]> {
 	const result = await dbClient.query(
@@ -443,33 +395,14 @@ export async function listTinyBlueprintsForCustomer({
                        left join user_customer on blueprint.user_customer_id = user_customer.id
                        left join "user" u on user_customer.user_email = u.email
                        left join user_customer uc on u.email = uc.user_email
-              where uc.customer_id = $1
+              where ${customerWide ? 'uc.customer_id' : 'uc.id'} = $1
               order by blueprint.name
     `,
-		[customerId]
+		[
+			customerWide
+				? user.selectedCustomer.customerId
+				: user.selectedCustomer.userCustomerId,
+		]
 	)
-	return result.rows
-}
-
-export async function listTinyBlueprintsForUser({
-	user,
-	dbClient,
-}: {
-	user: UserWithSelectedCustomer
-	dbClient: PoolClient
-}) {
-	const result = await dbClient.query(
-		`
-              select blueprint.id,
-                     blueprint.name
-              from blueprint
-                       left join user_customer on blueprint.user_customer_id = user_customer.id
-                       left join "user" u on user_customer.user_email = u.email
-              where user_customer.id = $1
-              order by blueprint.name
-    `,
-		[user.selectedCustomer.userCustomerId]
-	)
-
 	return result.rows
 }

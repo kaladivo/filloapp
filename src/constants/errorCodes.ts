@@ -34,6 +34,7 @@ export const BAD_PAGINATION: ErrorCode = 'bad_pagination'
 export const USER_DOES_NOT_EXIST: ErrorCode = 'USER_DOES_NOT_EXIST'
 export const UNABLE_TO_GET_GOOGLE_FILE: ErrorCode = 'unable_to_get_google_file'
 export const ERROR_GENERATING_DOCUMENT: ErrorCode = 'error_generating_documents'
+// TODO better FE message
 export const UNABLE_TO_ACCESS_DRIVE_FILE: ErrorCode =
 	'unable_to_access_drive_file'
 export const UNABLE_TO_ACCESS_OUTPUT_FOLDER: ErrorCode =

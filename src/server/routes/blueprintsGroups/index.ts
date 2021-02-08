@@ -17,16 +17,13 @@ import {
 	createGroup,
 	getGroup,
 	checkIfUserHasAccessToBlueprints,
-	listBlueprintsGroupsForUser,
-	listBlueprintsGroupsForCustomer,
-	searchUsersBlueprintsGroups,
+	listBlueprintsGroups,
 	deleteBlueprintGroup,
-	searchCustomersBlueprintsGroups,
+	searchBlueprintsGroups,
 	insertSubmit,
 	getSubmit,
-	listSubmitsForCustomer,
-	listSubmitsForUser,
-	modifyBlueprint,
+	listSubmits,
+	modifyBlueprintGroup,
 	nextIdFieldValue,
 	prepareIncFieldTypeForSubmit,
 } from './db'
@@ -91,7 +88,7 @@ router.get(
 
 		if (
 			group.owner.email !== user.email &&
-			!user.selectedCustomer.permissions.admin
+			!user.selectedCustomer.permissions.canSeeAllBlueprintsGroups
 		) {
 			throw new SendableError('Insufficient permissions', {
 				status: httpStatus.FORBIDDEN,
@@ -99,22 +96,13 @@ router.get(
 			})
 		}
 
-		let submits = []
-		if (user.selectedCustomer.permissions.admin) {
-			submits = await listSubmitsForCustomer({
-				blueprintsGroupId: groupId,
-				customerId: user.selectedCustomer.customerId,
-				dbClient,
-			})
-		} else {
-			submits = await listSubmitsForUser({
-				blueprintsGroupId: groupId,
-				customerId: user.selectedCustomer.customerId,
-				dbClient,
-				user,
-			})
-		}
-
+		const submits = await listSubmits({
+			blueprintsGroupId: groupId,
+			user,
+			customerWide:
+				user.selectedCustomer.permissions.canSeeAllBlueprintsGroupsSubmits,
+			dbClient,
+		})
 		const enhancedSubmits = await Promise.all(
 			submits.map(async (submit: any) => {
 				// eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -222,7 +210,7 @@ router.put(
 
 		if (
 			group.owner.email !== user.email &&
-			!user.selectedCustomer.permissions.admin
+			!user.selectedCustomer.permissions.canModifyAllBlueprintsGroups
 		) {
 			throw new SendableError('Insufficient permissions', {
 				status: httpStatus.FORBIDDEN,
@@ -230,23 +218,15 @@ router.put(
 			})
 		}
 
-		let submits = []
-		if (user.selectedCustomer.permissions.admin) {
-			submits = await listSubmitsForCustomer({
-				blueprintsGroupId: groupId,
-				customerId: user.selectedCustomer.customerId,
-				dbClient,
-			})
-		} else {
-			submits = await listSubmitsForUser({
-				blueprintsGroupId: groupId,
-				customerId: user.selectedCustomer.customerId,
-				dbClient,
-				user,
-			})
-		}
+		const submits = await listSubmits({
+			blueprintsGroupId: groupId,
+			user,
+			customerWide:
+				user.selectedCustomer.permissions.canSeeAllBlueprintsGroupsSubmits,
+			dbClient,
+		})
 
-		await modifyBlueprint({
+		await modifyBlueprintGroup({
 			dbClient,
 			blueprintsGroupId: groupId,
 			blueprintsIds,
@@ -283,21 +263,13 @@ router.get(
 			})
 		}
 
-		if (user.selectedCustomer.permissions.admin) {
-			ctx.body = await searchCustomersBlueprintsGroups({
-				customerId: user.selectedCustomer.customerId,
-				pagination,
-				query,
-				dbClient,
-			})
-		} else {
-			ctx.body = await searchUsersBlueprintsGroups({
-				user,
-				pagination,
-				query,
-				dbClient,
-			})
-		}
+		ctx.body = await searchBlueprintsGroups({
+			user,
+			pagination,
+			query,
+			customerWide: user.selectedCustomer.permissions.canSeeAllBlueprintsGroups,
+			dbClient,
+		})
 
 		await next()
 	}
@@ -313,15 +285,12 @@ router.get(
 		const dbClient = extractDbClient(ctx)
 		const pagination = extractPagination(ctx)
 
-		if (user.selectedCustomer.permissions.admin) {
-			ctx.body = await listBlueprintsGroupsForCustomer({
-				customerId: user.selectedCustomer.customerId,
-				pagination,
-				dbClient,
-			})
-		} else {
-			ctx.body = await listBlueprintsGroupsForUser({user, pagination, dbClient})
-		}
+		ctx.body = await listBlueprintsGroups({
+			user,
+			pagination,
+			customerWide: user.selectedCustomer.permissions.canSeeAllBlueprintsGroups,
+			dbClient,
+		})
 
 		await next()
 	}
@@ -350,7 +319,7 @@ router.delete(
 
 		if (
 			group.owner.email !== user.email &&
-			!user.selectedCustomer.permissions.admin
+			!user.selectedCustomer.permissions.canModifyAllBlueprintsGroups
 		) {
 			throw new SendableError('Insufficient permissions', {
 				status: httpStatus.FORBIDDEN,
@@ -449,7 +418,7 @@ router.post(
 
 		// Can user access group?
 		if (
-			!user.selectedCustomer.permissions.admin &&
+			!user.selectedCustomer.permissions.canSeeAllBlueprintsGroups &&
 			blueprintGroup.owner.email !== user.email
 		) {
 			throw new SendableError('Can not access to blueprint group', {
@@ -483,7 +452,7 @@ router.post(
 
 		if (blueprintsWithoutPermissions.length > 0) {
 			throw new SendableError(
-				'You dont have permissions to access one or more blueprints',
+				'Our service account does not have permissions to access one or more blueprints',
 				{
 					errorCode: errorCodes.UNABLE_TO_ACCESS_DRIVE_FILE,
 					status: 400,

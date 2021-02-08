@@ -9,7 +9,11 @@ import {
 import {extractDbClient, withDataDbMiddleware} from '../../dbService'
 import {extractUser, withValidUserMiddleware} from '../../utils/auth'
 import validateBodyMiddleware from '../../utils/validateBodyMiddleware'
-import {accessTokenToUser, createJwtForUser} from './utils'
+import {
+	accessTokenToUser,
+	createJwtForUser,
+	generateCorrectPermissions,
+} from './utils'
 import SendableError from '../../utils/SendableError'
 import {NO_CUSTOMER_FOR_EMAIL} from '../../../constants/errorCodes'
 
@@ -98,6 +102,8 @@ router.post(
 			customerId: ctx.request.body.customerId,
 			dbClient,
 		})
+
+		customer.permissions = generateCorrectPermissions(customer.permissions)
 
 		ctx.body = {
 			newBearer: await createJwtForUser({...user, selectedCustomer: customer}),
