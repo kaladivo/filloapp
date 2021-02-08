@@ -8,7 +8,7 @@ function RetryableError({
 }: {
 	error: Error
 	text?: string
-	onTryAgain: () => void
+	onTryAgain?: () => void
 }) {
 	console.info('Rendering error', error)
 	return (
@@ -23,7 +23,7 @@ function RetryableError({
 			<Typography color="error">
 				{text} {error.message}
 			</Typography>
-			<Button onClick={onTryAgain}>Try again</Button>
+			{onTryAgain && <Button onClick={onTryAgain}>Try again</Button>}
 		</div>
 	)
 }

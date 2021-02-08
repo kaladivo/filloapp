@@ -20,11 +20,17 @@ export default {
 		'nothingSelected': 'No files selected. Picker was closed.',
 	},
 	'CustomerSelect': {
-		'title': 'Select customer',
-		'loading': 'Loading customers list',
+		'title': 'Select team',
+		'text': 'Click on team name to select it',
+		'loading': 'Loading teams list',
+		'selecting': 'Selecting team',
+		'errorSelecting':
+			'Error while selecting team. Please try selecting it again.',
 	},
 	'TopBar': {
 		'logout': 'Logout',
+		'switchCustomer': 'Switch team',
+		'loggedAs': '{{email}}',
 	},
 	'sections': {
 		'blueprintsGroups': 'Documents',

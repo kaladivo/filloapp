@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useState} from 'react'
+import React, {useCallback, useContext, useEffect, useState} from 'react'
 import {useUser} from '../../utils/auth'
 import CustomerSelect from './components/CustomerSelect'
 
@@ -11,7 +11,7 @@ const customerSelectorContext = React.createContext<{
 function CustomerSelectorProvider({children}: {children: React.ReactNode}) {
 	const user = useUser()
 	const [showSelector, setShowSelector] = useState(
-		!user?.userInfo.selectedCustomer
+		!user?.userInfo?.selectedCustomer
 	)
 
 	const triggerSelect = useCallback(() => {
@@ -34,3 +34,7 @@ function CustomerSelectorProvider({children}: {children: React.ReactNode}) {
 }
 
 export default CustomerSelectorProvider
+
+export function useCustomerSelector() {
+	return useContext(customerSelectorContext)
+}
