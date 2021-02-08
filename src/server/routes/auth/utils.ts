@@ -36,6 +36,14 @@ export async function generateCorrectPermissions(permissions: any) {
 		generated.canSeeAllBlueprintsGroups = true
 	}
 
+	if (permissions.admin) {
+		generated.canSeeAllBlueprintsGroupsSubmits = true
+		generated.canSeeAllBlueprints = true
+		generated.canModifyAllBlueprints = true
+		generated.canModifyAllBlueprintsGroups = true
+		generated.canSeeAllBlueprintsGroups = true
+	}
+
 	return generated
 }
 
