@@ -2,7 +2,7 @@
 Small but useful documentation
 
 
-## user Permissions
+## User permissions
 
 Lives in `user_customer.permissions` table.   
 User automatically gets all permissions above the permission he has set to true.
