@@ -53,10 +53,18 @@ router.post(
 			dbClient,
 		})
 
+		let selectedCustomer
+		if (customers.length === 1) {
+			;[selectedCustomer] = customers
+			selectedCustomer.permissions = generateCorrectPermissions(
+				selectedCustomer.permissions
+			)
+		}
+
 		ctx.body = {
 			bearer: await createJwtForUser({
 				...user,
-				selectedCustomer: customers.length === 1 ? customers[0] : undefined,
+				selectedCustomer,
 			}),
 		}
 		await next()
