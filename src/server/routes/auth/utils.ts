@@ -14,26 +14,9 @@ const CALLBACK_URI = String(process.env.GOOGLEAPIS_CALLBACK_URI)
 
 export function generateCorrectPermissions(permissions: any) {
 	const generated = {...permissions}
-	if (permissions.canModifyAllBlueprints) {
-		generated.canSeeAllBlueprints = true
-	}
 
-	if (permissions.canSeeAllBlueprintsGroups) {
+	if (permissions.user) {
 		generated.canSeeAllBlueprints = true
-		generated.canModifyAllBlueprints = true
-	}
-
-	if (permissions.canModifyAllBlueprintsGroups) {
-		generated.canSeeAllBlueprints = true
-		generated.canModifyAllBlueprints = true
-		generated.canSeeAllBlueprintsGroups = true
-	}
-
-	if (permissions.canSeeAllBlueprintsGroupsSubmits) {
-		generated.canSeeAllBlueprints = true
-		generated.canModifyAllBlueprints = true
-		generated.canModifyAllBlueprintsGroups = true
-		generated.canSeeAllBlueprintsGroups = true
 	}
 
 	if (permissions.admin) {
