@@ -441,9 +441,8 @@ export async function listSubmits({
                        left join generated_document gd on bgs.id = gd.blueprints_group_submit_id
                        left join user_customer uc on bgs.submitted_by_user_customer_id = uc.id
                        left join "user" u on uc.user_email = u.email
-              where uc.customer_id = $1
+            	where ${customerWide ? 'uc.customer_id' : 'uc.id'} = $1
                 and b.id = $2::int 
-                ${!customerWide && 'and u.email = $3'}
               group by bgs.id, u.email, bgs.submitted_at
               order by bgs.submitted_at desc
     `,
@@ -452,7 +451,6 @@ export async function listSubmits({
 				? user.selectedCustomer.customerId
 				: user.selectedCustomer.userCustomerId,
 			blueprintsGroupId,
-			user.email,
 		]
 	)
 
