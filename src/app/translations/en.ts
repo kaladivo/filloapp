@@ -114,6 +114,7 @@ export default {
 			'about': 'About',
 			'faq': 'FAQ',
 			'getStarted': 'Get started',
+			'enterApp': 'Enter app',
 		},
 		'common': {
 			'createAccount': 'Create an account',

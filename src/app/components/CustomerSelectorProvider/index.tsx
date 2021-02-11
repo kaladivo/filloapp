@@ -19,7 +19,7 @@ function CustomerSelectorProvider({children}: {children: React.ReactNode}) {
 	}, [setShowSelector])
 
 	useEffect(() => {
-		if (!user?.userInfo.selectedCustomer) setShowSelector(true)
+		if (!user?.userInfo?.selectedCustomer) setShowSelector(true)
 	}, [user, setShowSelector])
 
 	return (

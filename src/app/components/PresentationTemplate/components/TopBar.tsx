@@ -10,6 +10,7 @@ import {
 } from '@material-ui/core'
 import {Link} from 'react-router-dom'
 import {useTranslation} from 'react-i18next'
+import {useUser} from '../../../utils/auth'
 
 const logo = require('../../../images/logo.png')
 
@@ -61,6 +62,7 @@ function TopBar({className}: {className?: string}) {
 	const {t} = useTranslation()
 	const classes = useStyles()
 	const navigationItems = useNavigationItems()
+	const user = useUser()
 
 	return (
 		<AppBar className={className} position="fixed">
@@ -93,9 +95,15 @@ function TopBar({className}: {className?: string}) {
 				</Hidden>
 				<div className={classes.filler} />
 				<div>
-					<Button component={Link} to="/login" color="inherit">
-						{t('common.signIn')}
-					</Button>
+					{user ? (
+						<Button component={Link} to="/" color="inherit">
+							{t('Presentation.menu.enterApp')}
+						</Button>
+					) : (
+						<Button component={Link} to="/login" color="inherit">
+							{t('common.signIn')}
+						</Button>
+					)}
 				</div>
 			</Toolbar>
 		</AppBar>

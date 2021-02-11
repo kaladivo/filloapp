@@ -2,7 +2,8 @@ import {useEffect, useCallback} from 'react'
 import {useSnackbar} from 'notistack'
 import {useTranslation} from 'react-i18next'
 import {cleanUser, getUser, User} from '../utils/auth'
-import {useApiService, ApiService} from '../api'
+import {ApiService} from '../api'
+import {useApiService} from '../api/apiContext'
 
 async function checkUser(
 	user: User | null,

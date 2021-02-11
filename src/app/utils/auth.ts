@@ -11,7 +11,46 @@ export interface User {
 	userInfo: UserInfo
 }
 
+class UserStore {
+	_user: User | null
+
+	constructor() {
+		try {
+			const json = localStorage.getItem(KEY_LOCAL_STORAGE)
+			if (!json) this._user = null
+			else this._user = JSON.parse(json)
+		} catch (e) {
+			console.error('Unable to parse user json in local storage', e)
+			this._user = null
+		}
+	}
+
+	storeUser = (user: User | null) => {
+		if (this._user)
+			localStorage.setItem(KEY_LOCAL_STORAGE, JSON.stringify(user))
+		else localStorage.removeItem(KEY_LOCAL_STORAGE)
+		this._user = user
+	}
+
+	setUser = (user: User | null) => {
+		this._user = user
+	}
+
+	getUser = () => this._user
+}
+
+const userStore = new UserStore()
+
 const onChangeListeners: Array<(user: User | null) => void> = []
+
+sysend.on(KEY_BROADCAST_AUTH, (user: User | null) => {
+	console.log('Receiving user change', user)
+	userStore.setUser(user)
+
+	onChangeListeners.forEach((callback) => {
+		callback(user)
+	})
+})
 
 function onUserChange(newUser: User | null) {
 	sysend.broadcast(KEY_BROADCAST_AUTH, newUser)
@@ -25,8 +64,7 @@ function onUserChange(newUser: User | null) {
  * @param user new user
  */
 export function setUser(user: User) {
-	console.log('setting user', user)
-	localStorage.setItem(KEY_LOCAL_STORAGE, JSON.stringify(user))
+	userStore.storeUser(user)
 	onUserChange(user)
 }
 
@@ -41,7 +79,7 @@ export function parseTokenAndSetUser(accessToken: string) {
  * Will clean user from local storage. Will not perform any api call!
  */
 export function cleanUser() {
-	localStorage.removeItem(KEY_LOCAL_STORAGE)
+	userStore.storeUser(null)
 	onUserChange(null)
 }
 
@@ -49,15 +87,7 @@ export function cleanUser() {
  * Gets the current user. Prefer using the useUser hook when possible
  */
 export function getUser(): User | null {
-	try {
-		const jsonString = localStorage.getItem(KEY_LOCAL_STORAGE)
-		if (!jsonString) return null
-		return JSON.parse(jsonString)
-	} catch (e) {
-		console.info('Unable to parse user. Logging out.', e)
-		localStorage.removeItem(KEY_LOCAL_STORAGE)
-		return null
-	}
+	return userStore.getUser()
 }
 
 /**
@@ -74,26 +104,17 @@ export function listenForUserChange(
 	}
 }
 
-sysend.on(KEY_BROADCAST_AUTH, (user: User | null) => {
-	if (user) localStorage.setItem(KEY_LOCAL_STORAGE, JSON.stringify(user))
-	else localStorage.removeItem(KEY_LOCAL_STORAGE)
-
-	onChangeListeners.forEach((callback) => {
-		callback(user)
-	})
-})
-
 /**
  * Hook for getting current user
  */
 export function useUser(): User | null {
-	const [currentUser, setCurrentUser] = useState(getUser())
+	const [watchedUser, setWatchedUser] = useState(getUser())
 
 	useEffect(() => {
-		return listenForUserChange(setCurrentUser)
+		return listenForUserChange(setWatchedUser)
 	}, [])
 
-	return currentUser
+	return watchedUser
 }
 
 export function useLogout(): () => void {

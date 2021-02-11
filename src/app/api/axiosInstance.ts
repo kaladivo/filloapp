@@ -3,12 +3,6 @@ import axios from 'axios'
 const baseUrl: string = process.env.API_URL || '/api'
 const timeout: number = Number(process.env.API_TIMEOUT || 120000)
 
-const apiService = axios.create({
-	baseURL: `${baseUrl}`,
-	timeout,
-	headers: {'Content-Type': 'application/json'},
-})
-
 function authAxiosInstanceFactory({
 	getBearer,
 	onBearerRefused,
@@ -51,5 +45,4 @@ function authAxiosInstanceFactory({
 	return authApiService
 }
 
-export default apiService
 export {authAxiosInstanceFactory}
