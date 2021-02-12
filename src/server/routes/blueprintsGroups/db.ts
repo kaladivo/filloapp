@@ -150,14 +150,16 @@ export async function checkIfUserHasAccessToBlueprints({
 			`
                 select *
                 from blueprint
-                where blueprint.user_customer_id = $1
+                left join user_customer uc on blueprint.user_customer_id = uc.id
+                where uc.customer_id = $1
                   and blueprint.id = any ($2::int[])
       `,
-			[user.selectedCustomer.userCustomerId, blueprintsIds]
+			[user.selectedCustomer.customerId, blueprintsIds]
 		)
 
 		return result.rowCount === blueprintsIds.length
 	}
+
 	const result = await dbClient.query(
 		`
               select *
