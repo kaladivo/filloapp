@@ -26,8 +26,7 @@ class UserStore {
 	}
 
 	storeUser = (user: User | null) => {
-		if (this._user)
-			localStorage.setItem(KEY_LOCAL_STORAGE, JSON.stringify(user))
+		if (user) localStorage.setItem(KEY_LOCAL_STORAGE, JSON.stringify(user))
 		else localStorage.removeItem(KEY_LOCAL_STORAGE)
 		this._user = user
 	}
