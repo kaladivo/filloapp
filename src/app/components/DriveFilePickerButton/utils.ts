@@ -17,14 +17,13 @@ export function useShowFilePicker() {
 		async ({
 			title,
 			pickerMode,
-			userToken,
 			multiple,
 		}: {
 			title: string
-			userToken: string
 			pickerMode: PickerMode
 			multiple: boolean
 		}): Promise<PickedDocument[] | null> => {
+			// await loadPicker()
 			return new Promise((resolve, reject) => {
 				let builtPicker: any = null
 				// @ts-ignore
@@ -52,9 +51,14 @@ export function useShowFilePicker() {
 					if (builtPicker) builtPicker.dispose()
 				}
 
-				console.log('Token', {userToken})
+				// @ts-ignore
+				const accessToken = window.gapi.auth2
+					.getAuthInstance()
+					.currentUser.get()
+					.getAuthResponse().access_token
+
 				const builder = new picker.PickerBuilder()
-					.setOAuthToken(userToken)
+					.setOAuthToken(accessToken)
 					.setTitle(title)
 					.setDeveloperKey(googlePickerDeveloperKey)
 					.enableFeature(picker.Feature.MINE_ONLY)
