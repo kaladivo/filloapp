@@ -63,7 +63,7 @@ async function getUser({
                        left join user_customer uc on u.email = uc.user_email
                        left join customer c on uc.customer_id = c.id
               where u.email = $1
-              group by u.email, u.google_access_token, u.customer_admin, u.additional_info
+              group by u.email, u.google_access_token, u.additional_info
     `,
 		[email]
 	)
