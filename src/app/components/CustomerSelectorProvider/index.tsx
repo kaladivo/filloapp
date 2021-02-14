@@ -1,6 +1,6 @@
 import React, {useCallback, useContext, useEffect, useState} from 'react'
-import {useUser} from '../../utils/auth'
 import CustomerSelect from './components/CustomerSelect'
+import {useUser} from '../AuthProvider'
 
 const customerSelectorContext = React.createContext<{
 	triggerSelect: () => void

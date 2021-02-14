@@ -31,10 +31,15 @@ export async function checkGoogleAccessToken(googleAccessToken: string) {
 	}
 }
 
-export async function withValidUserMiddleware(ctx: Context, next: Next) {
+export async function extractAndValidateBearerFromHeader({
+	authorizationHeader,
+	validateAccessToken,
+}: {
+	authorizationHeader: string
+	validateAccessToken: boolean
+}): Promise<User> {
 	try {
-		const {authorization} = ctx.request.headers
-		const bearer = authorization.replace('Bearer ', '')
+		const bearer = authorizationHeader.replace('Bearer ', '')
 		const {
 			email,
 			googleAccessToken,
@@ -46,24 +51,25 @@ export async function withValidUserMiddleware(ctx: Context, next: Next) {
 			!email ||
 			!googleAccessToken ||
 			!additionalInfo ||
-			!(await checkGoogleAccessToken(googleAccessToken))
+			(validateAccessToken &&
+				!(await checkGoogleAccessToken(googleAccessToken)))
 		) {
-			throw new Error('Unauthorized')
+			throw new Error('Bad bearer')
 		}
-
-		const user: User = {
-			email,
-			googleAccessToken,
-			additionalInfo,
-			selectedCustomer,
-		}
-		ctx.state.user = user
+		return {email, googleAccessToken, additionalInfo, selectedCustomer}
 	} catch (e) {
 		throw new SendableError('Unauthorized', {
 			status: 401,
 			errorCode: UNAUTHORIZED,
 		})
 	}
+}
+
+export async function withValidUserMiddleware(ctx: Context, next: Next) {
+	ctx.state.user = await extractAndValidateBearerFromHeader({
+		authorizationHeader: ctx.request.headers.authorization,
+		validateAccessToken: true,
+	})
 	await next()
 }
 

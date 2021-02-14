@@ -1,18 +1,17 @@
 import React, {useEffect, useState} from 'react'
 import {useTranslation} from 'react-i18next'
 import {Typography} from '@material-ui/core'
-import {useEnvInfo, useEnvInfoStatus} from '../components/EnvInfoProvider'
+import {useEnvInfo} from '../components/EnvInfoProvider'
 
 function GapiProvider({children}: {children: React.ReactNode}) {
 	const {t} = useTranslation()
 	const [loaded, setLoaded] = useState(false)
 	const {googleClientId, googleScopes} = useEnvInfo()
-	const envInfoStatus = useEnvInfoStatus()
+
 	useEffect(() => {
-		// TODO use gapi from index
-		if (envInfoStatus === 'loading') return
 		// @ts-ignore
 		const {gapi} = window
+
 		gapi.load('auth2:picker', () => {
 			gapi.client
 				.init({clientId: googleClientId, scope: googleScopes})
@@ -20,10 +19,10 @@ function GapiProvider({children}: {children: React.ReactNode}) {
 					setLoaded(true)
 				})
 		})
-	}, [googleClientId, googleScopes, envInfoStatus])
+	}, [googleClientId, googleScopes])
 
 	if (loaded) return <>{children}</>
-	return <Typography>{t('common.loading')}</Typography>
+	return <Typography>{t('common.loading')} gapi</Typography>
 }
 
 export {GapiProvider}

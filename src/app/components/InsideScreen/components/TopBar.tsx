@@ -13,8 +13,8 @@ import {
 import MenuIcon from '@material-ui/icons/Menu'
 import {useTranslation} from 'react-i18next'
 import {AccountCircle} from '@material-ui/icons'
-import {useLogout, useUser} from '../../../utils/auth'
 import {useCustomerSelector} from '../../CustomerSelectorProvider'
+import {useLogout, useUser} from '../../AuthProvider'
 
 const logo = require('../../../images/logo.png')
 

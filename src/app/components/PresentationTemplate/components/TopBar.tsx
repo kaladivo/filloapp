@@ -10,7 +10,7 @@ import {
 } from '@material-ui/core'
 import {Link} from 'react-router-dom'
 import {useTranslation} from 'react-i18next'
-import {useUser} from '../../../utils/auth'
+import {useUser} from '../../AuthProvider'
 
 const logo = require('../../../images/logo.png')
 

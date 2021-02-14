@@ -11,7 +11,23 @@ export default class ImportExportService {
 	}
 
 	loginWithAccessToken = ({googleAccessToken}: {googleAccessToken: string}) => {
-		return this.apiService.post<any>(authRoutes.login, {googleAccessToken})
+		return this.apiService.post<{bearer: string}>(authRoutes.login, {
+			googleAccessToken,
+		})
+	}
+
+	refreshUser = ({
+		bearer,
+		googleAccessToken,
+	}: {
+		bearer: string
+		googleAccessToken: string
+	}): Promise<AxiosResponse<{bearer: string}>> => {
+		return this.apiService.post(
+			authRoutes.refreshUser,
+			{googleAccessToken},
+			{headers: {'Authorization': bearer}}
+		)
 	}
 
 	checkUser = (request: {

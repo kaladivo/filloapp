@@ -1,4 +1,4 @@
-import React, {useCallback, useMemo} from 'react'
+import React, {useCallback} from 'react'
 import {Container, Typography} from '@material-ui/core'
 import {createStyles, makeStyles} from '@material-ui/core/styles'
 import {useAsync} from 'react-async'
@@ -11,10 +11,9 @@ import {useSnackbar} from 'notistack'
 import GoogleButton from 'react-google-button'
 import {ApiService} from '../api'
 import {useApiService} from '../api/apiContext'
-import {parseTokenAndSetUser} from '../utils/auth'
 import errorCodes from '../../constants/errorCodes'
-import {WaitForEnvInfo} from './EnvInfoProvider'
 import PresentationTemplate from './PresentationTemplate'
+import {useSetBearer} from './AuthProvider'
 
 const useStyles = makeStyles((theme) =>
 	createStyles({
@@ -38,21 +37,18 @@ async function loginPromise([{apiService, googleAccessToken}]: [
 	{apiService: ApiService; googleAccessToken: string}
 ]) {
 	const result = await apiService.auth.loginWithAccessToken({googleAccessToken})
-	const accessToken = result.data.bearer
-
-	parseTokenAndSetUser(accessToken)
-
-	return null
+	return result.data.bearer
 }
 
-function LoginPage() {
+export default function LoginPage() {
 	const {t} = useTranslation()
 	const apiService = useApiService()
 	const classes = useStyles({})
 	const {enqueueSnackbar} = useSnackbar()
+	const setBearer = useSetBearer()
 
 	// @ts-ignore
-	const gapi = useMemo(() => window.gapi, [])
+	const {gapi} = window
 
 	const setLoginError = useCallback(
 		(error) => {
@@ -70,6 +66,9 @@ function LoginPage() {
 	const loginTask = useAsync({
 		deferFn: loginPromise,
 		onReject: setLoginError,
+		onResolve: (bearer) => {
+			setBearer(bearer)
+		},
 	})
 
 	return (
@@ -88,8 +87,6 @@ function LoginPage() {
 							const user = await authInstance.signIn()
 							const {access_token: googleAccessToken} = user.getAuthResponse()
 
-							// TODO check scopes
-
 							loginTask.run({apiService, googleAccessToken})
 						}}
 					>
@@ -98,13 +95,5 @@ function LoginPage() {
 				</div>
 			</Container>
 		</PresentationTemplate>
-	)
-}
-
-export default function LoginPageWithEnvInfo() {
-	return (
-		<WaitForEnvInfo>
-			<LoginPage />
-		</WaitForEnvInfo>
 	)
 }

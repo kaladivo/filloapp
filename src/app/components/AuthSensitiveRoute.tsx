@@ -1,6 +1,6 @@
-import React, {useState, useEffect} from 'react'
+import React from 'react'
 import {Route, Redirect, RouteProps} from 'react-router-dom'
-import {listenForUserChange, getUser} from '../utils/auth'
+import {useIsLoggedIn} from './AuthProvider'
 
 interface Props extends RouteProps {
 	mode: 'onlyLogged' | 'onlyNotLogged'
@@ -9,13 +9,7 @@ interface Props extends RouteProps {
 }
 
 function AuthSensitiveRoute({mode, path, children}: Props) {
-	const [isLoggedIn, setIsLoggedIn] = useState(!!getUser())
-
-	useEffect(() => {
-		return listenForUserChange((user) => {
-			setIsLoggedIn(!!user)
-		})
-	}, [])
+	const isLoggedIn = useIsLoggedIn()
 
 	return (
 		<>

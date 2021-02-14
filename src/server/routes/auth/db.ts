@@ -95,7 +95,7 @@ export async function checkIfUserExistsAndUpdate({
 	if (!userExists) {
 		throw new SendableError('user does not exists', {
 			errorCode: USER_DOES_NOT_EXIST,
-			status: 403,
+			status: 404,
 		})
 	}
 

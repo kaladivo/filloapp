@@ -6,8 +6,8 @@ import RootContainer from '../../RootContainer'
 import {useApiService} from '../../../api/apiContext'
 import LoadingIndicator from '../../LoadingIndicator'
 import CustomersList from './CustomersList'
-import {parseTokenAndSetUser} from '../../../utils/auth'
 import RetryableError from '../../RetryableError'
+import {useSetBearer} from '../../AuthProvider'
 
 const logo = require('../../../images/logo.png')
 
@@ -35,6 +35,7 @@ const useStyles = makeStyles((theme) =>
 function CustomerSelect({onSelected}: {onSelected: () => void}) {
 	const {t} = useTranslation()
 	const api = useApiService()
+	const setBearer = useSetBearer()
 	const classes = useStyles()
 
 	const loadCustomersTask = useAsync({
@@ -49,15 +50,12 @@ function CustomerSelect({onSelected}: {onSelected: () => void}) {
 			async ([customerId]) => {
 				const response = await api.auth.selectCustomer({customerId})
 				const {newBearer} = response.data
-
-				parseTokenAndSetUser(newBearer)
+				setBearer(newBearer)
 				onSelected()
 			},
-			[api, onSelected]
+			[api, onSelected, setBearer]
 		),
 	})
-
-	console.log({customers: loadCustomersTask.data})
 
 	return (
 		<RootContainer>

@@ -17,7 +17,8 @@ function CustomerInfoProvider({children}: {children: React.ReactNode}) {
 		}, [api]),
 	})
 
-	if (asyncTask.isLoading) return <Typography>{t('common.loading')}</Typography>
+	if (!asyncTask.data)
+		return <Typography>{t('common.loading')} customer info</Typography>
 	return (
 		<customerInfoContext.Provider value={asyncTask.data || {}}>
 			{children}

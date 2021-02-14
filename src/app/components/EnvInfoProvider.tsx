@@ -1,15 +1,14 @@
-import React, {useCallback, useContext} from 'react'
+import React, {useCallback, useContext, useMemo} from 'react'
 import {useAsync} from 'react-async'
 import {useTranslation} from 'react-i18next'
 import {Typography} from '@material-ui/core'
 import {EnvInfo} from '../../constants/models/EnvInfo'
-import {useApiService} from '../api/apiContext'
+import {ApiService} from '../api'
 
 type EnvInfoStatus = 'loading' | 'done'
 
 interface EnvInfoContext {
 	envInfo: EnvInfo
-	envInfoStatus: EnvInfoStatus
 }
 
 const emptyContextValue: EnvInfoContext = {
@@ -20,25 +19,34 @@ const emptyContextValue: EnvInfoContext = {
 		googleSharingServiceAccount: '',
 		googleAppId: '',
 	},
-	envInfoStatus: 'loading',
 }
 
 const envInfoContext = React.createContext<EnvInfoContext>(emptyContextValue)
 
 function EnvInfoProvider({children}: {children: React.ReactNode}) {
-	const api = useApiService()
+	const {t} = useTranslation()
+	const envInfoApi = useMemo(
+		() =>
+			new ApiService({getBearer: () => null, onBearerRefused: () => undefined})
+				.envInfo,
+		[]
+	)
+
 	const fetchEnvInfoTask = useAsync({
 		promiseFn: useCallback(async () => {
-			const response = await api.envInfo.getEnvInfo()
+			const response = await envInfoApi.getEnvInfo()
 			return response.data
-		}, [api]),
+		}, [envInfoApi]),
 	})
+
+	if (!fetchEnvInfoTask.data) {
+		return <Typography>{t('common.loading')} Env info</Typography>
+	}
 
 	return (
 		<envInfoContext.Provider
 			value={{
 				envInfo: fetchEnvInfoTask.data || emptyContextValue.envInfo,
-				envInfoStatus: fetchEnvInfoTask.isFulfilled ? 'done' : 'loading',
 			}}
 		>
 			{children}
@@ -49,21 +57,6 @@ function EnvInfoProvider({children}: {children: React.ReactNode}) {
 export function useEnvInfo(): EnvInfo {
 	// TODO Report error if accessed before env info is fetched
 	return useContext(envInfoContext).envInfo
-}
-
-export function useEnvInfoStatus(): EnvInfoStatus {
-	return useContext(envInfoContext).envInfoStatus
-}
-
-export function WaitForEnvInfo({children}: {children: React.ReactNode}) {
-	const {t} = useTranslation()
-	const status = useEnvInfoStatus()
-
-	if (status === 'loading') {
-		return <Typography>{t('common.loading')}</Typography>
-	}
-
-	return <>{children}</>
 }
 
 export default EnvInfoProvider

@@ -12,10 +12,6 @@ export default {
 		'loading': 'loading...',
 		'signIn': 'Sign in',
 	},
-	'AuthChecker': {
-		'unableToCheckUser':
-			'Unable to check user. Logout and login might be required.',
-	},
 	'DriveFilePicker': {
 		'nothingSelected': 'No files selected. Picker was closed.',
 	},
