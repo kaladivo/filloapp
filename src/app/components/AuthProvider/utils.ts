@@ -11,8 +11,8 @@ export interface GapiUser {
 
 export function gapiGetCurrentUserAuthToken() {
 	// TODO return correct auth token
-	// @ts-ignore
 	return (
+		// @ts-ignore
 		window.gapi.auth2
 			.getAuthInstance()
 			?.currentUser?.get()
