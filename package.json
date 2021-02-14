@@ -104,7 +104,7 @@
 		"build": "NODE_ENV=production . ./utils/build.sh",
 		"serve": "node -r dotenv/config dist/server/index.js",
 		"lint": "eslint \"./**/*.{ts,tsx,js}\" && prettier -c \"./**/*.{ts,tsx,js,json}\"",
-		"dev:migrate": ". ./utils/migrateDb.sh down 2"
+		"dev:migrate": ". ./utils/migrateDb.sh up"
 	},
 	"eslintConfig": {
 		"extends": "react-app"
