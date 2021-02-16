@@ -30,6 +30,7 @@ export default {
 	},
 	'sections': {
 		'blueprintsGroups': 'Documents',
+		'blueprints': 'Templates',
 	},
 	'LoginScreen': {
 		'title': 'Sign into FilloApp',

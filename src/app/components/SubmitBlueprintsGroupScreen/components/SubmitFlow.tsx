@@ -4,13 +4,15 @@ import {useTranslation} from 'react-i18next'
 import {useAsync} from 'react-async'
 import {useHistory} from 'react-router-dom'
 import {useSnackbar} from 'notistack'
-import {BlueprintGroup} from '../../../../constants/models/BlueprintsGroup'
+import {
+	BlueprintGroup,
+	SubmitSettings,
+} from '../../../../constants/models/BlueprintsGroup'
 import FillValuesScreen from './FillValuesScreen'
 import SettingsScreen, {SettingsValues} from './SettingsScreen'
 import {useApiService} from '../../../api/apiContext'
 import LoadingIndicator from '../../LoadingIndicator'
 import ErrorScreen from './ErrorScreen'
-import {SubmitSettings} from '../../../api/BlueprintsGroups/models'
 
 interface Props {
 	blueprintsGroup: BlueprintGroup

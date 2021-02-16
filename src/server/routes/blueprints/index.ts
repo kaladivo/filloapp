@@ -38,6 +38,10 @@ const createBlueprintSchema = new Schema({
 		type: String,
 		required: true,
 	},
+	isSubmitted: {
+		type: Boolean,
+		required: true,
+	},
 	fieldsOptions: {
 		type: Array,
 		required: true,
@@ -57,7 +61,7 @@ const createBlueprintSchema = new Schema({
 })
 
 router.post(
-	blueprintsRoutes.createBlueprint,
+	blueprintsRoutes.upsertBlueprint,
 	validateBodyMiddleware(createBlueprintSchema),
 	withValidUserWithCustomerMiddleware,
 	withServiceAccountDriveApiMiddleware,
@@ -66,7 +70,7 @@ router.post(
 		const drive = extractDriveApiForServiceAccount(ctx)
 		const user = extractUserWithCustomer(ctx)
 		const dbClient = extractDbClient(ctx)
-		const {fileId, fieldsOptions} = ctx.request.body
+		const {fileId, fieldsOptions, isSubmitted} = ctx.request.body
 
 		const {mimeType, name} = await getFileMetadata({fileId, drive})
 		if (mimeType !== 'application/vnd.google-apps.document') {
@@ -112,6 +116,7 @@ router.post(
 		try {
 			const createdBlueprint = await createOrUpdateBlueprint({
 				fileId,
+				isSubmitted,
 				fileName: name || moment().format('DD. MM. YYYY - HH:MM:SS'),
 				user,
 				dbClient,
@@ -139,12 +144,13 @@ router.post(
 )
 
 router.get(
-	blueprintsRoutes.searchBlueprint,
+	blueprintsRoutes.searchBlueprints,
 	withValidUserWithCustomerMiddleware,
 	withDataDbMiddleware,
 	async (ctx, next) => {
 		const user = extractUserWithCustomer(ctx)
 		const dbClient = extractDbClient(ctx)
+		const onlySubmitted = ctx.request.query.onlySubmitted === 'true'
 
 		const {query} = ctx.request.query
 
@@ -159,6 +165,7 @@ router.get(
 			dbClient,
 			query,
 			user,
+			onlySubmitted,
 			customerWide: user.selectedCustomer.permissions.canSeeAllBlueprints,
 		})
 		await next()
@@ -212,11 +219,13 @@ router.get(
 		const user = extractUserWithCustomer(ctx)
 		const dbClient = extractDbClient(ctx)
 		const pagination = extractPagination(ctx)
+		const onlySubmitted = ctx.request.query.onlySubmitted === 'true'
 
 		ctx.body = await listBlueprints({
 			dbClient,
 			user,
 			pagination,
+			onlySubmitted,
 			customerWide: user.selectedCustomer.permissions.canSeeAllBlueprints,
 		})
 		await next()
@@ -230,10 +239,12 @@ router.get(
 	async (ctx, next) => {
 		const user = extractUserWithCustomer(ctx)
 		const dbClient = extractDbClient(ctx)
+		const onlySubmitted = ctx.request.query.onlySubmitted === 'true'
 
 		ctx.body = await listTinyBlueprints({
 			dbClient,
 			user,
+			onlySubmitted,
 			customerWide: user.selectedCustomer.permissions.canSeeAllBlueprints,
 		})
 		await next()

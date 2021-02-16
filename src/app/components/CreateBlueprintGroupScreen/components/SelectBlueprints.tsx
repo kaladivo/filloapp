@@ -52,7 +52,9 @@ function SelectBlueprints({className, onChange}: Props) {
 
 	const fetchBlueprintsTask = useAsync({
 		promiseFn: useCallback(async () => {
-			const blueprints = await api.blueprints.listBlueprints()
+			const blueprints = await api.blueprints.listTiny({
+				onlySubmitted: true,
+			})
 			return blueprints.data
 		}, [api]),
 	})

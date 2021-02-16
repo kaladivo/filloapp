@@ -1,11 +1,16 @@
 import {useTranslation} from 'react-i18next'
 import HomeIcon from '@material-ui/icons/Home'
 
+import FlipIcon from '@material-ui/icons/Flip'
 import BlueprintsGroupsScreen from './components/BlueprintsGroupsScreen'
 import BlueprintsGroupDetailScreen from './components/BlueprintsGroupDetailScreen'
 import SubmitBlueprintsGroupScreen from './components/SubmitBlueprintsGroupScreen'
 import CreateBlueprintGroupScreen from './components/CreateBlueprintGroupScreen'
 import DevScreen from './components/DevScreen'
+import BlueprintsListScreen from './components/BlueprintsListScreen'
+import EditBlueprintScreen from './components/EditBlueprintScreen'
+import BlueprintDetailScreen from './components/BlueprintDetailScreen'
+import CreateBlueprintScreen from './components/CreateBlueprintScreen'
 
 export interface Section {
 	paths: string[]
@@ -48,6 +53,29 @@ function useSections(): Section[] {
 		{
 			paths: ['/blueprints-group/:id'],
 			Component: BlueprintsGroupDetailScreen,
+		},
+		{
+			paths: ['/blueprints'],
+			exact: true,
+			Component: BlueprintsListScreen,
+			navigation: {
+				path: '/blueprints',
+				label: t('sections.blueprints'),
+				Icon: FlipIcon,
+				section: 'main',
+			},
+		},
+		{
+			paths: ['/blueprints/create'],
+			Component: CreateBlueprintScreen,
+		},
+		{
+			paths: ['/blueprints/:id/edit'],
+			Component: EditBlueprintScreen,
+		},
+		{
+			paths: ['/blueprints/:id'],
+			Component: BlueprintDetailScreen,
 		},
 	]
 

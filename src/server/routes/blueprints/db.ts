@@ -26,6 +26,7 @@ async function getBlueprintByFileIdAndUser({
               select blueprint.id,
                      google_docs_id                                                 as "googleDocsId",
                      blueprint.name,
+                     blueprint.is_submitted as "isSubmitted",
                      json_agg(json_build_object('id', blueprint_field.id, 'name', blueprint_field.name, 'type',
                                                 blueprint_field.type, 'display_name', blueprint_field.display_name,
                                                 'helperText', blueprint_field.helper_text, 'options',
@@ -59,6 +60,7 @@ export async function getBlueprintById({
               select blueprint.id,
                      google_docs_id                                                 as "googleDocsId",
                      blueprint.name,
+                     blueprint.is_submitted                                         as "isSubmitted",
                      json_agg(json_build_object('id', blueprint_field.id, 'name', blueprint_field.name, 'type',
                                                 blueprint_field.type, 'display_name', blueprint_field.display_name,
                                                 'helperText', blueprint_field.helper_text, 'options',
@@ -132,6 +134,7 @@ async function createOrUpdateFields({
 async function updateBlueprint({
 	fileName,
 	fileId,
+	isSubmitted,
 	blueprintId,
 	fields,
 	user,
@@ -139,6 +142,7 @@ async function updateBlueprint({
 }: {
 	fileId: string
 	blueprintId: string
+	isSubmitted: boolean
 	fileName: string
 	fields: InputBlueprintField[]
 	user: UserWithSelectedCustomer
@@ -149,10 +153,10 @@ async function updateBlueprint({
 		await dbClient.query(
 			`
                 update blueprint
-                set name = $1
+                set name = $1, is_submitted = $2
                 where id = $2::int
       `,
-			[fileName, blueprintId]
+			[fileName, blueprintId, isSubmitted]
 		)
 		await createOrUpdateFields({fields, blueprintId, dbClient})
 
@@ -169,10 +173,12 @@ async function createBlueprint({
 	fileName,
 	fields,
 	user,
+	isSubmitted,
 	dbClient,
 }: {
 	fileId: string
 	fileName: string
+	isSubmitted: boolean
 	fields: InputBlueprintField[]
 	user: UserWithSelectedCustomer
 	dbClient: PoolClient
@@ -182,10 +188,10 @@ async function createBlueprint({
 
 		await dbClient.query(
 			`
-                INSERT INTO blueprint (google_docs_id, user_customer_id, name)
-                values ($1, $2, $3)
+                INSERT INTO blueprint (google_docs_id, user_customer_id, name, is_submitted)
+                values ($1, $2, $3, $4)
       `,
-			[fileId, user.selectedCustomer.userCustomerId, fileName]
+			[fileId, user.selectedCustomer.userCustomerId, fileName, isSubmitted]
 		)
 		const blueprint = await getBlueprintByFileIdAndUser({
 			fileId,
@@ -206,12 +212,14 @@ async function createBlueprint({
 export async function createOrUpdateBlueprint({
 	fileId,
 	fileName,
+	isSubmitted,
 	fields,
 	dbClient,
 	user,
 }: {
 	fileId: string
 	fileName: string
+	isSubmitted: boolean
 	fields: InputBlueprintField[]
 	dbClient: PoolClient
 	user: UserWithSelectedCustomer
@@ -225,6 +233,7 @@ export async function createOrUpdateBlueprint({
 			dbClient,
 			user,
 			fields,
+			isSubmitted,
 			fileName,
 		})
 		performedAction = 'create'
@@ -234,6 +243,7 @@ export async function createOrUpdateBlueprint({
 			fileId,
 			user,
 			fields,
+			isSubmitted,
 			dbClient,
 			fileName,
 		})
@@ -252,16 +262,19 @@ export async function listBlueprints({
 	dbClient,
 	user,
 	customerWide,
+	onlySubmitted,
 }: {
 	pagination: PaginationPosition
 	dbClient: PoolClient
 	user: UserWithSelectedCustomer
 	customerWide: boolean
+	onlySubmitted: boolean
 }) {
 	const result = await dbClient.query(
 		`
               select blueprint.id,
                      blueprint.name,
+                     blueprint.is_submitted as "isSubmitted",
                      json_agg(json_build_object('id', blueprint_field.id, 'name', blueprint_field.name, 'type',
                                                 blueprint_field.type, 'display_name', blueprint_field.display_name,
                                                 'helperText', blueprint_field.helper_text, 'options',
@@ -274,6 +287,7 @@ export async function listBlueprints({
               where ${
 								customerWide ? 'user_customer.customer_id' : 'user_customer.id'
 							} = $1
+             	${onlySubmitted ? 'and blueprint.is_submitted = true' : ''}
               group by blueprint.id, u.email, blueprint.name
               order by blueprint.name
               limit $2 offset $3
@@ -295,16 +309,19 @@ export async function searchBlueprints({
 	query,
 	user,
 	customerWide,
+	onlySubmitted,
 }: {
 	dbClient: PoolClient
 	query: string
 	user: UserWithSelectedCustomer
 	customerWide: boolean
+	onlySubmitted: boolean
 }) {
 	const result = await dbClient.query(
 		`
               select blueprint.id,
                      blueprint.name,
+                     blueprint.is_submitted as "isSubmitted",
                      json_agg(json_build_object('id', blueprint_field.id, 'name', blueprint_field.name, 'type',
                                                 blueprint_field.type, 'display_name', blueprint_field.display_name,
                                                 'helperText', blueprint_field.helper_text,
@@ -318,6 +335,7 @@ export async function searchBlueprints({
               where ${
 								customerWide ? 'user_customer.customer_id' : 'user_customer.id'
 							} = $1
+                ${onlySubmitted ? 'and blueprint.is_submitted = true' : ''}
                 and lower(blueprint.name) like $2
               group by blueprint.id, u.email, blueprint.name
               order by blueprint.name
@@ -381,21 +399,26 @@ export async function deleteBlueprint({
 export async function listTinyBlueprints({
 	user,
 	customerWide,
+	onlySubmitted,
 	dbClient,
 }: {
 	user: UserWithSelectedCustomer
 	customerWide: UserWithSelectedCustomer
+	onlySubmitted: boolean
 	dbClient: PoolClient
 }): Promise<TinyBlueprint[]> {
 	const result = await dbClient.query(
 		`
               select blueprint.id,
-                     blueprint.name
+                     blueprint.name,
+                     blueprint.is_submitted as "isSubmitted"
               from blueprint
                        left join user_customer on blueprint.user_customer_id = user_customer.id
                        left join "user" u on user_customer.user_email = u.email
                        left join user_customer uc on u.email = uc.user_email
               where ${customerWide ? 'uc.customer_id' : 'uc.id'} = $1
+                ${onlySubmitted ? 'and blueprint.is_submitted = true' : ''}
+              and blueprint.is_submitted = true
               order by blueprint.name
     `,
 		[
@@ -405,4 +428,27 @@ export async function listTinyBlueprints({
 		]
 	)
 	return result.rows
+}
+
+export async function doesBlueprintExist({
+	fileId,
+	user,
+	dbClient,
+}: {
+	fileId: string
+	user: UserWithSelectedCustomer
+	dbClient: PoolClient
+}) {
+	const result = await dbClient.query(
+		`
+              select count(*) > 0 as exists
+              from blueprint
+                       left join user_customer uc on blueprint.user_customer_id = uc.id
+              where blueprint.google_docs_id = $1
+                and user_customer_id = $2
+    `,
+		[fileId, user.selectedCustomer.userCustomerId]
+	)
+
+	return result.rows[0].exists
 }

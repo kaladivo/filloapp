@@ -1,9 +1,11 @@
 import {OwnerInfo} from './OwnerInfo'
 
+export type BlueprintFieldType = 'string' | 'id' | 'date' | 'number' | 'select'
+
 export interface BlueprintField {
 	id: string
 	name: string
-	type: 'string' | 'id'
+	type: BlueprintFieldType
 	displayName: string
 	helperText: string
 	options: any
@@ -15,6 +17,7 @@ export interface Blueprint {
 	owner: OwnerInfo
 	name: string
 	fields: BlueprintField[]
+	isSubmitted: boolean
 }
 
 export interface TinyBlueprint {
