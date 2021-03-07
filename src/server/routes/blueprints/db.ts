@@ -413,9 +413,7 @@ export async function listTinyBlueprints({
                      blueprint.name,
                      blueprint.is_submitted as "isSubmitted"
               from blueprint
-                       left join user_customer on blueprint.user_customer_id = user_customer.id
-                       left join "user" u on user_customer.user_email = u.email
-                       left join user_customer uc on u.email = uc.user_email
+                       left join user_customer uc on blueprint.user_customer_id = uc.id
               where ${customerWide ? 'uc.customer_id' : 'uc.id'} = $1
                 ${onlySubmitted ? 'and blueprint.is_submitted = true' : ''}
               and blueprint.is_submitted = true

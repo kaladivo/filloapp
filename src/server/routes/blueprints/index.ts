@@ -45,6 +45,9 @@ const createBlueprintSchema = new Schema({
 		type: String,
 		required: true,
 	},
+	name: {
+		type: String,
+	},
 	isSubmitted: {
 		type: Boolean,
 		required: true,
@@ -79,19 +82,25 @@ router.post(
 		const userDrive = extractUserDriveApi(ctx)
 		const user = extractUserWithCustomer(ctx)
 		const dbClient = extractDbClient(ctx)
-		const {fileId, fieldsOptions, isSubmitted} = ctx.request.body
+		const {
+			fileId,
+			fieldsOptions,
+			isSubmitted,
+			name: chosenName,
+		} = ctx.request.body
 
 		const exists = await doesBlueprintExist({fileId, dbClient, user})
 
-		const {mimeType, name} = await getFileMetadata({fileId, drive: userDrive})
+		// TODO handle service account not having access
+		if (!exists) await shareFileToServiceAccount({fileId, drive: userDrive})
+
+		const {mimeType, name} = await getFileMetadata({fileId, drive: saDrive})
 		if (mimeType !== 'application/vnd.google-apps.document') {
 			throw new SendableError('File submitted is not document', {
 				status: httpStatus.BAD_REQUEST,
 				errorCode: errorCodes.BAD_FILE_TYPE,
 			})
 		}
-
-		await shareFileToServiceAccount({fileId, drive: userDrive})
 
 		let fieldsNames: string[] = fieldsOptions.map(
 			(one: BlueprintField) => one.name
@@ -141,7 +150,8 @@ router.post(
 			const createdBlueprint = await createOrUpdateBlueprint({
 				fileId,
 				isSubmitted,
-				fileName: name || moment().format('DD. MM. YYYY - HH:MM:SS'),
+				fileName:
+					chosenName || name || moment().format('DD. MM. YYYY - HH:MM:SS'),
 				user,
 				dbClient,
 				fields,

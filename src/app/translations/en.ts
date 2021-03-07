@@ -11,6 +11,7 @@ export default {
 		'delete': 'Delete',
 		'loading': 'loading...',
 		'signIn': 'Sign in',
+		'cancel': 'Cancel',
 	},
 	'DriveFilePicker': {
 		'nothingSelected': 'No files selected. Picker was closed.',
@@ -109,8 +110,19 @@ export default {
 		'syncWithSpreadsheetSuccess': 'Sync was successful',
 		'syncWithSpreadsheetError': 'Error while syncing. Try again later.',
 	},
+	'CreateBlueprintScreen': {
+		'title': 'Create new template',
+		'text': 'TODO',
+		'error': 'Error while creating template',
+		'pickerTitle': 'Pick template document',
+		'pickerLabel': 'Pick template document',
+	},
+	'BlueprintsListScreen': {
+		'createNew': 'Create new template',
+	},
 	'EditBlueprintScreen': {
-		'errorLoadingBlueprint': 'There was an error while loading blueprint.',
+		'title': 'Edit template',
+		'errorLoadingBlueprint': 'There was an error while loading template.',
 		'fieldTemplateNameLabel': 'Field name',
 		'fieldTemplateNameHelper': 'Name of the field as it is in the template',
 		'fieldDisplayNameLabel': 'Display name',
@@ -118,7 +130,7 @@ export default {
 		'fieldHelperTextTitle': 'Helper text',
 		'fieldHelperTextHelper':
 			'You can put description here, to help others fill it.',
-		'blueprintNameLabel': 'Blueprint name',
+		'blueprintNameLabel': 'Template name',
 		'blueprintNameHelper':
 			'Will be used as a name of generated document. You can put values into the name also',
 		'fields': 'Fields:',
@@ -142,6 +154,15 @@ export default {
 			'helperText': '',
 			'name': 'newField',
 		},
+		'updateSuccess': 'template successfully updated',
+		'updateError': 'Error while updating template',
+		'deleteDialogTitle': 'All documents will be deleted!',
+		'deleteDialogContent':
+			'Deleting this template will also remove all documents that this template appears in',
+		'deleteSuccess': 'Successfully deleted template',
+		'deleteError': 'Error while deleting template',
+		'ownedBy': 'Owned by',
+		'openFile': 'Open template document',
 	},
 	'Presentation': {
 		'menu': {

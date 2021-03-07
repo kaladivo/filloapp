@@ -13,6 +13,7 @@ export interface UpsertBlueprintResponse {
 }
 
 export interface UpsertBlueprintRequest {
+	name?: string
 	fileId: string
 	isSubmitted: boolean
 	fieldsOptions: BlueprintField[]

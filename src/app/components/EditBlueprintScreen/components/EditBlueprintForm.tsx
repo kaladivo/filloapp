@@ -18,6 +18,7 @@ import {
 } from '../../../../constants/models/Blueprint'
 import BlueprintField from './BlueprintField'
 import {useApiService} from '../../../api/apiContext'
+import AreYouSureDialog from '../../AreYouSureDialog'
 
 const useStyles = makeStyles((theme) =>
 	createStyles({
@@ -28,7 +29,14 @@ const useStyles = makeStyles((theme) =>
 			// 	margin: theme.spacing(2, 0),
 			// },
 		},
-		submitButton: {
+		buttonsContainer: {
+			margin: theme.spacing(2, -1, 0),
+			' & > *': {
+				display: 'inline-block',
+				margin: theme.spacing(0, 1),
+			},
+		},
+		addNewButton: {
 			marginTop: theme.spacing(2),
 		},
 	})
@@ -43,6 +51,7 @@ function EditBlueprintForm({
 	const api = useApiService()
 	const {enqueueSnackbar} = useSnackbar()
 	const history = useHistory()
+	const [deleteDialogOpen, setDeleteDialogOpen] = useState()
 
 	const classes = useStyles()
 	const [blueprint, setBlueprint] = useState(initialBlueprint)
@@ -50,36 +59,53 @@ function EditBlueprintForm({
 		[id: string]: boolean
 	}>({})
 
-	const onSubmitTask = useAsync({
+	const submitTask = useAsync({
 		deferFn: useCallback(async () => {
 			await api.blueprints.upsert({
+				name: blueprint.name,
 				fileId: blueprint.googleDocsId,
 				fieldsOptions: blueprint.fields,
 				isSubmitted: true,
 			})
-		}, [blueprint, api]),
+
+			enqueueSnackbar(t(t('EditBlueprintScreen.updateSuccess')), {
+				variant: 'success',
+			})
+			history.push('/blueprints')
+		}, [blueprint, api, history, enqueueSnackbar, t]),
 	})
 
-	// When updated
-	useEffect(() => {
-		if (!onSubmitTask.isResolved) return
-		enqueueSnackbar('Blueprint successfully updated', {variant: 'success'})
-		history.push('/blueprints')
-	}, [onSubmitTask.isResolved, enqueueSnackbar, history])
+	const deleteTask = useAsync({
+		deferFn: useCallback(async () => {
+			await api.blueprints.delete({blueprintId: blueprint.id})
+
+			enqueueSnackbar(t('EditBlueprintScreen.deleteSuccess'), {
+				variant: 'success',
+			})
+			history.push('/blueprints')
+		}, [api, blueprint, enqueueSnackbar, t, history]),
+	})
 
 	// When error while updating
 	useEffect(() => {
-		if (!onSubmitTask.isRejected || !onSubmitTask.error) return
-		enqueueSnackbar('Error while updating blueprint', {variant: 'error'})
+		if (!submitTask.isRejected || !submitTask.error) return
+		enqueueSnackbar(t(t('EditBlueprintScreen.updateError')), {variant: 'error'})
 		// TODO report
-	}, [onSubmitTask.isRejected, onSubmitTask.error, enqueueSnackbar])
+	}, [submitTask.isRejected, submitTask.error, enqueueSnackbar, t])
+
+	// When error while deleting
+	useEffect(() => {
+		if (!submitTask.isRejected || !submitTask.error) return
+		enqueueSnackbar(t(t('EditBlueprintScreen.deleteError')), {variant: 'error'})
+		// TODO report
+	}, [submitTask.isRejected, submitTask.error, enqueueSnackbar, t])
 
 	const onSubmit = useCallback(
 		(e) => {
 			e.preventDefault()
-			onSubmitTask.run()
+			submitTask.run()
 		},
-		[onSubmitTask]
+		[submitTask]
 	)
 
 	const onExpand = useCallback(
@@ -138,6 +164,16 @@ function EditBlueprintForm({
 	// TODO display google doc
 	return (
 		<form onSubmit={onSubmit}>
+			<AreYouSureDialog
+				contentText={t('EditBlueprintScreen.deleteDialogContent')}
+				positiveText={t('common.delete')}
+				negativeText={t('common.cancel')}
+				open={deleteDialogOpen}
+				setOpen={setDeleteDialogOpen}
+				titleText={t('EditBlueprintScreen.deleteDialogTitle')}
+				onPositiveClicked={deleteTask.run}
+			/>
+			<Typography variant="h4">{t('EditBlueprintScreen.title')}</Typography>
 			<Typography>
 				{t('EditBlueprintScreen.ownedBy')} {blueprint.owner.info.name}
 			</Typography>
@@ -148,6 +184,7 @@ function EditBlueprintForm({
 				{t('EditBlueprintScreen.openFile')}
 			</Link>
 			<TextField
+				margin="normal"
 				fullWidth
 				label={t('EditBlueprintScreen.blueprintNameLabel')}
 				helperText={t('EditBlueprintScreen.blueprintNameHelper')}
@@ -174,18 +211,33 @@ function EditBlueprintForm({
 					/>
 				))}
 			</div>
-			<Button onClick={handleAddNewField} variant="outlined" color="primary">
-				{t('EditBlueprintScreen.addNewField')}
-			</Button>
-			<Button
-				disabled={onSubmitTask.isLoading}
-				className={classes.submitButton}
-				type="submit"
-				color="primary"
-				variant="contained"
-			>
-				{onSubmitTask.isLoading ? <CircularProgress /> : t('common.submit')}
-			</Button>
+			<div>
+				<Button
+					className={classes.addNewButton}
+					onClick={handleAddNewField}
+					variant="outlined"
+					color="primary"
+				>
+					{t('EditBlueprintScreen.addNewField')}
+				</Button>
+			</div>
+			<div className={classes.buttonsContainer}>
+				<Button
+					disabled={submitTask.isLoading}
+					type="submit"
+					color="primary"
+					variant="contained"
+				>
+					{submitTask.isLoading ? <CircularProgress /> : t('common.submit')}
+				</Button>
+				<Button
+					onClick={() => setDeleteDialogOpen(true)}
+					disabled={deleteTask.isLoading}
+					variant="contained"
+				>
+					{deleteTask.isLoading ? <CircularProgress /> : t('common.delete')}
+				</Button>
+			</div>
 		</form>
 	)
 }

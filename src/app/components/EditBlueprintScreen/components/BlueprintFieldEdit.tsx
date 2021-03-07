@@ -14,6 +14,7 @@ const useStyles = makeStyles((theme) =>
 	createStyles({
 		root: {
 			padding: theme.spacing(-2),
+			width: '100%',
 		},
 		inner: {
 			'& > *': {
@@ -38,7 +39,8 @@ function BlueprintFieldEdit({className, value, onChange, onDelete}: Props) {
 		<div className={`${className} ${classes.root}`}>
 			<TextField
 				fullWidth
-				label={t('EditEditBlueprintScreen.fieldTemplateNameLabel')}
+				label={t('EditBlueprintScreen.fieldTemplateNameLabel')}
+				margin="normal"
 				helperText={t('EditBlueprintScreen.fieldTemplateNameHelper')}
 				value={value.name || ''}
 				onChange={(e) => {
@@ -48,6 +50,7 @@ function BlueprintFieldEdit({className, value, onChange, onDelete}: Props) {
 
 			<TextField
 				fullWidth
+				margin="normal"
 				label={t('EditBlueprintScreen.fieldDisplayNameLabel')}
 				helperText={t('EditBlueprintScreen.fieldDisplayNameHelper')}
 				value={value.displayName || ''}
@@ -58,6 +61,7 @@ function BlueprintFieldEdit({className, value, onChange, onDelete}: Props) {
 
 			<TextField
 				fullWidth
+				margin="normal"
 				label={t('EditBlueprintScreen.fieldHelperTextTitle')}
 				helperText={t('EditBlueprintScreen.fieldHelperTextHelper')}
 				value={value.helperText || ''}

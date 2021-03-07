@@ -58,7 +58,7 @@ function CreateBlueprintScreen() {
 				/>
 			)}
 			{createBlueprintTask.isLoading && (
-				<LoadingIndicator text={t('CreateBlueprintScreen.loading')} />
+				<LoadingIndicator text={t('common.loading')} />
 			)}
 		</RootContainer>
 	)

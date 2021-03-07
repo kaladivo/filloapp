@@ -81,12 +81,13 @@ function SelectOptions({className, options, onChange}: Props) {
 			/>
 			{options.selectOptions.slice(1).map((option: any, index: number) => (
 				<TextField
+					margin="normal"
 					fullWidth
 					key={option.id}
 					onChange={handleOneOptionChange(index + 1)}
 					value={option.value}
 					label={t('EditBlueprintScreen.selectOptionValue', {
-						number: index + 1,
+						number: index + 2,
 					})}
 					InputProps={{
 						endAdornment: (

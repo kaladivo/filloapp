@@ -65,7 +65,7 @@ function FieldTypeEdit({className, field, onChange}: Props) {
 
 	return (
 		<div className={`${classes.root} ${className}`}>
-			<FormControl fullWidth>
+			<FormControl fullWidth margin="normal">
 				<InputLabel id="demo-simple-select-label">
 					{t('EditBlueprintScreen.typeSelectLabel')}
 				</InputLabel>

@@ -9,7 +9,6 @@ import CreateBlueprintGroupScreen from './components/CreateBlueprintGroupScreen'
 import DevScreen from './components/DevScreen'
 import BlueprintsListScreen from './components/BlueprintsListScreen'
 import EditBlueprintScreen from './components/EditBlueprintScreen'
-import BlueprintDetailScreen from './components/BlueprintDetailScreen'
 import CreateBlueprintScreen from './components/CreateBlueprintScreen'
 
 export interface Section {
@@ -72,10 +71,6 @@ function useSections(): Section[] {
 		{
 			paths: ['/blueprints/:id/edit'],
 			Component: EditBlueprintScreen,
-		},
-		{
-			paths: ['/blueprints/:id'],
-			Component: BlueprintDetailScreen,
 		},
 	]
 
