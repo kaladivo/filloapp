@@ -66,7 +66,7 @@ function NumberOptions({options, onChange, className}: Props) {
 						fullWidth
 						label={t('EditBlueprintScreen.minValue')}
 						type="number"
-						value={options.min || 0}
+						value={options.min || '0'}
 						onChange={(e) => {
 							onChange({...options, min: e.target.value})
 						}}
@@ -78,7 +78,7 @@ function NumberOptions({options, onChange, className}: Props) {
 				<FormControlLabel
 					className={className}
 					onChange={enableMax}
-					checked={options.min !== undefined}
+					checked={options.max !== undefined}
 					control={<Checkbox />}
 					label={t('EditBlueprintScreen.enableMax')}
 				/>
@@ -89,7 +89,7 @@ function NumberOptions({options, onChange, className}: Props) {
 						fullWidth
 						label={t('EditBlueprintScreen.maxValue')}
 						type="number"
-						value={options.max || 0}
+						value={options.max || '0'}
 						onChange={(e) => {
 							onChange({...options, max: e.target.value})
 						}}
