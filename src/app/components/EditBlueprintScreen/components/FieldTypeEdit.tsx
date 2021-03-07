@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {useCallback} from 'react'
 import {
 	createStyles,
 	FormControl,
@@ -6,8 +6,7 @@ import {
 	InputLabel,
 	Select,
 	MenuItem,
-	FormControlLabel,
-	Checkbox,
+	Typography,
 } from '@material-ui/core'
 import {useTranslation} from 'react-i18next'
 import {
@@ -15,6 +14,9 @@ import {
 	BlueprintField,
 	BlueprintFieldType,
 } from '../../../../constants/models/Blueprint'
+import OptionCheckbox from './OptionCheckbox'
+import NumberOptions from './NumberOptions'
+import SelectOptions from './SelectOptions'
 
 const useStyles = makeStyles(() =>
 	createStyles({
@@ -33,18 +35,45 @@ function FieldTypeEdit({className, field, onChange}: Props) {
 
 	const {t} = useTranslation()
 
+	const handleOptionsChange = useCallback(
+		(options) => {
+			onChange({...field, options})
+		},
+		[onChange, field]
+	)
+
+	const handleTypeChange = useCallback(
+		(event) => {
+			const value = event.target.value as BlueprintFieldType
+			let initialOptions = {}
+			if (value === 'select') {
+				initialOptions = {selectOptions: [{id: Date.now(), value: ''}]}
+			}
+
+			onChange({...field, type: value, options: initialOptions})
+		},
+		[field, onChange]
+	)
+
+	if (field.type === 'id') {
+		return (
+			<div className={`${classes.root} ${className}`}>
+				<Typography>{t('EditBlueprintScreen.typeIsIdExplanation')}</Typography>
+			</div>
+		)
+	}
+
 	return (
 		<div className={`${classes.root} ${className}`}>
 			<FormControl fullWidth>
-				<InputLabel id="demo-simple-select-label">Age</InputLabel>
+				<InputLabel id="demo-simple-select-label">
+					{t('EditBlueprintScreen.typeSelectLabel')}
+				</InputLabel>
 				<Select
 					labelId="demo-simple-select-label"
 					id="demo-simple-select"
 					value={field.type}
-					onChange={(event) => {
-						const value = event.target.value as BlueprintFieldType
-						onChange({...field, type: value})
-					}}
+					onChange={handleTypeChange}
 				>
 					<MenuItem value="string">
 						{t('EditBlueprintScreen.stringTypeLabel')}
@@ -63,17 +92,32 @@ function FieldTypeEdit({className, field, onChange}: Props) {
 
 			{field.type === 'string' && (
 				<div>
-					<FormControlLabel
-						control={<Checkbox name="checkedC" />}
+					<OptionCheckbox
+						optionName="multiline"
+						optionsObject={field.options}
+						onChange={handleOptionsChange}
 						label={t('EditBlueprintScreen.multilineLabel')}
 					/>
 				</div>
 			)}
-			{field.type === 'date' && <div>TODO options for date</div>}
+			{field.type === 'date' && (
+				<div>
+					<OptionCheckbox
+						optionName="withTime"
+						optionsObject={field.options}
+						onChange={handleOptionsChange}
+						label={t('EditBlueprintScreen.withTimeLabel')}
+					/>
+				</div>
+			)}
 
-			{field.type === 'number' && <div>TODO options for number</div>}
+			{field.type === 'number' && (
+				<NumberOptions options={field.options} onChange={handleOptionsChange} />
+			)}
 
-			{field.type === 'select' && <div>TODO options for select</div>}
+			{field.type === 'select' && (
+				<SelectOptions options={field.options} onChange={handleOptionsChange} />
+			)}
 		</div>
 	)
 }

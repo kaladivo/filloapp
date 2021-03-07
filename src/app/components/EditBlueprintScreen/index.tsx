@@ -28,7 +28,7 @@ function EditBlueprintScreen() {
 			{loadBlueprintTask.isRejected && loadBlueprintTask.error && (
 				<RetryableError
 					onTryAgain={loadBlueprintTask.reload}
-					text={t('EditBlueprintTask.error')}
+					text={t('EditBlueprintScreen.errorLoadingBlueprint')}
 					error={loadBlueprintTask.error}
 				/>
 			)}

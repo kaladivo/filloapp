@@ -86,6 +86,9 @@ export default {
 		'folderFieldHelp': 'If you can not pick a file, insert folder url',
 		'folderFieldBadFormat': 'Can not recognize file url',
 		'folderFieldLabel': 'Folder url',
+		'valueIsNotNumber': 'Filled must be a number',
+		'minValueExceeded': 'Value must be higher than {{min}}',
+		'maxValueExceeded': 'Value must be lower than {{max}}',
 	},
 	'CreateBlueprintGroupScreen': {
 		'title': 'Create new Document ',
@@ -105,6 +108,40 @@ export default {
 		'syncWithSpreadsheet': 'Sync with spreadsheet',
 		'syncWithSpreadsheetSuccess': 'Sync was successful',
 		'syncWithSpreadsheetError': 'Error while syncing. Try again later.',
+	},
+	'EditBlueprintScreen': {
+		'errorLoadingBlueprint': 'There was an error while loading blueprint.',
+		'fieldTemplateNameLabel': 'Field name',
+		'fieldTemplateNameHelper': 'Name of the field as it is in the template',
+		'fieldDisplayNameLabel': 'Display name',
+		'fieldDisplayNameHelper': 'Name of the field to be displayed in fillo app',
+		'fieldHelperTextTitle': 'Helper text',
+		'fieldHelperTextHelper':
+			'You can put description here, to help others fill it.',
+		'blueprintNameLabel': 'Blueprint name',
+		'blueprintNameHelper':
+			'Will be used as a name of generated document. You can put values into the name also',
+		'fields': 'Fields:',
+		'typeIsIdExplanation':
+			'This is ID field. Further configuration of this field is not yet implemented. We are working on many new features, this is one of them!',
+		'typeSelectLabel': 'Field type',
+		'stringTypeLabel': 'Text',
+		'dateTypeLabel': 'Date',
+		'numberTypeLabel': 'Number',
+		'selectTypeLabel': 'Predefined options',
+		'multilineLabel': 'Allow inserting newline',
+		'withTimeLabel': 'Include exact time with the date',
+		'enableMin': 'Specify minimal value',
+		'enableMax': 'Specify maximal value',
+		'minValue': 'Minimal value',
+		'maxValue': 'Maximal value',
+		'selectOptionValue': 'option {{number}}',
+		'addNewField': 'Add new field',
+		'newField': {
+			'displayName': '',
+			'helperText': '',
+			'name': 'newField',
+		},
 	},
 	'Presentation': {
 		'menu': {

@@ -1,6 +1,12 @@
 import React from 'react'
-import {createStyles, makeStyles, TextField} from '@material-ui/core'
+import {
+	createStyles,
+	IconButton,
+	makeStyles,
+	TextField,
+} from '@material-ui/core'
 import {useTranslation} from 'react-i18next'
+import {Delete} from '@material-ui/icons'
 import {BlueprintField as BlueprintFieldI} from '../../../../constants/models/Blueprint'
 import FieldTypeEdit from './FieldTypeEdit'
 
@@ -21,9 +27,10 @@ interface Props {
 	className?: string
 	value: BlueprintFieldI
 	onChange: (field: BlueprintFieldI) => void
+	onDelete: (id: string) => void
 }
 
-function BlueprintFieldEdit({className, value, onChange}: Props) {
+function BlueprintFieldEdit({className, value, onChange, onDelete}: Props) {
 	const classes = useStyles()
 	const {t} = useTranslation()
 
@@ -60,6 +67,9 @@ function BlueprintFieldEdit({className, value, onChange}: Props) {
 			/>
 
 			<FieldTypeEdit field={value} onChange={onChange} />
+			<IconButton onClick={() => onDelete(value.id)}>
+				<Delete />
+			</IconButton>
 		</div>
 	)
 }

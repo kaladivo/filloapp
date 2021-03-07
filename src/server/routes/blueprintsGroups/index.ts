@@ -476,7 +476,7 @@ router.post(
 		// TODO start transition
 		for (const valueName of Object.keys(values)) {
 			const value = values[valueName]
-			if (value.type !== 'string') {
+			if (value.type === 'id') {
 				generatedValues[valueName] = {
 					// eslint-disable-next-line no-await-in-loop
 					value: await prepareIncFieldTypeForSubmit({

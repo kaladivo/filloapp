@@ -2,13 +2,15 @@ import {OwnerInfo} from './OwnerInfo'
 
 export type BlueprintFieldType = 'string' | 'id' | 'date' | 'number' | 'select'
 
+export type BlueprintFieldOptions = {[key: string]: any}
+
 export interface BlueprintField {
 	id: string
 	name: string
 	type: BlueprintFieldType
 	displayName: string
 	helperText: string
-	options: any
+	options: BlueprintFieldOptions
 }
 
 export interface Blueprint {

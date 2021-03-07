@@ -1,17 +1,23 @@
-import React, {useCallback, useState} from 'react'
+import React, {useCallback, useEffect, useState} from 'react'
 import {
+	Button,
+	CircularProgress,
 	createStyles,
+	Link,
 	makeStyles,
 	TextField,
 	Typography,
-	Button,
 } from '@material-ui/core'
 import {useTranslation} from 'react-i18next'
+import {useAsync} from 'react-async'
+import {useSnackbar} from 'notistack'
+import {useHistory} from 'react-router-dom'
 import {
 	Blueprint,
 	BlueprintField as BlueprintFieldI,
 } from '../../../../constants/models/Blueprint'
 import BlueprintField from './BlueprintField'
+import {useApiService} from '../../../api/apiContext'
 
 const useStyles = makeStyles((theme) =>
 	createStyles({
@@ -34,18 +40,46 @@ function EditBlueprintForm({
 	blueprint: Blueprint
 }) {
 	const {t} = useTranslation()
+	const api = useApiService()
+	const {enqueueSnackbar} = useSnackbar()
+	const history = useHistory()
+
 	const classes = useStyles()
 	const [blueprint, setBlueprint] = useState(initialBlueprint)
 	const [expandedBlueprints, setExpandedBlueprints] = useState<{
 		[id: string]: boolean
 	}>({})
 
+	const onSubmitTask = useAsync({
+		deferFn: useCallback(async () => {
+			await api.blueprints.upsert({
+				fileId: blueprint.googleDocsId,
+				fieldsOptions: blueprint.fields,
+				isSubmitted: true,
+			})
+		}, [blueprint, api]),
+	})
+
+	// When updated
+	useEffect(() => {
+		if (!onSubmitTask.isResolved) return
+		enqueueSnackbar('Blueprint successfully updated', {variant: 'success'})
+		history.push('/blueprints')
+	}, [onSubmitTask.isResolved, enqueueSnackbar, history])
+
+	// When error while updating
+	useEffect(() => {
+		if (!onSubmitTask.isRejected || !onSubmitTask.error) return
+		enqueueSnackbar('Error while updating blueprint', {variant: 'error'})
+		// TODO report
+	}, [onSubmitTask.isRejected, onSubmitTask.error, enqueueSnackbar])
+
 	const onSubmit = useCallback(
 		(e) => {
 			e.preventDefault()
-			console.log('Submitting', blueprint)
+			onSubmitTask.run()
 		},
-		[blueprint]
+		[onSubmitTask]
 	)
 
 	const onExpand = useCallback(
@@ -69,11 +103,50 @@ function EditBlueprintForm({
 		[setBlueprint]
 	)
 
+	const handleAddNewField = useCallback(() => {
+		setBlueprint((prev) => ({
+			...prev,
+			fields: [
+				...prev.fields,
+				{
+					id: Date.now().toString(),
+					displayName: t('EditBlueprintScreen.newField.displayName'),
+					helperText: t('EditBlueprintScreen.newField.helperText'),
+					name: t('EditBlueprintScreen.newField.name'),
+					type: 'string',
+					options: {multiline: false},
+				},
+			],
+		}))
+	}, [setBlueprint, t])
+
+	const handleDeleteField = useCallback(
+		(id: string) => {
+			setBlueprint((old) => {
+				const fieldIndex = old.fields.findIndex((one) => one.id === id)
+				if (fieldIndex === -1) return old
+				const newFields = [...old.fields]
+				newFields.splice(fieldIndex, 1)
+				return {...old, fields: newFields}
+			})
+		},
+		[setBlueprint]
+	)
+
 	// TODO display owner
 	// TODO display if it is submitted or not
 	// TODO display google doc
 	return (
 		<form onSubmit={onSubmit}>
+			<Typography>
+				{t('EditBlueprintScreen.ownedBy')} {blueprint.owner.info.name}
+			</Typography>
+			<Link
+				href={`https://docs.google.com/document/d/${blueprint.googleDocsId}/edit`}
+				target="_blank"
+			>
+				{t('EditBlueprintScreen.openFile')}
+			</Link>
 			<TextField
 				fullWidth
 				label={t('EditBlueprintScreen.blueprintNameLabel')}
@@ -92,6 +165,7 @@ function EditBlueprintForm({
 			<div className={classes.fields}>
 				{blueprint.fields.map((field) => (
 					<BlueprintField
+						onDelete={handleDeleteField}
 						key={field.id}
 						expanded={expandedBlueprints[field.id]}
 						onExpand={onExpand}
@@ -100,13 +174,17 @@ function EditBlueprintForm({
 					/>
 				))}
 			</div>
+			<Button onClick={handleAddNewField} variant="outlined" color="primary">
+				{t('EditBlueprintScreen.addNewField')}
+			</Button>
 			<Button
+				disabled={onSubmitTask.isLoading}
 				className={classes.submitButton}
 				type="submit"
 				color="primary"
 				variant="contained"
 			>
-				{t('common.submit')}
+				{onSubmitTask.isLoading ? <CircularProgress /> : t('common.submit')}
 			</Button>
 		</form>
 	)

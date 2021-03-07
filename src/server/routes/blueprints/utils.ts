@@ -6,6 +6,8 @@ import unique from 'array-unique'
 import errorCodes from '../../../constants/errorCodes'
 import SendableError from '../../utils/SendableError'
 
+const SERVICE_ACCOUNT_EMAIL = String(process.env.SERVICE_ACCOUNT_EMAIL)
+
 function findFields(text: string): string[] {
 	const re = /\{{(.*?)\}}/g
 
@@ -51,6 +53,36 @@ export async function getBlueprintFields({
 	} catch (e) {
 		throw new SendableError(
 			`Unable to access file with id: ${fileId}`,
+			{
+				status: httpStatus.BAD_REQUEST,
+				errorCode: errorCodes.UNABLE_TO_GET_GOOGLE_FILE,
+			},
+			{error: e}
+		)
+	}
+}
+
+export async function shareFileToServiceAccount({
+	fileId,
+	drive,
+}: {
+	fileId: String
+	drive: driveV3.Drive
+}) {
+	try {
+		// @ts-ignore This is tested  and works
+		await drive.permissions.create({
+			fileId,
+			sendNotificationEmail: false,
+			requestBody: {
+				role: 'reader',
+				type: 'user',
+				emailAddress: SERVICE_ACCOUNT_EMAIL,
+			},
+		})
+	} catch (e) {
+		throw new SendableError(
+			`Unable to share file. Id: ${fileId}`,
 			{
 				status: httpStatus.BAD_REQUEST,
 				errorCode: errorCodes.UNABLE_TO_GET_GOOGLE_FILE,

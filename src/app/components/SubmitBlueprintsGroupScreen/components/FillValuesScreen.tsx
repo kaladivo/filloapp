@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from 'react'
+import React, {useState, useEffect, useRef, useCallback} from 'react'
 import {Button, Grid, TextField, Typography} from '@material-ui/core'
 import {useTranslation} from 'react-i18next'
 import Autocomplete from '@material-ui/lab/Autocomplete'
@@ -6,6 +6,14 @@ import {GroupField} from '../../../../constants/models/BlueprintsGroup'
 import StringField from './StringField'
 import IncrementingField from './IncrementingField'
 import {useCustomerInfo} from '../../CustomerInfoProvider'
+import DateField from './DateField'
+import NumberField from './NumberField'
+import SelectField from './SelectField'
+
+function getFieldTypeBasedOnPriority(types: string[]): string {
+	if (types.length === 1) return types[0]
+	return 'string'
+}
 
 interface Props {
 	fields: GroupField[]
@@ -24,15 +32,22 @@ function FillValuesScreen({fields, values, onChange, onSubmit}: Props) {
 	const priceFieldLimit = customerInfo.priceLimit?.limit
 	const priceFieldName = customerInfo.priceLimit?.fieldName
 
-	const ids = fields.filter((one) => !one.types.includes('string'))
-	const otherFields = fields.filter((one) => one.types.includes('string'))
+	const ids = fields.filter((one) => one.types.includes('id'))
+	const otherFields = fields.filter((one) => !one.types.includes('id'))
+
+	const onFieldChange = useCallback(
+		(value: string, field: GroupField) => {
+			onChange({...values, [field.name]: value})
+		},
+		[onChange, values]
+	)
 
 	const valuesRef = useRef(values)
 	useEffect(() => {
 		valuesRef.current = values
 	}, [values])
 
-	// // Populate values when entity changes
+	// Populate values when entity changes
 	useEffect(() => {
 		if (!disabledFields) return
 		// If no entity selected, make sure to empty disabled fields that depends on the entity.
@@ -58,6 +73,7 @@ function FillValuesScreen({fields, values, onChange, onSubmit}: Props) {
 				onSubmit()
 			}}
 		>
+			{/* CD specific start */}
 			<Grid container spacing={2}>
 				{!!suppliersList && (
 					<Grid item xs={12}>
@@ -79,48 +95,78 @@ function FillValuesScreen({fields, values, onChange, onSubmit}: Props) {
 						/>
 					</Grid>
 				)}
-				{[...ids, ...otherFields].map(
-					({name, types, displayName, helperText, options}, i) => (
+				{ids.map(({name, types, displayName}) => (
+					<IncrementingField
+						label={displayName}
+						type={types[0]}
+						value={values[name]}
+					/>
+				))}
+				{/* CD specific end */}
+
+				{otherFields.map((fieldOptions, i) => {
+					const {name, types, displayName, helperText, options} = fieldOptions
+					// TODO make user choose or somehthing
+					const type = getFieldTypeBasedOnPriority(types)
+
+					return (
 						<Grid key={name} item xs={12}>
-							{types.length === 1 && types[0] === 'string' ? (
-								<>
-									<StringField
-										disabled={(disabledFields || []).includes(name)}
-										helperText={
-											(disabledFields || []).includes(name)
-												? `${helperText ? `${helperText} ` : ''} ${t(
-														'CDSpecific.autofillFromEntity'
-												  )}`
-												: helperText || undefined
-										}
-										autoFocus={i === 0}
-										label={displayName}
-										value={values[name]}
-										multiline={!!options.multiline}
-										onChange={(e) => {
-											const {value} = e.target
-											onChange({...values, [name]: value})
-										}}
-									/>
-									{priceFieldLimit &&
-										priceFieldName &&
-										name === priceFieldName &&
-										Number(values[priceFieldName]) >= priceFieldLimit && (
-											<Typography color="secondary">
-												{t('CDSpecific.priceExceeded')}
-											</Typography>
-										)}
-								</>
-							) : (
-								<IncrementingField
+							{type === 'string' && (
+								<StringField
+									disabled={(disabledFields || []).includes(name)}
+									helperText={
+										(disabledFields || []).includes(name)
+											? `${helperText ? `${helperText} ` : ''} ${t(
+													'CDSpecific.autofillFromEntity'
+											  )}`
+											: helperText || undefined
+									}
+									autoFocus={i === 0}
 									label={displayName}
-									type={types[0]}
 									value={values[name]}
+									multiline={!!options.multiline}
+									onChange={(e) => {
+										const {value} = e.target
+										onFieldChange(value, fieldOptions)
+									}}
 								/>
 							)}
+
+							{type === 'date' && (
+								<DateField
+									value={values[fieldOptions.name]}
+									onChange={onFieldChange}
+									field={fieldOptions}
+								/>
+							)}
+							{type === 'number' && (
+								<NumberField
+									value={values[fieldOptions.name]}
+									onChange={onFieldChange}
+									field={fieldOptions}
+								/>
+							)}
+							{type === 'select' && (
+								<SelectField
+									value={values[fieldOptions.name]}
+									onChange={onFieldChange}
+									field={fieldOptions}
+								/>
+							)}
+
+							{/* Cd specific start */}
+							{priceFieldLimit &&
+								priceFieldName &&
+								name === priceFieldName &&
+								Number(values[priceFieldName]) >= priceFieldLimit && (
+									<Typography color="secondary">
+										{t('CDSpecific.priceExceeded')}
+									</Typography>
+								)}
+							{/* Cd specific end */}
 						</Grid>
 					)
-				)}
+				})}
 				<Grid item xs={12}>
 					<Button fullWidth type="submit" variant="contained" color="primary">
 						{t('common.submit')}

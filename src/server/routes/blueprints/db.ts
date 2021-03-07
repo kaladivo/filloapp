@@ -28,7 +28,7 @@ async function getBlueprintByFileIdAndUser({
                      blueprint.name,
                      blueprint.is_submitted as "isSubmitted",
                      json_agg(json_build_object('id', blueprint_field.id, 'name', blueprint_field.name, 'type',
-                                                blueprint_field.type, 'display_name', blueprint_field.display_name,
+                                                blueprint_field.type, 'displayName', blueprint_field.display_name,
                                                 'helperText', blueprint_field.helper_text, 'options',
                                                 blueprint_field.options))           as fields,
                      json_build_object('email', u.email, 'info', u.additional_info) as owner
@@ -62,7 +62,7 @@ export async function getBlueprintById({
                      blueprint.name,
                      blueprint.is_submitted                                         as "isSubmitted",
                      json_agg(json_build_object('id', blueprint_field.id, 'name', blueprint_field.name, 'type',
-                                                blueprint_field.type, 'display_name', blueprint_field.display_name,
+                                                blueprint_field.type, 'displayName', blueprint_field.display_name,
                                                 'helperText', blueprint_field.helper_text, 'options',
                                                 blueprint_field.options))           as fields,
                      json_build_object('email', u.email, 'info', u.additional_info) as owner
@@ -154,9 +154,9 @@ async function updateBlueprint({
 			`
                 update blueprint
                 set name = $1, is_submitted = $2
-                where id = $2::int
+                where id = $3::int
       `,
-			[fileName, blueprintId, isSubmitted]
+			[fileName, isSubmitted, blueprintId]
 		)
 		await createOrUpdateFields({fields, blueprintId, dbClient})
 
@@ -276,7 +276,7 @@ export async function listBlueprints({
                      blueprint.name,
                      blueprint.is_submitted as "isSubmitted",
                      json_agg(json_build_object('id', blueprint_field.id, 'name', blueprint_field.name, 'type',
-                                                blueprint_field.type, 'display_name', blueprint_field.display_name,
+                                                blueprint_field.type, 'displayName', blueprint_field.display_name,
                                                 'helperText', blueprint_field.helper_text, 'options',
                                                 blueprint_field.options))           as fields,
                      json_build_object('email', u.email, 'info', u.additional_info) as owner
@@ -323,7 +323,7 @@ export async function searchBlueprints({
                      blueprint.name,
                      blueprint.is_submitted as "isSubmitted",
                      json_agg(json_build_object('id', blueprint_field.id, 'name', blueprint_field.name, 'type',
-                                                blueprint_field.type, 'display_name', blueprint_field.display_name,
+                                                blueprint_field.type, 'displayName', blueprint_field.display_name,
                                                 'helperText', blueprint_field.helper_text,
                                                 blueprint_field.options))           as fields,
                      json_build_object('email', u.email, 'info', u.additional_info) as owner

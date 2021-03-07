@@ -18,6 +18,7 @@ interface Props {
 	onChange: (field: BlueprintFieldI) => void
 	expanded: boolean
 	onExpand: (value: boolean, blueprint: BlueprintFieldI) => void
+	onDelete: (id: string) => void
 }
 
 const StyledAccordionSummary = withStyles({
@@ -61,6 +62,7 @@ function BlueprintField({
 	onChange,
 	expanded,
 	onExpand,
+	onDelete,
 }: Props) {
 	const classes = useStyles()
 
@@ -83,7 +85,11 @@ function BlueprintField({
 				</Typography>
 			</StyledAccordionSummary>
 			<AccordionDetails>
-				<BlueprintFieldEdit value={value} onChange={onChange} />
+				<BlueprintFieldEdit
+					onDelete={onDelete}
+					value={value}
+					onChange={onChange}
+				/>
 			</AccordionDetails>
 		</Accordion>
 	)

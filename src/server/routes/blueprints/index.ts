@@ -2,34 +2,41 @@ import httpStatus from 'http-status-codes'
 import Schema from 'validate'
 import Router from 'koa-router'
 import moment from 'moment'
-import {FORBIDDEN, NOT_DELETED} from '../../../constants/errorCodes'
-
 import * as errorCodes from '../../../constants/errorCodes'
+import {FORBIDDEN, NOT_DELETED} from '../../../constants/errorCodes'
 import * as blueprintsRoutes from '../../../constants/api/blueprints'
 import validateBodyMiddleware from '../../utils/validateBodyMiddleware'
 import {
-	withValidUserWithCustomerMiddleware,
 	extractUserWithCustomer,
+	withValidUserWithCustomerMiddleware,
 } from '../../utils/auth'
 import {
 	extractDriveApiForServiceAccount,
+	extractUserDriveApi,
 	withServiceAccountDriveApiMiddleware,
+	withUserDriveApiMiddleware,
 } from '../../utils/googleApis'
-import {getBlueprintFields, getFileMetadata} from './utils'
+import {
+	getBlueprintFields,
+	getFileMetadata,
+	shareFileToServiceAccount,
+} from './utils'
 import SendableError from '../../utils/SendableError'
 import {
 	createOrUpdateBlueprint,
-	listBlueprints,
 	deleteBlueprint,
+	doesBlueprintExist,
 	getBlueprintById,
-	searchBlueprints,
 	InputBlueprintField,
+	listBlueprints,
 	listTinyBlueprints,
+	searchBlueprints,
 } from './db'
-import {withDataDbMiddleware, extractDbClient} from '../../dbService'
+import {extractDbClient, withDataDbMiddleware} from '../../dbService'
 import withPaginationMiddleware, {
 	extractPagination,
 } from '../../utils/withPaginationMiddleware'
+import {BlueprintField} from '../../../constants/models/Blueprint'
 
 const router = new Router()
 
@@ -65,14 +72,18 @@ router.post(
 	validateBodyMiddleware(createBlueprintSchema),
 	withValidUserWithCustomerMiddleware,
 	withServiceAccountDriveApiMiddleware,
+	withUserDriveApiMiddleware,
 	withDataDbMiddleware,
 	async (ctx, next) => {
-		const drive = extractDriveApiForServiceAccount(ctx)
+		const saDrive = extractDriveApiForServiceAccount(ctx)
+		const userDrive = extractUserDriveApi(ctx)
 		const user = extractUserWithCustomer(ctx)
 		const dbClient = extractDbClient(ctx)
 		const {fileId, fieldsOptions, isSubmitted} = ctx.request.body
 
-		const {mimeType, name} = await getFileMetadata({fileId, drive})
+		const exists = await doesBlueprintExist({fileId, dbClient, user})
+
+		const {mimeType, name} = await getFileMetadata({fileId, drive: userDrive})
 		if (mimeType !== 'application/vnd.google-apps.document') {
 			throw new SendableError('File submitted is not document', {
 				status: httpStatus.BAD_REQUEST,
@@ -80,29 +91,42 @@ router.post(
 			})
 		}
 
-		let fieldsNames
-		try {
-			fieldsNames = await getBlueprintFields({
-				fileId: ctx.request.body.fileId,
-				drive,
-			})
-		} catch (e) {
-			throw new SendableError(
-				'Unable to parse fields',
-				{
-					status: httpStatus.BAD_REQUEST,
-					errorCode: errorCodes.UNKNOWN,
-				},
-				{error: e}
-			)
+		await shareFileToServiceAccount({fileId, drive: userDrive})
+
+		let fieldsNames: string[] = fieldsOptions.map(
+			(one: BlueprintField) => one.name
+		)
+
+		// If blueprint is being created, make sure to scan it and add fields names accordingly
+		if (!exists) {
+			try {
+				fieldsNames = await getBlueprintFields({
+					fileId: ctx.request.body.fileId,
+					drive: saDrive,
+				})
+			} catch (e) {
+				throw new SendableError(
+					'Unable to parse fields',
+					{
+						status: httpStatus.BAD_REQUEST,
+						errorCode: errorCodes.UNKNOWN,
+					},
+					{error: e}
+				)
+			}
 		}
 
 		const fields = fieldsNames.map((fieldName) => {
 			const fieldOption = fieldsOptions.find(
-				(option: any) => option.name === fieldName
+				(option: BlueprintField) => option.name === fieldName
 			)
-			if (!fieldOption)
-				return {type: 'string', name: fieldName, displayName: fieldName}
+			if (!fieldOption) {
+				return {
+					type: 'string',
+					name: fieldName,
+					displayName: fieldName,
+				}
+			}
 			return {
 				name: fieldName,
 				// TODO check if type is valid maybe?
