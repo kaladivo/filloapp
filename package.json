@@ -1,6 +1,6 @@
 {
-	"name": "smlouvy-web",
-	"version": "0.1.0",
+	"name": "fillo-app",
+	"version": "0.1.21",
 	"private": true,
 	"dependencies": {
 		"@date-io/moment": "1.x",
