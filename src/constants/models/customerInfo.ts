@@ -17,4 +17,10 @@ export interface CustomerInfo {
 		refreshTokenOfWriter: string
 		spreadsheetId: string
 	}
+	defaults?: {
+		submitSettings?: {
+			generatePdfs?: boolean
+			generateMasterPdf?: boolean
+		}
+	}
 }

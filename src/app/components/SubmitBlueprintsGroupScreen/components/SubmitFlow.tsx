@@ -13,6 +13,7 @@ import SettingsScreen, {SubmitSettingsState} from './SettingsScreen'
 import {useApiService} from '../../../api/apiContext'
 import LoadingIndicator from '../../LoadingIndicator'
 import ErrorScreen from './ErrorScreen'
+import {useCustomerInfo} from '../../CustomerInfoProvider'
 
 interface Props {
 	blueprintsGroup: BlueprintGroup
@@ -26,6 +27,7 @@ function SubmitFlow({blueprintsGroup}: Props) {
 	const api = useApiService()
 	const history = useHistory()
 	const {enqueueSnackbar} = useSnackbar()
+	const customerInfo = useCustomerInfo()
 
 	const defaultValues = useMemo(() => {
 		return blueprintsGroup.fields.reduce<{[key: string]: string}>(
@@ -44,9 +46,10 @@ function SubmitFlow({blueprintsGroup}: Props) {
 
 	const [values, setValues] = useState(defaultValues)
 	const [settings, setSettings] = useState<SubmitSettingsState>({
-		generatePdfs: true,
+		generatePdfs: customerInfo.defaults?.submitSettings?.generatePdfs || false,
 		outputFolder: null,
-		generateMasterPdf: false,
+		generateMasterPdf:
+			customerInfo.defaults?.submitSettings?.generateMasterPdf || false,
 	})
 
 	const submitDetailTask = useAsync({
