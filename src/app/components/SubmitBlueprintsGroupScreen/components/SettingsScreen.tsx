@@ -1,18 +1,15 @@
 import React from 'react'
 import {
-	FormControlLabel,
-	Checkbox,
-	Typography,
 	Button,
-	TextField,
-	makeStyles,
+	Checkbox,
 	createStyles,
 	FormControl,
-	Tooltip,
+	FormControlLabel,
+	makeStyles,
+	Typography,
 } from '@material-ui/core'
 import {useTranslation} from 'react-i18next'
 import DriveFilePickerButton from '../../DriveFilePickerButton'
-// import FolderPickerTextField from './FolderPickerTextField'
 
 const useStyles = makeStyles((theme) =>
 	createStyles({
@@ -42,22 +39,19 @@ const useStyles = makeStyles((theme) =>
 	})
 )
 
-export interface SettingsValues {
-	outputFolder: {
-		name?: string
-		id: string
-	} | null
-	name: string
+export interface SubmitSettingsState {
 	generatePdfs: boolean
 	generateMasterPdf: boolean
-	generateDocuments: boolean
-	removeOldVersion: boolean
+	outputFolder: {
+		id: string
+		name?: string
+	} | null
 }
 
 interface Props {
 	onNext: () => void
-	values: SettingsValues
-	onChange: (values: SettingsValues) => void
+	values: SubmitSettingsState
+	onChange: (values: SubmitSettingsState) => void
 	onBack: () => void
 }
 
@@ -75,13 +69,6 @@ function SettingsScreen({onNext, values, onChange, onBack}: Props) {
 			}}
 			className={classes.root}
 		>
-			<TextField
-				fullWidth
-				value={values.name}
-				label={t('SubmitBlueprintsGroupScreen.versionName')}
-				helperText={t('SubmitBlueprintsGroupScreen.versionNameHelp')}
-				onChange={(e) => onChange({...values, name: e.target.value})}
-			/>
 			<div className={classes.folderPicker}>
 				<Typography variant="h6">
 					{t('SubmitBlueprintsGroupScreen.selectOutputFolder')}
@@ -104,14 +91,6 @@ function SettingsScreen({onNext, values, onChange, onBack}: Props) {
 						})}
 					</Typography>
 				</div>
-				{/* <FolderPickerTextField
-					onChange={(folderId) => {
-						onChange({
-							...values,
-							outputFolder: folderId ? {id: folderId, name: 'unknown'} : null,
-						})
-					}}
-				/> */}
 			</div>
 			<FormControl className={classes.checkboxes}>
 				<FormControlLabel
@@ -125,39 +104,13 @@ function SettingsScreen({onNext, values, onChange, onBack}: Props) {
 						/>
 					}
 				/>
-				<Tooltip title={t('common.notImplemented') || ''}>
-					<FormControlLabel
-						label={t('SubmitBlueprintsGroupScreen.generateMasterPdf')}
-						disabled
-						control={
-							<Checkbox
-								checked={values.generateMasterPdf}
-								onChange={(_, checked) => {
-									onChange({...values, generateMasterPdf: checked})
-								}}
-							/>
-						}
-					/>
-				</Tooltip>
 				<FormControlLabel
-					label={t('SubmitBlueprintsGroupScreen.generateDocuments')}
-					disabled
+					label={t('SubmitBlueprintsGroupScreen.generateMasterPdf')}
 					control={
 						<Checkbox
-							checked={values.generateDocuments}
+							checked={values.generateMasterPdf}
 							onChange={(_, checked) => {
-								onChange({...values, generateDocuments: checked})
-							}}
-						/>
-					}
-				/>
-				<FormControlLabel
-					label={t('SubmitBlueprintsGroupScreen.removeOldVersion')}
-					control={
-						<Checkbox
-							checked={values.removeOldVersion}
-							onChange={(_, checked) => {
-								onChange({...values, generateDocuments: checked})
+								onChange({...values, generateMasterPdf: checked})
 							}}
 						/>
 					}

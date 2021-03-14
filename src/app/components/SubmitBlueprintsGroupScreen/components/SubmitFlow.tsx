@@ -1,4 +1,4 @@
-import React, {useState, useMemo, useCallback, useEffect} from 'react'
+import React, {useCallback, useEffect, useMemo, useState} from 'react'
 import {Typography} from '@material-ui/core'
 import {useTranslation} from 'react-i18next'
 import {useAsync} from 'react-async'
@@ -9,7 +9,7 @@ import {
 	SubmitSettings,
 } from '../../../../constants/models/BlueprintsGroup'
 import FillValuesScreen from './FillValuesScreen'
-import SettingsScreen, {SettingsValues} from './SettingsScreen'
+import SettingsScreen, {SubmitSettingsState} from './SettingsScreen'
 import {useApiService} from '../../../api/apiContext'
 import LoadingIndicator from '../../LoadingIndicator'
 import ErrorScreen from './ErrorScreen'
@@ -43,16 +43,10 @@ function SubmitFlow({blueprintsGroup}: Props) {
 	}, [blueprintsGroup])
 
 	const [values, setValues] = useState(defaultValues)
-	const [settings, setSettings] = useState<SettingsValues>({
+	const [settings, setSettings] = useState<SubmitSettingsState>({
 		generatePdfs: true,
-		removeOldVersion: true,
-		outputFolder:
-			blueprintsGroup.submits.length > 0
-				? blueprintsGroup.submits[0]?.folder || null
-				: null,
-		generateDocuments: true,
+		outputFolder: null,
 		generateMasterPdf: false,
-		name: '',
 	})
 
 	const submitDetailTask = useAsync({
@@ -77,15 +71,10 @@ function SubmitFlow({blueprintsGroup}: Props) {
 			// TODO handle unauthorized errors!
 
 			const settingsToSubmit: SubmitSettings = {
-				outputName: settings.name,
 				generatePdfs: settings.generatePdfs,
-				generateDocuments: settings.generateDocuments,
-				generateMasterPdf: false,
+				generateMasterPdf: settings.generateMasterPdf,
 				outputFolder: {id: settings.outputFolder?.id || ''},
-				removeOldVersion: settings.removeOldVersion,
 			}
-
-			console.log({settingsToSubmit, settings})
 
 			await api.blueprintsGroups.submit({
 				id: blueprintsGroup.id,

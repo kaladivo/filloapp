@@ -9,8 +9,8 @@ import {
 } from '@material-ui/core'
 import {Link} from 'react-router-dom'
 import moment from 'moment'
-import {useTranslation} from 'react-i18next'
 import {BlueprintsGroupPreview} from '../../../../constants/models/BlueprintsGroup'
+import OwnerInfoDisplay from '../../OwnerInfoDisplay'
 
 const useStyles = makeStyles((theme) =>
 	createStyles({
@@ -39,29 +39,22 @@ interface Props {
 
 function BlueprintsGroupItem({className, blueprintGroup}: Props) {
 	const classes = useStyles()
-	const {t} = useTranslation()
 	return (
 		<Card className={className}>
 			<CardContent>
 				<Typography variant="h6">{blueprintGroup.name}</Typography>
-				<Typography className={classes.projectName}>
-					{blueprintGroup.projectName}
-				</Typography>
+				{blueprintGroup.projectName && (
+					<Typography className={classes.projectName}>
+						{blueprintGroup.projectName}
+					</Typography>
+				)}
 				<Typography>
 					{moment(blueprintGroup.createdAt).format('DD. MMMM YYYY')}
 				</Typography>
-				<div className={classes.author}>
-					<Typography>
-						{t('BlueprintsGroupScreen.createdBy', {
-							name: blueprintGroup.owner.info.name,
-						})}
-					</Typography>
-					<img
-						alt=""
-						src={blueprintGroup.owner.info.picture}
-						className={classes.authorPhoto}
-					/>
-				</div>
+				<OwnerInfoDisplay
+					ownerInfo={blueprintGroup.owner}
+					className={classes.author}
+				/>
 				<Button
 					className={classes.button}
 					variant="contained"

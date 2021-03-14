@@ -55,12 +55,12 @@ import {
 	sendPriceAlertIfLimitExceeded,
 	exportToSpreadsheet,
 	createEmptyFolderAndShareItToSA,
-	silentlyDeleteFile,
 } from './utils'
 import {
 	withCustomerInfoMiddleware,
 	extractCustomerInfo,
 } from '../../utils/customerInfo'
+import {createAndUploadCombinedPdf} from './utils/generateMasterPdf'
 
 const router = new Router()
 
@@ -109,8 +109,7 @@ router.get(
 				const {folderId, ...rest} = submit
 				return {
 					...rest,
-					// TODO handle folder
-					folder: null,
+					folderId,
 				}
 			})
 		)
@@ -348,9 +347,6 @@ const submitGroupSchema = new Schema({
 		message: 'Must be map of type and value objects',
 	},
 	settings: {
-		outputName: {
-			type: String,
-		},
 		outputFolder: {
 			id: {required: true, type: String},
 		},
@@ -359,14 +355,6 @@ const submitGroupSchema = new Schema({
 			type: Boolean,
 		},
 		generateMasterPdf: {
-			required: true,
-			type: Boolean,
-		},
-		generateDocuments: {
-			required: true,
-			type: Boolean,
-		},
-		removeOldVersion: {
 			required: true,
 			type: Boolean,
 		},
@@ -387,11 +375,9 @@ router.post(
 		const {
 			values,
 			settings: {
-				outputName,
 				generatePdfs,
+				generateMasterPdf,
 				outputFolder: {id: outputFolderId},
-				generateDocuments,
-				// removeOldVersion,
 			},
 		} = ctx.request.body
 		const dbClient = extractDbClient(ctx)
@@ -520,9 +506,7 @@ router.post(
 					blueprint,
 				})
 
-				const fileNameRaw = `${outputName ? `${outputName} -` : ''}${
-					blueprint.name
-				}`
+				const fileNameRaw = blueprint.name
 
 				const fileName = replaceTemplatesInFileName({
 					fileName: fileNameRaw,
@@ -541,7 +525,7 @@ router.post(
 					saDocs,
 				})
 
-				// TODO reenable pdf generation
+				console.info('Submitting filled blueprint', 'Generating PDF')
 				let pdfId: string | null = null
 				if (generatePdfs) {
 					pdfId = await saveDocumentAsPdf({
@@ -552,21 +536,13 @@ router.post(
 					})
 				}
 
-				if (!generateDocuments) {
-					// TODO maybe can not do this
-					await silentlyDeleteFile({
-						fileId: googleDocId,
-						drive: serviceAccountDrive,
-					})
-				}
-
 				console.info('Submitting filled blueprint', 'Document generated', {
 					googleDocId,
 				})
 
 				return {
 					blueprint,
-					googleDocId: generateDocuments ? googleDocId : null,
+					googleDocId,
 					pdfId,
 					name: fileName,
 				}
@@ -576,10 +552,31 @@ router.post(
 		try {
 			console.info('Submitting filled blueprint', 'Inserting submits')
 			const generated = await Promise.all(generateBlueprintTasks)
+			console.info('Submitting filled blueprint', 'Submits inserted')
+
+			console.info('Submitting filled blueprint', {generateMasterPdf})
+			if (generateMasterPdf) {
+				const docsIds = generated
+					.map((one) => one.googleDocId)
+					.filter(Boolean) as string[]
+
+				console.info('Submitting filled blueprint', 'Generating master pdf')
+				const masterPdfId = await createAndUploadCombinedPdf({
+					drive: serviceAccountDrive,
+					docsIds,
+					folderId: targetFolderId,
+					resultName: `${blueprintGroup.name} - master pdf`,
+				})
+				console.info(
+					'Submitting filled blueprint',
+					`Master pdf generated ${masterPdfId}`
+				)
+			}
+
 			const insertedId = await insertSubmit({
 				blueprintsGroupId: blueprintGroup.id,
 				dbClient,
-				folderId: outputFolderId,
+				folderId: targetFolderId,
 				generated,
 				values: generatedValues,
 				user,
@@ -606,7 +603,7 @@ router.post(
 				),
 				blueprint: {
 					id: submit.id,
-					name: outputName,
+					name: submit.name,
 					userName: submit.byUser.info?.name || submit.byUser.email,
 				},
 				customerInfo,

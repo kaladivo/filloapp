@@ -16,10 +16,7 @@ export interface FilledValue {
 export interface BlueprintsGroupSubmit {
 	id: string
 	submittedAt: string
-	folder?: {
-		name: string
-		id: string
-	}
+	folderId: string
 	byUser: OwnerInfo
 	filledValues: Array<FilledValue>
 	generatedFiles: Array<GeneratedDocument>

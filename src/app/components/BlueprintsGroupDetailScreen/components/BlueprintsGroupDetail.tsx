@@ -72,11 +72,13 @@ function BlueprintsGroupDetail({blueprintsGroup}: Props) {
 							date: moment(blueprintsGroup.createdAt).format('DD. MM. YYYY'),
 						})}
 					</Typography>
-					<Typography>
-						{t('BlueprintsGroupDetailScreen.projectName', {
-							projectName: blueprintsGroup.projectName,
-						})}
-					</Typography>
+					{blueprintsGroup.projectName && (
+						<Typography>
+							{t('BlueprintsGroupDetailScreen.projectName', {
+								projectName: blueprintsGroup.projectName,
+							})}
+						</Typography>
+					)}
 				</div>
 
 				<div>

@@ -41,10 +41,12 @@ export default {
 		'badDomain':
 			'Your domain is not on our list, make sure you are using your work email',
 	},
+	OwnerInfo: {
+		'createdBy': 'Created by {{name}}',
+	},
 	'BlueprintsGroupScreen': {
 		'title': 'Forms to submit',
 		'addNew': 'Add new',
-		'createdBy': 'Created by {{name}}',
 		'unableToDelete': 'Unable to delete. Are you the owner?',
 		'deleted': 'Deleted',
 		'searchLabel': 'Search by name or project',
@@ -68,13 +70,10 @@ export default {
 		'outputName': 'Output name',
 		'generatePdfs': 'Generate PDF files from generated documents',
 		'generateMasterPdf': 'Generate all of the files into one PDF',
-		'generateDocuments': 'Generate editable documents',
-		'removeOldVersion': 'Remove old version from drive',
 		'selectOutputFolder': 'Select folder to save the generated items into',
 		'selectedOutputFolder': 'Selected folder: {{name}}',
 		'loading': 'Generating documents, this might take 10 - 30 seconds',
 		'select': 'Select',
-		'versionName': 'Version name',
 		'versionNameHelp': 'Will be used as a part of the name',
 		'generate': 'Generate filled document',
 		'outputFolderMissing': 'Output folder must be selected',
@@ -119,6 +118,7 @@ export default {
 	},
 	'BlueprintsListScreen': {
 		'createNew': 'Create new template',
+		'edit': 'Edit',
 	},
 	'EditBlueprintScreen': {
 		'title': 'Edit template',

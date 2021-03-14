@@ -34,14 +34,14 @@ function GeneratedFilesList({className, submit}: Props) {
 	const classes = useStyles()
 	return (
 		<div className={className}>
-			{submit.folder && (
+			{submit.folderId && (
 				<Button
 					className={classes.folderButton}
 					variant="outlined"
 					color="secondary"
 					size="small"
 					target="_blank"
-					href={`https://drive.google.com/drive/folders/${submit.folder.id}?usp=sharing`}
+					href={`https://drive.google.com/drive/folders/${submit.folderId}?usp=sharing`}
 				>
 					{t('BlueprintsGroupDetailScreen.goToFolderButton')}
 				</Button>

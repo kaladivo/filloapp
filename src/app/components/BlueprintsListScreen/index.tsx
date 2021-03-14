@@ -1,21 +1,35 @@
 import React, {useCallback} from 'react'
 import {Link} from 'react-router-dom'
-import {Button, Typography} from '@material-ui/core'
+import {Button, makeStyles, createStyles} from '@material-ui/core'
 import {useTranslation} from 'react-i18next'
+
 import RootContainer from '../RootContainer'
 import {useApiService} from '../../api/apiContext'
 import {Blueprint} from '../../../constants/models/Blueprint'
 import {PaginationPosition} from '../../../constants/models/Pagination'
 import InfiniteLoadingList from '../InfiniteLoadingList'
+import BlueprintPreview from './components/BlueprintPreview'
 
 interface Result {
 	items: Blueprint[]
 	pagination: PaginationPosition
 }
 
+const useStyles = makeStyles((theme) =>
+	createStyles({
+		list: {
+			margin: theme.spacing(0, 0),
+			' & > *': {
+				margin: theme.spacing(2, 0),
+			},
+		},
+	})
+)
+
 function BlueprintsListScreen() {
 	const {t} = useTranslation()
 	const api = useApiService()
+	const classes = useStyles()
 
 	const loadMore = useCallback(
 		async (lastResult: Result | null) => {
@@ -54,20 +68,14 @@ function BlueprintsListScreen() {
 			>
 				{t('BlueprintsListScreen.createNew')}
 			</Button>
-			<InfiniteLoadingList resultToItems={resultToItems} loadMore={loadMore}>
+			<InfiniteLoadingList
+				resultToItems={resultToItems}
+				loadMore={loadMore}
+				listContainerProps={{className: classes.list}}
+			>
 				{(items: Blueprint[]) => {
 					return items.map((one) => (
-						<div key={one.id}>
-							<Typography>{one.name}</Typography>
-							<Button
-								component={Link}
-								to={`blueprints/${one.id}/edit`}
-								variant="contained"
-								color="primary"
-							>
-								Edit
-							</Button>
-						</div>
+						<BlueprintPreview blueprint={one} key={one.id} />
 					))
 				}}
 			</InfiniteLoadingList>

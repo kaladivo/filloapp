@@ -30,12 +30,9 @@ export interface BlueprintsGroupPreview {
 }
 
 export interface SubmitSettings {
-	outputName: string
 	generatePdfs: boolean
 	generateMasterPdf: boolean
-	removeOldVersion: boolean
-	generateDocuments: boolean
-	outputFolder?: {
+	outputFolder: {
 		id: string
 		name?: string
 	}
