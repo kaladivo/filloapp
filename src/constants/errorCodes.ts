@@ -16,6 +16,7 @@ export type ErrorCode =
 	| 'error_generating_documents'
 	| 'user_must_have_customer_selected'
 	| 'USER_DOES_NOT_EXIST'
+	| 'already_exists'
 
 export const NO_CUSTOMER_FOR_EMAIL: ErrorCode = 'no_customer_for_email'
 export const USER_MUST_HAVE_CUSTOMER_SELECTED: ErrorCode =
@@ -39,6 +40,7 @@ export const UNABLE_TO_ACCESS_DRIVE_FILE: ErrorCode =
 	'unable_to_access_drive_file'
 export const UNABLE_TO_ACCESS_OUTPUT_FOLDER: ErrorCode =
 	'unable_to_access_output_folder'
+export const ALREADY_EXISTS: ErrorCode = 'already_exists'
 
 const errorCodes = {
 	NO_CUSTOMER_FOR_EMAIL,
@@ -58,6 +60,7 @@ const errorCodes = {
 	ERROR_GENERATING_DOCUMENT,
 	USER_DOES_NOT_BELONG_TO_SPECIFIED_CUSTOMER,
 	USER_MUST_HAVE_CUSTOMER_SELECTED,
+	ALREADY_EXISTS,
 }
 
 export default errorCodes

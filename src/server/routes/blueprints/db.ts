@@ -1,5 +1,5 @@
 import {PoolClient} from 'pg'
-import {TinyBlueprint, Blueprint} from '../../../constants/models/Blueprint'
+import {Blueprint, TinyBlueprint} from '../../../constants/models/Blueprint'
 import {PaginationPosition} from '../../../constants/models/Pagination'
 
 import {UserWithSelectedCustomer} from '../../../constants/User'
@@ -131,16 +131,39 @@ async function createOrUpdateFields({
 	)
 }
 
-async function updateBlueprint({
-	fileName,
-	fileId,
-	isSubmitted,
+export async function canUserUpdateBlueprint({
 	blueprintId,
+	user,
+	dbClient,
+}: {
+	blueprintId: string
+	user: UserWithSelectedCustomer
+	dbClient: PoolClient
+}) {
+	const {rows} = await dbClient.query(
+		`
+		select uc.id as "userCustomerId"
+		from blueprint
+		left join user_customer uc on blueprint.user_customer_id = uc.id
+		where blueprint.id = $1 and uc.id = $2
+	`,
+		[blueprintId, user.selectedCustomer.customerId]
+	)
+
+	if (rows.length) return false
+	const author = rows[0].userCustomerId
+	if (author === user.selectedCustomer.userCustomerId) return true
+	return user.selectedCustomer.permissions.canModifyAllBlueprintsGroups
+}
+
+export async function updateBlueprint({
+	blueprintId,
+	isSubmitted,
+	fileName,
 	fields,
 	user,
 	dbClient,
 }: {
-	fileId: string
 	blueprintId: string
 	isSubmitted: boolean
 	fileName: string
@@ -161,14 +184,18 @@ async function updateBlueprint({
 		await createOrUpdateFields({fields, blueprintId, dbClient})
 
 		await dbClient.query(`commit`)
-		return await getBlueprintByFileIdAndUser({fileId, dbClient, user})
+		return await getBlueprintById({
+			blueprintId,
+			dbClient,
+			customerId: user.selectedCustomer.customerId,
+		})
 	} catch (e) {
 		await dbClient.query(`rollback`)
 		throw e
 	}
 }
 
-async function createBlueprint({
+export async function createBlueprint({
 	fileId,
 	fileName,
 	fields,
@@ -207,54 +234,6 @@ async function createBlueprint({
 		await dbClient.query(`rollback`)
 		throw e
 	}
-}
-
-export async function createOrUpdateBlueprint({
-	fileId,
-	fileName,
-	isSubmitted,
-	fields,
-	dbClient,
-	user,
-}: {
-	fileId: string
-	fileName: string
-	isSubmitted: boolean
-	fields: InputBlueprintField[]
-	dbClient: PoolClient
-	user: UserWithSelectedCustomer
-}): Promise<{blueprint: Blueprint; performedAction: 'update' | 'create'}> {
-	let blueprint = await getBlueprintByFileIdAndUser({fileId, dbClient, user})
-	let performedAction: 'update' | 'create'
-
-	if (!blueprint) {
-		blueprint = await createBlueprint({
-			fileId,
-			dbClient,
-			user,
-			fields,
-			isSubmitted,
-			fileName,
-		})
-		performedAction = 'create'
-	} else {
-		blueprint = await updateBlueprint({
-			blueprintId: blueprint?.id || '0', // this should not happen, because we check for blueprint above
-			fileId,
-			user,
-			fields,
-			isSubmitted,
-			dbClient,
-			fileName,
-		})
-		performedAction = 'update'
-	}
-
-	if (!blueprint) {
-		throw new Error('Blueprint is null after creation. This should not happen')
-	}
-
-	return {blueprint, performedAction}
 }
 
 export async function listBlueprints({

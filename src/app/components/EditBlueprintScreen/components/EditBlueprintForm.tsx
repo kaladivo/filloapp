@@ -61,11 +61,10 @@ function EditBlueprintForm({
 
 	const submitTask = useAsync({
 		deferFn: useCallback(async () => {
-			await api.blueprints.upsert({
+			await api.blueprints.update({
 				name: blueprint.name,
-				fileId: blueprint.googleDocsId,
+				blueprintId: blueprint.id,
 				fieldsOptions: blueprint.fields,
-				isSubmitted: true,
 			})
 
 			enqueueSnackbar(t(t('EditBlueprintScreen.updateSuccess')), {
@@ -95,10 +94,10 @@ function EditBlueprintForm({
 
 	// When error while deleting
 	useEffect(() => {
-		if (!submitTask.isRejected || !submitTask.error) return
+		if (!deleteTask.isRejected || !deleteTask.error) return
 		enqueueSnackbar(t(t('EditBlueprintScreen.deleteError')), {variant: 'error'})
 		// TODO report
-	}, [submitTask.isRejected, submitTask.error, enqueueSnackbar, t])
+	}, [deleteTask.error, enqueueSnackbar, t, deleteTask.isRejected])
 
 	const onSubmit = useCallback(
 		(e) => {

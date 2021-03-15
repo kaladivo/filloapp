@@ -23,7 +23,7 @@ import {
 } from './utils'
 import SendableError from '../../utils/SendableError'
 import {
-	createOrUpdateBlueprint,
+	createBlueprint,
 	deleteBlueprint,
 	doesBlueprintExist,
 	getBlueprintById,
@@ -31,6 +31,7 @@ import {
 	listBlueprints,
 	listTinyBlueprints,
 	searchBlueprints,
+	updateBlueprint,
 } from './db'
 import {extractDbClient, withDataDbMiddleware} from '../../dbService'
 import withPaginationMiddleware, {
@@ -71,7 +72,7 @@ const createBlueprintSchema = new Schema({
 })
 
 router.post(
-	blueprintsRoutes.upsertBlueprint,
+	blueprintsRoutes.createBlueprint,
 	validateBodyMiddleware(createBlueprintSchema),
 	withValidUserWithCustomerMiddleware,
 	withServiceAccountDriveApiMiddleware,
@@ -89,10 +90,17 @@ router.post(
 			name: chosenName,
 		} = ctx.request.body
 
-		const exists = await doesBlueprintExist({fileId, dbClient, user})
+		if (await doesBlueprintExist({fileId, dbClient, user})) {
+			throw new SendableError(
+				`Blueprint with document: ${fileId} for user: ${user.googleAccessToken} was already created`,
+				{
+					errorCode: errorCodes.ALREADY_EXISTS,
+					status: httpStatus.CONFLICT,
+				}
+			)
+		}
 
-		// TODO handle service account not having access
-		if (!exists) await shareFileToServiceAccount({fileId, drive: userDrive})
+		await shareFileToServiceAccount({fileId, drive: userDrive})
 
 		const {mimeType, name} = await getFileMetadata({fileId, drive: saDrive})
 		if (mimeType !== 'application/vnd.google-apps.document') {
@@ -106,23 +114,20 @@ router.post(
 			(one: BlueprintField) => one.name
 		)
 
-		// If blueprint is being created, make sure to scan it and add fields names accordingly
-		if (!exists) {
-			try {
-				fieldsNames = await getBlueprintFields({
-					fileId: ctx.request.body.fileId,
-					drive: saDrive,
-				})
-			} catch (e) {
-				throw new SendableError(
-					'Unable to parse fields',
-					{
-						status: httpStatus.BAD_REQUEST,
-						errorCode: errorCodes.UNKNOWN,
-					},
-					{error: e}
-				)
-			}
+		try {
+			fieldsNames = await getBlueprintFields({
+				fileId: ctx.request.body.fileId,
+				drive: saDrive,
+			})
+		} catch (e) {
+			throw new SendableError(
+				'Unable to parse fields',
+				{
+					status: httpStatus.BAD_REQUEST,
+					errorCode: errorCodes.UNKNOWN,
+				},
+				{error: e}
+			)
 		}
 
 		const fields = fieldsNames.map((fieldName) => {
@@ -147,7 +152,7 @@ router.post(
 		}) as InputBlueprintField[]
 
 		try {
-			const createdBlueprint = await createOrUpdateBlueprint({
+			ctx.body = await createBlueprint({
 				fileId,
 				isSubmitted,
 				fileName:
@@ -156,12 +161,7 @@ router.post(
 				dbClient,
 				fields,
 			})
-
-			ctx.body = createdBlueprint
-			ctx.status =
-				createdBlueprint.performedAction === 'create'
-					? httpStatus.CREATED
-					: httpStatus.OK
+			ctx.status = httpStatus.CREATED
 		} catch (e) {
 			throw new SendableError(
 				'Unable to create blueprint',
@@ -172,6 +172,81 @@ router.post(
 				{error: e}
 			)
 		}
+
+		await next()
+	}
+)
+
+const updateBlueprintSchema = new Schema({
+	blueprintId: {
+		type: String,
+		required: true,
+	},
+	name: {
+		type: String,
+	},
+	fieldsOptions: {
+		type: Array,
+		required: true,
+		each: {
+			name: {type: String, required: true},
+			type: {type: String, required: true},
+			helperText: String,
+			displayName: String,
+			options: {
+				multiline: {
+					required: false,
+					type: Boolean,
+				},
+			},
+		},
+	},
+})
+
+router.put(
+	blueprintsRoutes.updateBlueprint,
+	validateBodyMiddleware(updateBlueprintSchema),
+	withValidUserWithCustomerMiddleware,
+	withDataDbMiddleware,
+	async (ctx, next) => {
+		const user = extractUserWithCustomer(ctx)
+		const dbClient = extractDbClient(ctx)
+		const {blueprintId, name, fieldsOptions} = ctx.request.body
+
+		const blueprintToUpdate = await getBlueprintById({
+			blueprintId,
+			dbClient,
+			customerId: user.selectedCustomer.customerId,
+		})
+
+		if (!blueprintToUpdate) {
+			throw new SendableError(
+				'Blueprint was not updated. Make sure it exists and you have the correct permissions',
+				{
+					status: httpStatus.OK,
+					errorCode: NOT_DELETED,
+				}
+			)
+		}
+
+		if (
+			blueprintToUpdate.owner.email !== user.email &&
+			!user.selectedCustomer.permissions.canModifyAllBlueprints
+		) {
+			throw new SendableError('Insufficient permissions', {
+				status: httpStatus.FORBIDDEN,
+				errorCode: FORBIDDEN,
+			})
+		}
+
+		ctx.body = await updateBlueprint({
+			blueprintId,
+			isSubmitted: true,
+			fileName: name,
+			dbClient,
+			fields: fieldsOptions,
+			user,
+		})
 
 		await next()
 	}

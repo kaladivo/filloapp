@@ -18,13 +18,13 @@ function CreateBlueprintScreen() {
 		deferFn: useCallback(
 			async ([document]: any) => {
 				const {id} = document[0]
-				const response = await api.blueprints.upsert({
+				const response = await api.blueprints.create({
 					fileId: id,
 					isSubmitted: false,
 					fieldsOptions: [],
 				})
 
-				history.push(`/blueprints/${response.data.blueprint.id}/edit`)
+				history.push(`/blueprints/${response.data.id}/edit`)
 			},
 			[api, history]
 		),

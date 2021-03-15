@@ -7,15 +7,16 @@ import {
 import * as blueprintsUrls from '../../../constants/api/blueprints'
 import {PaginationPosition} from '../../../constants/models/Pagination'
 
-export interface UpsertBlueprintResponse {
-	blueprint: Blueprint
-	performedAction: 'update' | 'create'
-}
-
-export interface UpsertBlueprintRequest {
+export interface CreateBlueprintRequest {
 	name?: string
 	fileId: string
 	isSubmitted: boolean
+	fieldsOptions: BlueprintField[]
+}
+
+export interface updateBlueprintRequest {
+	name?: string
+	blueprintId: string
 	fieldsOptions: BlueprintField[]
 }
 
@@ -31,10 +32,16 @@ export default class BlueprintsService {
 		this.apiService = apiService
 	}
 
-	upsert = (
-		request: UpsertBlueprintRequest
-	): Promise<AxiosResponse<UpsertBlueprintResponse>> => {
-		return this.apiService.post(blueprintsUrls.upsertBlueprint, request)
+	create = (
+		request: CreateBlueprintRequest
+	): Promise<AxiosResponse<Blueprint>> => {
+		return this.apiService.post(blueprintsUrls.createBlueprint, request)
+	}
+
+	update = (
+		request: updateBlueprintRequest
+	): Promise<AxiosResponse<Blueprint>> => {
+		return this.apiService.put(blueprintsUrls.updateBlueprint, request)
 	}
 
 	search = (
