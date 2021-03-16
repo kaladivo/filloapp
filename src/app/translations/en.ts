@@ -119,6 +119,8 @@ export default {
 	'BlueprintsListScreen': {
 		'createNew': 'Create new template',
 		'edit': 'Edit',
+		'canNotEditBlueprint':
+			'You do not have permissions to edit blueprints created by other users',
 	},
 	'EditBlueprintScreen': {
 		'title': 'Edit template',
