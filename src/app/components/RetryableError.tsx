@@ -1,5 +1,6 @@
 import React from 'react'
 import {Typography, Button} from '@material-ui/core'
+import {useTranslation} from 'react-i18next'
 
 function RetryableError({
 	error,
@@ -11,6 +12,19 @@ function RetryableError({
 	onTryAgain?: () => void
 }) {
 	console.info('Rendering error', error)
+	const {t} = useTranslation()
+
+	let errorMessage = error.message
+	// @ts-ignore
+	const errorResponse = error.response
+	if (errorResponse) {
+		errorMessage = t(
+			`errors.${errorResponse.data?.errorCode}`,
+			errorResponse.data?.message || errorMessage,
+			{}
+		)
+	}
+
 	return (
 		<div
 			style={{
@@ -21,7 +35,7 @@ function RetryableError({
 			}}
 		>
 			<Typography color="error">
-				{text} {error.message}
+				{text} - {errorMessage}
 			</Typography>
 			{onTryAgain && <Button onClick={onTryAgain}>Try again</Button>}
 		</div>

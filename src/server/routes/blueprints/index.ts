@@ -3,7 +3,11 @@ import Schema from 'validate'
 import Router from 'koa-router'
 import moment from 'moment'
 import * as errorCodes from '../../../constants/errorCodes'
-import {FORBIDDEN, NOT_DELETED} from '../../../constants/errorCodes'
+import {
+	DOCUMENT_DOES_NOT_INCLUDES_ANY_FIELDS,
+	FORBIDDEN,
+	NOT_DELETED,
+} from '../../../constants/errorCodes'
 import * as blueprintsRoutes from '../../../constants/api/blueprints'
 import validateBodyMiddleware from '../../utils/validateBodyMiddleware'
 import {
@@ -150,6 +154,12 @@ router.post(
 				options: fieldOption.options || {},
 			}
 		}) as InputBlueprintField[]
+
+		if (fields.length <= 0)
+			throw new SendableError('Blueprint does not contain any fields', {
+				status: httpStatus.BAD_REQUEST,
+				errorCode: DOCUMENT_DOES_NOT_INCLUDES_ANY_FIELDS,
+			})
 
 		try {
 			ctx.body = await createBlueprint({

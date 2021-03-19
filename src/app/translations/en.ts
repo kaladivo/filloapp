@@ -1,5 +1,9 @@
 export default {
 	'appName': 'FilloApp',
+	'errors': {
+		'document_does_not_include_any_fields':
+			'Document does not include any fields. Make sure to select documents with fields.',
+	},
 	'common': {
 		'goBack': 'Back',
 		'submit': 'submit',
