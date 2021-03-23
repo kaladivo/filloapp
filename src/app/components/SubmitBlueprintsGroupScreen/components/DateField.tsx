@@ -1,7 +1,7 @@
 import React, {useCallback, useMemo} from 'react'
 import {createStyles, makeStyles} from '@material-ui/core'
 import {DatePicker, DateTimePicker} from '@material-ui/pickers'
-import moment from 'moment'
+import moment, {Moment} from 'moment'
 import {GroupField} from '../../../../constants/models/BlueprintsGroup'
 
 const useStyles = makeStyles(() =>
@@ -26,9 +26,12 @@ function DateField({className, field, value, onChange}: Props) {
 		return moment(value, dateFormat)
 	}, [dateFormat, value])
 
-	const handleChange = useCallback(() => {
-		onChange(valueMoment.format(dateFormat), field)
-	}, [onChange, valueMoment, dateFormat, field])
+	const handleChange = useCallback(
+		(newValue: Moment) => {
+			onChange(newValue.format(dateFormat), field)
+		},
+		[onChange, dateFormat, field]
+	)
 
 	const classes = useStyles()
 	return (
