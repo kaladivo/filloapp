@@ -48,7 +48,7 @@ function ContactButton({className}: {className?: string}) {
 					</DialogContentText>
 				</DialogContent>
 				<DialogActions>
-					<Button onClick={handleClose} color="primary">
+					<Button onClick={() => setOpen(false)} color="primary">
 						{t('Presentation.createAccountDialog.no')}
 					</Button>
 					<Button onClick={handleClose} color="primary" autoFocus>

@@ -186,7 +186,7 @@ export default {
 			'yes': 'Open in email app',
 			'no': 'Close',
 			'mailLink':
-				'mailto:hynjin@gmail.com?subject=I am interested in using FolloApp',
+				'mailto:hynjin@gmail.com?subject=I am interested in using FilloApp',
 		},
 		'hero': {
 			'title': 'Let your documents be filled',
