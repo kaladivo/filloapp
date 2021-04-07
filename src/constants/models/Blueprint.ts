@@ -11,6 +11,7 @@ export interface BlueprintField {
 	displayName: string
 	helperText: string
 	options: BlueprintFieldOptions
+	defaultValue: string | null
 }
 
 export interface Blueprint {

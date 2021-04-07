@@ -37,7 +37,10 @@ function SubmitFlow({blueprintsGroup}: Props) {
 					[name]:
 						blueprintsGroup.submits[0]?.filledValues.find(
 							(one) => one.name === name
-						)?.value || '',
+						)?.value ||
+						blueprintsGroup.fields.find((one) => one.name === name)
+							?.defaultValue[0] ||
+						'',
 				}
 			},
 			{}

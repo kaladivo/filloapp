@@ -3,16 +3,25 @@ import {Button, Grid, TextField, Typography} from '@material-ui/core'
 import {useTranslation} from 'react-i18next'
 import Autocomplete from '@material-ui/lab/Autocomplete'
 import {GroupField} from '../../../../constants/models/BlueprintsGroup'
-import StringField from './StringField'
 import IncrementingField from './IncrementingField'
 import {useCustomerInfo} from '../../CustomerInfoProvider'
-import DateField from './DateField'
-import NumberField from './NumberField'
-import SelectField from './SelectField'
+import BlueprintField, {FieldOptions} from '../../BlueprintField'
 
 function getFieldTypeBasedOnPriority(types: string[]): string {
 	if (types.length === 1) return types[0]
 	return 'string'
+}
+
+function groupFieldToFieldOptions(groupField: GroupField): FieldOptions {
+	return {
+		displayName: groupField.displayName,
+		options: groupField.options,
+		helperText: groupField.helperText,
+		defaultValue: groupField.defaultValue[0],
+		name: groupField.name,
+		// TODO make user choose or somehthing
+		type: getFieldTypeBasedOnPriority(groupField.types),
+	}
 }
 
 interface Props {
@@ -36,7 +45,7 @@ function FillValuesScreen({fields, values, onChange, onSubmit}: Props) {
 	const otherFields = fields.filter((one) => !one.types.includes('id'))
 
 	const onFieldChange = useCallback(
-		(value: string, field: GroupField) => {
+		(value: string, field: {name: string}) => {
 			onChange({...values, [field.name]: value})
 		},
 		[onChange, values]
@@ -104,55 +113,37 @@ function FillValuesScreen({fields, values, onChange, onSubmit}: Props) {
 				))}
 				{/* CD specific end */}
 
-				{otherFields.map((fieldOptions, i) => {
-					const {name, types, displayName, helperText, options} = fieldOptions
-					// TODO make user choose or somehthing
-					const type = getFieldTypeBasedOnPriority(types)
+				{otherFields.map((fieldOptions) => {
+					const {name} = fieldOptions
 
 					return (
 						<Grid key={name} item xs={12}>
-							{type === 'string' && (
-								<StringField
-									disabled={(disabledFields || []).includes(name)}
-									helperText={
-										(disabledFields || []).includes(name)
-											? `${helperText ? `${helperText} ` : ''} ${t(
-													'CDSpecific.autofillFromEntity'
-											  )}`
-											: helperText || undefined
-									}
-									autoFocus={i === 0}
-									label={displayName}
-									value={values[name]}
-									multiline={!!options.multiline}
-									onChange={(e) => {
-										const {value} = e.target
-										onFieldChange(value, fieldOptions)
-									}}
-								/>
-							)}
+							{/* {type === 'string' && ( */}
+							{/*	<StringField */}
+							{/*		disabled={(disabledFields || []).includes(name)} */}
+							{/*		helperText={ */}
+							{/*			(disabledFields || []).includes(name) */}
+							{/*				? `${helperText ? `${helperText} ` : ''} ${t( */}
+							{/*						'CDSpecific.autofillFromEntity' */}
+							{/*				  )}` */}
+							{/*				: helperText || undefined */}
+							{/*		} */}
+							{/*		autoFocus={i === 0} */}
+							{/*		label={displayName} */}
+							{/*		value={values[name]} */}
+							{/*		multiline={!!options.multiline} */}
+							{/*		onChange={(e) => { */}
+							{/*			const {value} = e.target */}
+							{/*			onFieldChange(value, fieldOptions) */}
+							{/*		}} */}
+							{/*	/> */}
+							{/* )} */}
 
-							{type === 'date' && (
-								<DateField
-									value={values[fieldOptions.name]}
-									onChange={onFieldChange}
-									field={fieldOptions}
-								/>
-							)}
-							{type === 'number' && (
-								<NumberField
-									value={values[fieldOptions.name]}
-									onChange={onFieldChange}
-									field={fieldOptions}
-								/>
-							)}
-							{type === 'select' && (
-								<SelectField
-									value={values[fieldOptions.name]}
-									onChange={onFieldChange}
-									field={fieldOptions}
-								/>
-							)}
+							<BlueprintField
+								value={values[fieldOptions.name]}
+								field={groupFieldToFieldOptions(fieldOptions)}
+								onChange={onFieldChange}
+							/>
 
 							{/* Cd specific start */}
 							{priceFieldLimit &&

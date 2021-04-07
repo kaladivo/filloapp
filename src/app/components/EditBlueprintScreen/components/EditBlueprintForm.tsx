@@ -139,6 +139,7 @@ function EditBlueprintForm({
 					helperText: t('EditBlueprintScreen.newField.helperText'),
 					name: t('EditBlueprintScreen.newField.name'),
 					type: 'string',
+					defaultValue: null,
 					options: {multiline: false},
 				},
 			],

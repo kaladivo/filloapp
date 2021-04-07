@@ -7,6 +7,7 @@ export interface GroupField {
 	types: string[]
 	displayName: string
 	helperText: string | null
+	defaultValue: string[]
 	options: any
 }
 
