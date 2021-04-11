@@ -90,9 +90,6 @@ export default {
 		'folderFieldHelp': 'If you can not pick a file, insert folder url',
 		'folderFieldBadFormat': 'Can not recognize file url',
 		'folderFieldLabel': 'Folder url',
-		'valueIsNotNumber': 'Filled must be a number',
-		'minValueExceeded': 'Value must be higher than {{min}}',
-		'maxValueExceeded': 'Value must be lower than {{max}}',
 	},
 	'CreateBlueprintGroupScreen': {
 		'title': 'Create new Document ',
@@ -169,6 +166,13 @@ export default {
 		'deleteError': 'Error while deleting template',
 		'ownedBy': 'Owned by',
 		'openFile': 'Open template document',
+		'defaultValueLabel': 'Default value',
+		'defaultValueHelper': 'Leave empty for no default value',
+	},
+	'BlueprintField': {
+		'valueIsNotNumber': 'Filled must be a number',
+		'minValueExceeded': 'Value must be higher than {{min}}',
+		'maxValueExceeded': 'Value must be lower than {{max}}',
 	},
 	'Presentation': {
 		'menu': {

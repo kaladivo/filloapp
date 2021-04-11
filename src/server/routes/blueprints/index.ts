@@ -65,6 +65,7 @@ const createBlueprintSchema = new Schema({
 			type: {type: String, required: true},
 			helperText: String,
 			displayName: String,
+			defaultValue: String,
 			options: {
 				multiline: {
 					required: false,
@@ -152,6 +153,7 @@ router.post(
 				displayName: fieldOption.displayName || fieldName,
 				helperText: fieldOption.helperText || null,
 				options: fieldOption.options || {},
+				defaultValue: fieldOption.defaultValue,
 			}
 		}) as InputBlueprintField[]
 
@@ -203,6 +205,7 @@ const updateBlueprintSchema = new Schema({
 			type: {type: String, required: true},
 			helperText: String,
 			displayName: String,
+			defaultValue: String,
 			options: {
 				multiline: {
 					required: false,

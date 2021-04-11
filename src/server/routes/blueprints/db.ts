@@ -9,6 +9,7 @@ export interface InputBlueprintField {
 	type: string
 	displayName: string
 	helperText: string | null
+	defaultValue: string | null
 	options: {}
 }
 
@@ -23,22 +24,22 @@ async function getBlueprintByFileIdAndUser({
 }): Promise<Blueprint | null> {
 	const result = await dbClient.query(
 		`
-              select blueprint.id,
-                     google_docs_id                                                 as "googleDocsId",
-                     blueprint.name,
-                     blueprint.is_submitted as "isSubmitted",
-                     json_agg(json_build_object('id', blueprint_field.id, 'name', blueprint_field.name, 'type',
-                                                blueprint_field.type, 'displayName', blueprint_field.display_name,
-                                                'helperText', blueprint_field.helper_text, 'options',
-                                                blueprint_field.options))           as fields,
-                     json_build_object('email', u.email, 'info', u.additional_info) as owner
-              from blueprint
-                       left join blueprint_field on blueprint.id = blueprint_field.blueprint_id
-                       left join user_customer on blueprint.user_customer_id = user_customer.id
-                       left join "user" u on user_customer.user_email = u.email
-              where google_docs_id = $1
-                and blueprint.user_customer_id = $2
-              group by blueprint.id, u.email
+        select blueprint.id,
+               google_docs_id                                                 as "googleDocsId",
+               blueprint.name,
+               blueprint.is_submitted                                         as "isSubmitted",
+               json_agg(json_build_object('id', blueprint_field.id, 'name', blueprint_field.name, 'type',
+                                          blueprint_field.type, 'displayName', blueprint_field.display_name,
+                                          'helperText', blueprint_field.helper_text, 'defaultValue', blueprint_field.default_value, 'options',
+                                          blueprint_field.options))           as fields,
+               json_build_object('email', u.email, 'info', u.additional_info) as owner
+        from blueprint
+                 left join blueprint_field on blueprint.id = blueprint_field.blueprint_id
+                 left join user_customer on blueprint.user_customer_id = user_customer.id
+                 left join "user" u on user_customer.user_email = u.email
+        where google_docs_id = $1
+          and blueprint.user_customer_id = $2
+        group by blueprint.id, u.email
     `,
 		[fileId, user.selectedCustomer.userCustomerId]
 	)
@@ -57,23 +58,23 @@ export async function getBlueprintById({
 }): Promise<Blueprint | null> {
 	const result = await dbClient.query(
 		`
-              select blueprint.id,
-                     google_docs_id                                                 as "googleDocsId",
-                     blueprint.name,
-                     blueprint.is_submitted                                         as "isSubmitted",
-                     json_agg(json_build_object('id', blueprint_field.id, 'name', blueprint_field.name, 'type',
-                                                blueprint_field.type, 'displayName', blueprint_field.display_name,
-                                                'helperText', blueprint_field.helper_text, 'options',
-                                                blueprint_field.options))           as fields,
-                     json_build_object('email', u.email, 'info', u.additional_info) as owner
-              from blueprint
-                       left join blueprint_field on blueprint.id = blueprint_field.blueprint_id
-                       left join user_customer on blueprint.user_customer_id = user_customer.id
-                       left join "user" u on user_customer.user_email = u.email
-                       left join user_customer uc on u.email = uc.user_email
-              where blueprint.id = $1::int
-                and uc.customer_id = $2
-              group by blueprint.id, u.email
+        select blueprint.id,
+               google_docs_id                                                 as "googleDocsId",
+               blueprint.name,
+               blueprint.is_submitted                                         as "isSubmitted",
+               json_agg(json_build_object('id', blueprint_field.id, 'name', blueprint_field.name, 'type',
+                                          blueprint_field.type, 'displayName', blueprint_field.display_name,
+                                          'helperText', blueprint_field.helper_text, 'defaultValue', blueprint_field.default_value, 'options',
+                                          blueprint_field.options))           as fields,
+               json_build_object('email', u.email, 'info', u.additional_info) as owner
+        from blueprint
+                 left join blueprint_field on blueprint.id = blueprint_field.blueprint_id
+                 left join user_customer on blueprint.user_customer_id = user_customer.id
+                 left join "user" u on user_customer.user_email = u.email
+                 left join user_customer uc on u.email = uc.user_email
+        where blueprint.id = $1::int
+          and uc.customer_id = $2
+        group by blueprint.id, u.email
     `,
 		[blueprintId, customerId]
 	)
@@ -95,22 +96,22 @@ async function createOrUpdateFields({
 }) {
 	await dbClient.query(
 		`
-              delete
-              from blueprint_field
-              where blueprint_id = $1::int
+        delete
+        from blueprint_field
+        where blueprint_id = $1::int
     `,
 		[blueprintId]
 	)
 
 	await dbClient.query(
 		`
-		insert into blueprint_field (blueprint_id, name, type, display_name, helper_text, options) values
+		insert into blueprint_field (blueprint_id, name, type, display_name, helper_text, default_value, options) values
 			${fields
 				.map(
 					(field, index) =>
-						`($1::int, $${index * 5 + 2}, $${index * 5 + 3}, $${
-							index * 5 + 4
-						}, $${index * 5 + 5}, $${index * 5 + 6})`
+						`($1::int, $${index * 6 + 2}, $${index * 6 + 3}, $${
+							index * 6 + 4
+						}, $${index * 6 + 5}, $${index * 6 + 6}, $${index * 6 + 7})`
 				)
 				.join(', ')}
 	`,
@@ -123,6 +124,7 @@ async function createOrUpdateFields({
 					current.type,
 					current.displayName,
 					current.helperText,
+					current.defaultValue || null,
 					JSON.stringify(current.options || {}),
 				],
 				[]
@@ -142,11 +144,12 @@ export async function canUserUpdateBlueprint({
 }) {
 	const {rows} = await dbClient.query(
 		`
-		select uc.id as "userCustomerId"
-		from blueprint
-		left join user_customer uc on blueprint.user_customer_id = uc.id
-		where blueprint.id = $1 and uc.id = $2
-	`,
+        select uc.id as "userCustomerId"
+        from blueprint
+                 left join user_customer uc on blueprint.user_customer_id = uc.id
+        where blueprint.id = $1
+          and uc.id = $2
+    `,
 		[blueprintId, user.selectedCustomer.customerId]
 	)
 
@@ -175,9 +178,10 @@ export async function updateBlueprint({
 		await dbClient.query(`begin`)
 		await dbClient.query(
 			`
-                update blueprint
-                set name = $1, is_submitted = $2
-                where id = $3::int
+          update blueprint
+          set name         = $1,
+              is_submitted = $2
+          where id = $3::int
       `,
 			[fileName, isSubmitted, blueprintId]
 		)
@@ -215,8 +219,8 @@ export async function createBlueprint({
 
 		await dbClient.query(
 			`
-                INSERT INTO blueprint (google_docs_id, user_customer_id, name, is_submitted)
-                values ($1, $2, $3, $4)
+          INSERT INTO blueprint (google_docs_id, user_customer_id, name, is_submitted)
+          values ($1, $2, $3, $4)
       `,
 			[fileId, user.selectedCustomer.userCustomerId, fileName, isSubmitted]
 		)
@@ -256,7 +260,7 @@ export async function listBlueprints({
                      blueprint.is_submitted as "isSubmitted",
                      json_agg(json_build_object('id', blueprint_field.id, 'name', blueprint_field.name, 'type',
                                                 blueprint_field.type, 'displayName', blueprint_field.display_name,
-                                                'helperText', blueprint_field.helper_text, 'options',
+                                                'helperText', blueprint_field.helper_text, 'defaultValue', blueprint_field.default_value, 'options',
                                                 blueprint_field.options))           as fields,
                      json_build_object('email', u.email, 'info', u.additional_info) as owner
               from blueprint
@@ -303,7 +307,7 @@ export async function searchBlueprints({
                      blueprint.is_submitted as "isSubmitted",
                      json_agg(json_build_object('id', blueprint_field.id, 'name', blueprint_field.name, 'type',
                                                 blueprint_field.type, 'displayName', blueprint_field.display_name,
-                                                'helperText', blueprint_field.helper_text,
+                                                'helperText', blueprint_field.helper_text, 'defaultValue', blueprint_field.default_value,
                                                 blueprint_field.options))           as fields,
                      json_build_object('email', u.email, 'info', u.additional_info) as owner
               from blueprint
@@ -341,18 +345,18 @@ export async function deleteBlueprint({
 		await dbClient.query(`begin`)
 		await dbClient.query(
 			`
-                delete
-                from blueprint_blueprints_group
-                where blueprint_id = $1::int
+          delete
+          from blueprint_blueprints_group
+          where blueprint_id = $1::int
       `,
 			[blueprintId]
 		)
 
 		await dbClient.query(
 			`
-                delete
-                from blueprint_field
-                where blueprint_field.blueprint_id = $1::int
+          delete
+          from blueprint_field
+          where blueprint_field.blueprint_id = $1::int
       `,
 			[blueprintId]
 		)
@@ -361,9 +365,9 @@ export async function deleteBlueprint({
 
 		const resultBlueprint = await dbClient.query(
 			`
-                delete
-                from blueprint
-                where blueprint.id = $1::int
+          delete
+          from blueprint
+          where blueprint.id = $1::int
       `,
 			[blueprintId]
 		)
@@ -418,11 +422,11 @@ export async function doesBlueprintExist({
 }) {
 	const result = await dbClient.query(
 		`
-              select count(*) > 0 as exists
-              from blueprint
-                       left join user_customer uc on blueprint.user_customer_id = uc.id
-              where blueprint.google_docs_id = $1
-                and user_customer_id = $2
+        select count(*) > 0 as exists
+        from blueprint
+                 left join user_customer uc on blueprint.user_customer_id = uc.id
+        where blueprint.google_docs_id = $1
+          and user_customer_id = $2
     `,
 		[fileId, user.selectedCustomer.userCustomerId]
 	)

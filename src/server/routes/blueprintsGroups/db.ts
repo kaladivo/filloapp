@@ -22,7 +22,8 @@ export async function getFields({
                      json_agg(distinct bf.type) as types,
                      json_agg(bf.display_name)  as "displayName",
                      json_agg(bf.helper_text)   as "helperText",
-                     json_agg(bf.options)       as "options"
+                     json_agg(bf.options)       as "options",
+              			 json_agg(bf.default_value) as "defaultValue"
               from blueprint_field bf
                        left join blueprint b on bf.blueprint_id = b.id
                        left join blueprint_blueprints_group bbg on b.id = bbg.blueprint_id

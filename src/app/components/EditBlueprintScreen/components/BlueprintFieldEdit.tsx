@@ -9,6 +9,7 @@ import {useTranslation} from 'react-i18next'
 import {Delete} from '@material-ui/icons'
 import {BlueprintField as BlueprintFieldI} from '../../../../constants/models/Blueprint'
 import FieldTypeEdit from './FieldTypeEdit'
+import BlueprintField from '../../BlueprintField'
 
 const useStyles = makeStyles((theme) =>
 	createStyles({
@@ -70,7 +71,26 @@ function BlueprintFieldEdit({className, value, onChange, onDelete}: Props) {
 				}}
 			/>
 
+			<BlueprintField
+				field={{
+					type: value.type,
+					name: t('EditBlueprintScreen.defaultValueLabel'),
+					helperText: t('EditBlueprintScreen.defaultValueHelper'),
+					options: value.options,
+					displayName: t('EditBlueprintScreen.defaultValueLabel'),
+					defaultValue: null,
+				}}
+				value={value.defaultValue || ''}
+				onChange={(newDefaultValue) => {
+					onChange({
+						...value,
+						defaultValue: newDefaultValue === '' ? null : newDefaultValue,
+					})
+				}}
+			/>
+
 			<FieldTypeEdit field={value} onChange={onChange} />
+
 			<IconButton onClick={() => onDelete(value.id)}>
 				<Delete />
 			</IconButton>
