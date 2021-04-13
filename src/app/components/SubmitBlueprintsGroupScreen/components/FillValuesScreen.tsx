@@ -8,8 +8,7 @@ import {useCustomerInfo} from '../../CustomerInfoProvider'
 import BlueprintField, {FieldOptions} from '../../BlueprintField'
 
 function getFieldTypeBasedOnPriority(types: string[]): string {
-	if (types.length === 1) return types[0]
-	return 'string'
+	return types[0]
 }
 
 function groupFieldToFieldOptions(groupField: GroupField): FieldOptions {

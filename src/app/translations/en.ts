@@ -146,6 +146,7 @@ export default {
 		'selectTypeLabel': 'Predefined options',
 		'multilineLabel': 'Allow inserting newline',
 		'withTimeLabel': 'Include exact time with the date',
+		'currentTime': 'Prefill with current time',
 		'enableMin': 'Specify minimal value',
 		'enableMax': 'Specify maximal value',
 		'minValue': 'Minimal value',

@@ -71,23 +71,25 @@ function BlueprintFieldEdit({className, value, onChange, onDelete}: Props) {
 				}}
 			/>
 
-			<BlueprintField
-				field={{
-					type: value.type,
-					name: t('EditBlueprintScreen.defaultValueLabel'),
-					helperText: t('EditBlueprintScreen.defaultValueHelper'),
-					options: value.options,
-					displayName: t('EditBlueprintScreen.defaultValueLabel'),
-					defaultValue: null,
-				}}
-				value={value.defaultValue || ''}
-				onChange={(newDefaultValue) => {
-					onChange({
-						...value,
-						defaultValue: newDefaultValue === '' ? null : newDefaultValue,
-					})
-				}}
-			/>
+			{!(value.type === 'date' && value.options.setNow) && (
+				<BlueprintField
+					field={{
+						type: value.type,
+						name: t('EditBlueprintScreen.defaultValueLabel'),
+						helperText: t('EditBlueprintScreen.defaultValueHelper'),
+						options: value.options,
+						displayName: t('EditBlueprintScreen.defaultValueLabel'),
+						defaultValue: null,
+					}}
+					value={value.defaultValue || ''}
+					onChange={(newDefaultValue) => {
+						onChange({
+							...value,
+							defaultValue: newDefaultValue === '' ? null : newDefaultValue,
+						})
+					}}
+				/>
+			)}
 
 			<FieldTypeEdit field={value} onChange={onChange} />
 

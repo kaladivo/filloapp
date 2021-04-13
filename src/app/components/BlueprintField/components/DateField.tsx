@@ -3,7 +3,11 @@ import {createStyles, makeStyles} from '@material-ui/core'
 import {DatePicker, DateTimePicker} from '@material-ui/pickers'
 import moment, {Moment} from 'moment'
 import {useTranslation} from 'react-i18next'
-import {FieldProps} from '../index'
+import {FieldOptions, FieldProps} from '../index'
+
+export function getDateFormatForSetting(field: FieldOptions) {
+	return field.options.withTime ? 'DD.MM.YYYY HH:mm' : 'DD.MM.YYYY'
+}
 
 const useStyles = makeStyles(() =>
 	createStyles({
@@ -14,7 +18,7 @@ const useStyles = makeStyles(() =>
 function DateField({className, field, value, onChange}: FieldProps) {
 	const {t} = useTranslation()
 	const PickerToUse = field.options.withTime ? DateTimePicker : DatePicker
-	const dateFormat = field.options.withTime ? 'DD.MM.YYYY HH:mm' : 'DD.MM.YYYY'
+	const dateFormat = getDateFormatForSetting(field)
 
 	const valueMoment = useMemo(() => {
 		if (!value) return null

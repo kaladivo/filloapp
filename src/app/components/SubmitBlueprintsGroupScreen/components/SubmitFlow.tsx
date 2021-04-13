@@ -4,6 +4,7 @@ import {useTranslation} from 'react-i18next'
 import {useAsync} from 'react-async'
 import {useHistory} from 'react-router-dom'
 import {useSnackbar} from 'notistack'
+import moment from 'moment'
 import {
 	BlueprintGroup,
 	SubmitSettings,
@@ -14,6 +15,7 @@ import {useApiService} from '../../../api/apiContext'
 import LoadingIndicator from '../../LoadingIndicator'
 import ErrorScreen from './ErrorScreen'
 import {useCustomerInfo} from '../../CustomerInfoProvider'
+import {getDateFormatForSetting} from '../../BlueprintField/components/DateField'
 
 interface Props {
 	blueprintsGroup: BlueprintGroup
@@ -32,13 +34,29 @@ function SubmitFlow({blueprintsGroup}: Props) {
 	const defaultValues = useMemo(() => {
 		return blueprintsGroup.fields.reduce<{[key: string]: string}>(
 			(prev, {name}) => {
-				const defaultValue =
-					blueprintsGroup.submits[0]?.filledValues.find(
-						(one) => one.name === name
-					)?.value ||
-					blueprintsGroup.fields.find((one) => one.name === name)
-						?.defaultValue[0] ||
-					''
+				const lastSubmit = blueprintsGroup.submits[0]?.filledValues.find(
+					(one) => one.name === name
+				)?.value
+
+				const field = blueprintsGroup.fields.find((one) => one.name === name)
+
+				// If there was no last submit and date field should be set to current
+				if (
+					!lastSubmit &&
+					field?.types[0] === 'date' &&
+					field?.options.setNow
+				) {
+					return {
+						...prev,
+						[name]: moment().format(
+							getDateFormatForSetting(field?.options || {})
+						),
+					}
+				}
+
+				const specifiedDefaultValue = field?.defaultValue[0]
+
+				const defaultValue = lastSubmit || specifiedDefaultValue || ''
 
 				return {
 					...prev,
@@ -56,8 +74,6 @@ function SubmitFlow({blueprintsGroup}: Props) {
 		generateMasterPdf:
 			customerInfo.defaults?.submitSettings?.generateMasterPdf || false,
 	})
-
-	console.log('values', values, defaultValues)
 
 	const submitDetailTask = useAsync({
 		deferFn: useCallback(async () => {

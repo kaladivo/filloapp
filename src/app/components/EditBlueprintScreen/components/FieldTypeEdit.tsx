@@ -108,6 +108,12 @@ function FieldTypeEdit({className, field, onChange}: Props) {
 						onChange={handleOptionsChange}
 						label={t('EditBlueprintScreen.withTimeLabel')}
 					/>
+					<OptionCheckbox
+						optionName="setNow"
+						optionsObject={field.options}
+						onChange={handleOptionsChange}
+						label={t('EditBlueprintScreen.currentTime')}
+					/>
 				</div>
 			)}
 
