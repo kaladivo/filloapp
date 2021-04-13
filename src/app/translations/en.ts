@@ -173,6 +173,7 @@ export default {
 		'valueIsNotNumber': 'Filled must be a number',
 		'minValueExceeded': 'Value must be higher than {{min}}',
 		'maxValueExceeded': 'Value must be lower than {{max}}',
+		'noDateSelected': 'No date selected',
 	},
 	'Presentation': {
 		'menu': {

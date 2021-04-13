@@ -32,15 +32,17 @@ function SubmitFlow({blueprintsGroup}: Props) {
 	const defaultValues = useMemo(() => {
 		return blueprintsGroup.fields.reduce<{[key: string]: string}>(
 			(prev, {name}) => {
+				const defaultValue =
+					blueprintsGroup.submits[0]?.filledValues.find(
+						(one) => one.name === name
+					)?.value ||
+					blueprintsGroup.fields.find((one) => one.name === name)
+						?.defaultValue[0] ||
+					''
+
 				return {
 					...prev,
-					[name]:
-						blueprintsGroup.submits[0]?.filledValues.find(
-							(one) => one.name === name
-						)?.value ||
-						blueprintsGroup.fields.find((one) => one.name === name)
-							?.defaultValue[0] ||
-						'',
+					[name]: defaultValue,
 				}
 			},
 			{}
@@ -54,6 +56,8 @@ function SubmitFlow({blueprintsGroup}: Props) {
 		generateMasterPdf:
 			customerInfo.defaults?.submitSettings?.generateMasterPdf || false,
 	})
+
+	console.log('values', values, defaultValues)
 
 	const submitDetailTask = useAsync({
 		deferFn: useCallback(async () => {
