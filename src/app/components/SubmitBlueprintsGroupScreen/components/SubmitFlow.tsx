@@ -40,14 +40,14 @@ function SubmitFlow({blueprintsGroup}: Props) {
 
 				const field = blueprintsGroup.fields.find((one) => one.name === name)
 
-				const options = field?.options[0]
+				const options = field?.options
 
 				// If there was no last submit and date field should be set to current
 				if (!lastSubmit && field?.types[0] === 'date' && options?.setNow) {
 					return {
 						...prev,
 						[name]: moment().format(
-							getDateFormatForSetting(options?.withTime || {})
+							getDateFormatForSetting(!!field?.options?.withTime)
 						),
 					}
 				}
