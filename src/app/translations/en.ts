@@ -16,6 +16,7 @@ export default {
 		'loading': 'loading...',
 		'signIn': 'Sign in',
 		'cancel': 'Cancel',
+		'version': 'Version:',
 	},
 	'DriveFilePicker': {
 		'nothingSelected': 'No files selected. Picker was closed.',

@@ -9,7 +9,9 @@ import {
 	makeStyles,
 	createStyles,
 } from '@material-ui/core'
+import {useTranslation} from 'react-i18next'
 import {Section} from '../../../insideSections'
+import {useEnvInfo} from '../../EnvInfoProvider'
 
 const useStyles = makeStyles((theme) =>
 	createStyles({
@@ -24,6 +26,11 @@ const useStyles = makeStyles((theme) =>
 		toolbar: theme.mixins.toolbar,
 		active: {
 			backgroundColor: 'rgba(0, 0, 0, 0.04)',
+		},
+		versionName: {
+			color: 'lightgray',
+			fontSize: '0.7rem',
+			margin: theme.spacing(1, 2),
 		},
 	})
 )
@@ -59,6 +66,8 @@ interface Props {
 }
 
 function NavigationList({sections}: Props) {
+	const env = useEnvInfo()
+	const {t} = useTranslation()
 	const classes = useStyles()
 	const mainSections = sections.filter(
 		(section) => section.navigation?.section === 'main'
@@ -77,6 +86,11 @@ function NavigationList({sections}: Props) {
 			<Divider />
 			<List>
 				<SectionsList sections={bottomSections} />
+				{env.version && (
+					<div className={classes.versionName}>
+						{t('common.version')} {env.version}
+					</div>
+				)}
 			</List>
 		</div>
 	)

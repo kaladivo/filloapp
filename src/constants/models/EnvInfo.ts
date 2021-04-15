@@ -4,4 +4,5 @@ export interface EnvInfo {
 	googleClientId: string
 	googleSharingServiceAccount: string
 	googleAppId: string
+	version: string
 }

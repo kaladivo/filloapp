@@ -10,7 +10,7 @@ build_app:
   services:
     - docker:dind
   script:
-    - echo "VERSION=$CI_COMMIT_SHORT_SHA" > .env
+    - echo "VERSION=$CI_COMMIT_TAG" > .env
     - docker build -t $CI_REGISTRY_IMAGE:latest .
     - docker tag $CI_REGISTRY_IMAGE:latest $CI_REGISTRY_IMAGE:$CI_BUILD_TAG
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY

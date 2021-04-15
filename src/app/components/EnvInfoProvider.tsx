@@ -18,6 +18,7 @@ const emptyContextValue: EnvInfoContext = {
 		googleScopes: '',
 		googleSharingServiceAccount: '',
 		googleAppId: '',
+		version: '',
 	},
 }
 
