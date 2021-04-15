@@ -504,6 +504,7 @@ router.post(
 			async (blueprint) => {
 				console.info('Submitting filled blueprint', 'Generating document', {
 					blueprint,
+					generatedValues,
 				})
 
 				const fileNameRaw = blueprint.name
@@ -523,6 +524,11 @@ router.post(
 					),
 					saDrive: serviceAccountDrive,
 					saDocs,
+				})
+
+				console.info('Submitting filled blueprint', 'Document generated', {
+					fileName,
+					googleDocId,
 				})
 
 				console.info('Submitting filled blueprint', 'Generating PDF')

@@ -142,7 +142,6 @@ export async function createAndUploadCombinedPdf({
 			`Combining all pdfs into one. Target file: ${combinedFilePath}`
 		)
 		await createCombinedFile({paths: filesPaths, outFilePath: combinedFilePath})
-		console.info('Generating combined pdf', 'C')
 
 		console.info(
 			'Generating combined pdf',

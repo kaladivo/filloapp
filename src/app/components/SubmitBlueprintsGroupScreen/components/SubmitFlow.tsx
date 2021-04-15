@@ -82,12 +82,13 @@ function SubmitFlow({blueprintsGroup}: Props) {
 					// TODO let user select
 					blueprintsGroup.fields.find((one) => one.name === key)?.types[0] ||
 					'string'
-				if (!values[key] && valueType === 'string') return prev
+				// if (!values[key] && valueType === 'string') return prev
 				return {
 					...prev,
 					[key]: {
 						type: valueType,
-						value: values[key],
+						// fallback to empty string
+						value: values[key] || '',
 					},
 				}
 			}, {})
