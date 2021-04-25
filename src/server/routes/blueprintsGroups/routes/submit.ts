@@ -4,6 +4,7 @@ import Schema from 'validate'
 import isObject from 'is-object'
 // @ts-ignore
 import isString from 'is-string'
+import {drive_v3 as driveV3} from 'googleapis'
 import * as blueprintsGroupsUrls from '../../../../constants/api/blueprintsGroups'
 import {
 	extractUserWithCustomer,
@@ -34,15 +35,17 @@ import SendableError from '../../../utils/SendableError'
 import errorCodes, {
 	FORBIDDEN,
 	NOT_FOUND,
+	UNABLE_TO_ACQUIRE_WRITE_ACCESS_FOR_SERVICE_ACCOUNT,
 } from '../../../../constants/errorCodes'
 import {
-	canUserRead,
-	createEmptyFolderAndShareItToSA,
+	canBeRed,
 	exportToSpreadsheet,
 	generateFilledDocument,
+	hasWriteAccess,
 	replaceTemplatesInFileName,
 	saveDocumentAsPdf,
 	sendPriceAlertIfLimitExceeded,
+	shareFolderToSA,
 } from '../utils'
 import {createAndUploadCombinedPdf} from '../utils/generateMasterPdf'
 
@@ -75,6 +78,37 @@ const submitGroupSchema = new Schema({
 		},
 	},
 })
+
+async function makeSureOutputFolderHasCorrectAccess({
+	selectedId,
+	saDrive,
+	userDrive,
+}: {
+	selectedId: string
+	saDrive: driveV3.Drive
+	userDrive: driveV3.Drive
+}) {
+	try {
+		if (await hasWriteAccess({fileId: selectedId, drive: saDrive})) {
+			return selectedId
+		}
+
+		await shareFolderToSA({folderId: selectedId, drive: userDrive})
+		if (!(await hasWriteAccess({fileId: selectedId, drive: saDrive}))) {
+			// will be cached later
+			throw new Error('noAccess')
+		}
+		return selectedId
+	} catch (e) {
+		throw new SendableError(
+			`Error while acquiring access to folder ${selectedId}`,
+			{
+				status: 400,
+				errorCode: UNABLE_TO_ACQUIRE_WRITE_ACCESS_FOR_SERVICE_ACCOUNT,
+			}
+		)
+	}
+}
 
 router.post(
 	blueprintsGroupsUrls.submit,
@@ -128,20 +162,18 @@ router.post(
 			})
 		}
 
-		if (!(await canUserRead({drive: userDrive, fileId: outputFolderId}))) {
-			throw new SendableError(
-				'Output folder can not be accessed current user.',
-				{
-					errorCode: errorCodes.UNABLE_TO_ACCESS_OUTPUT_FOLDER,
-					status: httpStatus.BAD_REQUEST,
-				}
-			)
-		}
+		console.log('sharing folder')
+		const targetFolderId = await makeSureOutputFolderHasCorrectAccess({
+			selectedId: outputFolderId,
+			userDrive,
+			saDrive: serviceAccountDrive,
+		})
+		console.log('shared')
 
 		const blueprintsWithoutPermissions = (
 			await Promise.all(
 				blueprintGroup.blueprints.map(async (blueprint) => {
-					const hasPermissions = await canUserRead({
+					const hasPermissions = await canBeRed({
 						drive: serviceAccountDrive,
 						fileId: blueprint.googleDocsId,
 					})
@@ -199,16 +231,6 @@ router.post(
 			groupId,
 			generatedValues,
 			outputFolderId,
-		})
-
-		const targetFolderId = await createEmptyFolderAndShareItToSA({
-			name: blueprintGroup.name,
-			userDrive,
-			parent: outputFolderId,
-		})
-
-		console.info('Submitting filled blueprint', 'Created target folder', {
-			targetFolderId,
 		})
 
 		console.info('Submitting filled blueprint', {

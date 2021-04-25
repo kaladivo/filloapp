@@ -66,9 +66,12 @@ function SubmitFlow({blueprintsGroup}: Props) {
 	}, [blueprintsGroup])
 
 	const [values, setValues] = useState(defaultValues)
+
+	const defaultFolder = customerInfo.defaults?.submitSettings?.folder
+
 	const [settings, setSettings] = useState<SubmitSettingsState>({
 		generatePdfs: customerInfo.defaults?.submitSettings?.generatePdfs || false,
-		outputFolder: null,
+		outputFolder: defaultFolder || null,
 		generateMasterPdf:
 			customerInfo.defaults?.submitSettings?.generateMasterPdf || false,
 	})

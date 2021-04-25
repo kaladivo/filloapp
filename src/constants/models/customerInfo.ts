@@ -21,6 +21,10 @@ export interface CustomerInfo {
 		submitSettings?: {
 			generatePdfs?: boolean
 			generateMasterPdf?: boolean
+			folder?: {
+				id: string
+				name: string
+			}
 		}
 	}
 }

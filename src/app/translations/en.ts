@@ -3,6 +3,8 @@ export default {
 	'errors': {
 		'document_does_not_include_any_fields':
 			'Document does not include any fields. Make sure to select documents with fields.',
+		'unable_to_acquire_write_access_for_service_account':
+			'App can not acquire write access to create documents. Either select the folder manually or share it (give write access) with',
 	},
 	'common': {
 		'goBack': 'Back',

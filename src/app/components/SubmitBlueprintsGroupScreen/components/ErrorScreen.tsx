@@ -7,6 +7,8 @@ import {
 	Link,
 } from '@material-ui/core'
 import {useTranslation} from 'react-i18next'
+import {UNABLE_TO_ACQUIRE_WRITE_ACCESS_FOR_SERVICE_ACCOUNT} from '../../../../constants/errorCodes'
+import {useEnvInfo} from '../../EnvInfoProvider'
 
 const useStyles = makeStyles((theme) =>
 	createStyles({
@@ -35,12 +37,23 @@ interface Props {
 function ErrorScreen({className, onGoBack, onRetry, error}: Props) {
 	const classes = useStyles()
 	const {t} = useTranslation()
+	const info = useEnvInfo()
 
 	const filesWithoutPermissions = error.response?.data.filesWithoutPermissions
+	const accessError =
+		error.response?.data?.errorCode ===
+		UNABLE_TO_ACQUIRE_WRITE_ACCESS_FOR_SERVICE_ACCOUNT
 
 	return (
 		<div className={`${className} ${classes.root}`}>
 			<Typography>{t('SubmitBlueprintsGroupScreen.error')}</Typography>
+			{accessError && (
+				<Typography>
+					{t('errors.unable_to_acquire_write_access_for_service_account')}
+					<br />
+					<b>{info.googleSharingServiceAccount}</b>
+				</Typography>
+			)}
 			{filesWithoutPermissions && (
 				<>
 					<Typography>{t('SubmitBlueprintsGroupScreen.noAccess')}</Typography>

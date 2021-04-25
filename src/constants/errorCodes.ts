@@ -18,6 +18,7 @@ export type ErrorCode =
 	| 'USER_DOES_NOT_EXIST'
 	| 'already_exists'
 	| 'document_does_not_include_any_fields'
+	| 'unable_to_acquire_write_access_for_service_account'
 
 export const NO_CUSTOMER_FOR_EMAIL: ErrorCode = 'no_customer_for_email'
 export const USER_MUST_HAVE_CUSTOMER_SELECTED: ErrorCode =
@@ -44,6 +45,8 @@ export const UNABLE_TO_ACCESS_OUTPUT_FOLDER: ErrorCode =
 export const ALREADY_EXISTS: ErrorCode = 'already_exists'
 export const DOCUMENT_DOES_NOT_INCLUDES_ANY_FIELDS =
 	'document_does_not_include_any_fields'
+export const UNABLE_TO_ACQUIRE_WRITE_ACCESS_FOR_SERVICE_ACCOUNT =
+	'unable_to_acquire_write_access_for_service_account'
 
 const errorCodes = {
 	NO_CUSTOMER_FOR_EMAIL,
@@ -65,6 +68,7 @@ const errorCodes = {
 	USER_MUST_HAVE_CUSTOMER_SELECTED,
 	ALREADY_EXISTS,
 	DOCUMENT_DOES_NOT_INCLUDES_ANY_FIELDS,
+	UNABLE_TO_ACQUIRE_WRITE_ACCESS_FOR_SERVICE_ACCOUNT,
 }
 
 export default errorCodes
