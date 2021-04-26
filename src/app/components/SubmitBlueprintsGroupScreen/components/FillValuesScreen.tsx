@@ -2,29 +2,13 @@ import React, {useState, useEffect, useRef, useCallback} from 'react'
 import {Button, Grid, TextField, Typography} from '@material-ui/core'
 import {useTranslation} from 'react-i18next'
 import Autocomplete from '@material-ui/lab/Autocomplete'
-import {GroupField} from '../../../../constants/models/BlueprintsGroup'
+import {BlueprintField as BlueprintFieldI} from '../../../../constants/models/Blueprint'
 import IncrementingField from './IncrementingField'
 import {useCustomerInfo} from '../../CustomerInfoProvider'
-import BlueprintField, {FieldOptions} from '../../BlueprintField'
-
-function getFieldTypeBasedOnPriority(types: string[]): string {
-	return types[0]
-}
-
-function groupFieldToFieldOptions(groupField: GroupField): FieldOptions {
-	return {
-		displayName: groupField.displayName,
-		options: groupField.options,
-		helperText: groupField.helperText,
-		defaultValue: groupField.defaultValue[0],
-		name: groupField.name,
-		// TODO make user choose or somehthing
-		type: getFieldTypeBasedOnPriority(groupField.types),
-	}
-}
+import BlueprintField from '../../BlueprintField'
 
 interface Props {
-	fields: GroupField[]
+	fields: BlueprintFieldI[]
 	values: {[key: string]: string}
 	onSubmit: () => void
 	onChange: (data: {[id: string]: string}) => void
@@ -40,8 +24,8 @@ function FillValuesScreen({fields, values, onChange, onSubmit}: Props) {
 	const priceFieldLimit = customerInfo.priceLimit?.limit
 	const priceFieldName = customerInfo.priceLimit?.fieldName
 
-	const ids = fields.filter((one) => one.types.includes('id'))
-	const otherFields = fields.filter((one) => !one.types.includes('id'))
+	const ids = fields.filter((one) => one.type === 'id')
+	const otherFields = fields.filter((one) => one.type !== 'id')
 
 	const onFieldChange = useCallback(
 		(value: string, field: {name: string}) => {
@@ -103,10 +87,10 @@ function FillValuesScreen({fields, values, onChange, onSubmit}: Props) {
 						/>
 					</Grid>
 				)}
-				{ids.map(({name, types, displayName}) => (
+				{ids.map(({name, type, displayName}) => (
 					<IncrementingField
 						label={displayName}
-						type={types[0]}
+						type={type}
 						value={values[name]}
 					/>
 				))}
@@ -140,7 +124,7 @@ function FillValuesScreen({fields, values, onChange, onSubmit}: Props) {
 
 							<BlueprintField
 								value={values[fieldOptions.name]}
-								field={groupFieldToFieldOptions(fieldOptions)}
+								field={fieldOptions}
 								onChange={onFieldChange}
 							/>
 

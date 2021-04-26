@@ -13,8 +13,6 @@ export interface CustomerInfo {
 	}
 	projectsList?: string[]
 	spreadsheetExport?: {
-		// Remove token, request user to share with service account instead
-		refreshTokenOfWriter: string
 		spreadsheetId: string
 	}
 	defaults?: {

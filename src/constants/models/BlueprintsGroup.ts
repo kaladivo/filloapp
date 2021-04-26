@@ -1,14 +1,15 @@
 import {BlueprintsGroupSubmit} from './BlueprintsGroupSubmit'
 import {OwnerInfo} from './OwnerInfo'
-import {Blueprint} from './Blueprint'
+import {Blueprint, BlueprintField} from './Blueprint'
 
 export interface GroupField {
 	name: string
-	types: string[]
-	displayName: string
-	helperText: string | null
-	defaultValue: string[]
-	options: any
+	// types: string[]
+	// displayName: string
+	// helperText: string | null
+	// defaultValue: string[]
+	fieldsProperties: BlueprintField[]
+	// options: any
 }
 
 export interface BlueprintGroup {

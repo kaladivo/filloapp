@@ -8,6 +8,7 @@ import moment from 'moment'
 import {
 	BlueprintGroup,
 	SubmitSettings,
+	GroupField,
 } from '../../../../constants/models/BlueprintsGroup'
 import FillValuesScreen from './FillValuesScreen'
 import SettingsScreen, {SubmitSettingsState} from './SettingsScreen'
@@ -16,9 +17,20 @@ import LoadingIndicator from '../../LoadingIndicator'
 import ErrorScreen from './ErrorScreen'
 import {useCustomerInfo} from '../../CustomerInfoProvider'
 import {getDateFormatForSetting} from '../../BlueprintField/components/DateField'
+import {BlueprintField} from '../../../../constants/models/Blueprint'
 
 interface Props {
 	blueprintsGroup: BlueprintGroup
+}
+
+function getBlueprintField(field: GroupField): BlueprintField {
+	// TODO let user select
+	const firstNonString = field.fieldsProperties.find(
+		(one) => one.type !== 'string'
+	)
+	if (firstNonString) return firstNonString
+
+	return field.fieldsProperties[0]
 }
 
 function SubmitFlow({blueprintsGroup}: Props) {
@@ -39,20 +51,26 @@ function SubmitFlow({blueprintsGroup}: Props) {
 				)?.value
 
 				const field = blueprintsGroup.fields.find((one) => one.name === name)
+				// TODO: sentry report to sentry
+				if (!field) {
+					console.warn('Field with that name not found')
+					return prev
+				}
+				const properties = getBlueprintField(field)
 
-				const options = field?.options
+				const {options, type} = properties
 
 				// If there was no last submit and date field should be set to current
-				if (!lastSubmit && field?.types[0] === 'date' && options?.setNow) {
+				if (!lastSubmit && type === 'date' && options.setNow) {
 					return {
 						...prev,
 						[name]: moment().format(
-							getDateFormatForSetting(!!field?.options?.withTime)
+							getDateFormatForSetting(!!options.withTime)
 						),
 					}
 				}
 
-				const specifiedDefaultValue = field?.defaultValue[0]
+				const specifiedDefaultValue = properties.defaultValue
 
 				const defaultValue = lastSubmit || specifiedDefaultValue || ''
 
@@ -81,10 +99,11 @@ function SubmitFlow({blueprintsGroup}: Props) {
 			const valuesToSubmit = Object.keys(values).reduce<{
 				[key: string]: {type: string; value: string}
 			}>((prev, key) => {
-				const valueType =
-					// TODO let user select
-					blueprintsGroup.fields.find((one) => one.name === key)?.types[0] ||
-					'string'
+				const field = blueprintsGroup.fields.find((one) => one.name === key)
+				if (!field) return prev
+				const properties = getBlueprintField(field)
+
+				const valueType = properties.type
 				// if (!values[key] && valueType === 'string') return prev
 				return {
 					...prev,
@@ -139,7 +158,7 @@ function SubmitFlow({blueprintsGroup}: Props) {
 			{step === 'values' && (
 				<>
 					<FillValuesScreen
-						fields={blueprintsGroup.fields}
+						fields={blueprintsGroup.fields.map(getBlueprintField)}
 						values={values}
 						onChange={setValues}
 						onSubmit={() => {

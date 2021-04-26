@@ -19,14 +19,18 @@ export async function getFields({
 	const result = await dbClient.query(
 		`
 				select bf.name,
-							 json_agg(distinct bf.type)                                             as types,
-							 json_agg(bf.display_name)                                              as "displayName",
-							 json_agg(bf.helper_text)                                               as "helperText",
-							 json_agg(bf.options)                                                   as "options",
-							 coalesce(
-								 json_agg(bf.default_value) filter (where bf.default_value is not null),
-								 json_build_array()
-							 ) as "defaultValue"
+-- 				      todo remove once we use fieldProperties everywhere 
+-- 							 json_agg(distinct bf.type) as types,
+-- 							 json_agg(bf.display_name)  as "displayName",
+-- 							 json_agg(bf.helper_text)   as "helperText",
+-- 							 json_agg(bf.options)       as "options",
+-- 							 coalesce(
+-- 								 json_agg(bf.default_value) filter (where bf.default_value is not null),
+-- 								 json_build_array()
+-- 								 )                      as "defaultValue",
+-- 				       end todo
+							 json_agg(json_build_object('id', bf.id, 'name', bf.name, 'type', bf.type, 'displayName', bf.display_name, 'helperText', bf.helper_text,
+																					'options', bf.options, 'default_value', bf.default_value)) as "fieldsProperties"
 				from blueprint_field bf
 							 left join blueprint b on bf.blueprint_id = b.id
 							 left join blueprint_blueprints_group bbg on b.id = bbg.blueprint_id
