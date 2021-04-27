@@ -44,10 +44,9 @@ export async function getFields({
 
 	return result.rows.map((one) => ({
 		...one,
-		// TODO select form array here or on FE?
-		displayName: one.displayName[0],
-		helperText: one.helperText[0],
-		options: one.options[0],
+		// displayName: one.displayName[0],
+		// helperText: one.helperText[0],
+		// options: one.options[0],
 	}))
 }
 
