@@ -17,6 +17,8 @@ const GOOGLE_SHARING_SERVICE_ACCOUNT = JSON.parse(
 	String(process.env.GOOGLE_SHARING_SERVICE_ACCOUNT) || '{}'
 )
 
+const SERVICE_ACCOUNT_EMAIL = String(process.env.SERVICE_ACCOUNT_EMAIL)
+
 export function getOAuth2ClientForUser({
 	accessToken,
 	refreshToken,
@@ -163,4 +165,39 @@ export function extractSheetsApiForServiceAccount(
 	ctx: Context
 ): sheetsV4.Sheets {
 	return ctx.state.SASheets
+}
+
+export async function hasWriteAccess({
+	fileId,
+	drive,
+}: {
+	fileId: string
+	drive: driveV3.Drive
+}) {
+	try {
+		// This can be acquired only if drive has write access
+		await drive.permissions.list({fileId})
+		return true
+	} catch (e) {
+		return false
+	}
+}
+
+export async function shareToSA({
+	fileId,
+	drive,
+}: {
+	fileId: string
+	drive: driveV3.Drive
+}) {
+	// @ts-ignore This is tested  and works
+	await drive.permissions.create({
+		fileId,
+		sendNotificationEmail: false,
+		requestBody: {
+			role: 'writer',
+			type: 'user',
+			emailAddress: SERVICE_ACCOUNT_EMAIL,
+		},
+	})
 }

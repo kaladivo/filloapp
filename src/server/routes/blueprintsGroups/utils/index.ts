@@ -16,22 +16,6 @@ export interface Tokens {
 	refreshToken?: string
 }
 
-export async function hasWriteAccess({
-	fileId,
-	drive,
-}: {
-	fileId: string
-	drive: driveV3.Drive
-}) {
-	try {
-		// This can be acquired only if drive has write access
-		await drive.permissions.list({fileId})
-		return true
-	} catch (e) {
-		return false
-	}
-}
-
 export async function canBeRed({
 	fileId,
 	drive,
@@ -73,6 +57,27 @@ async function replaceTemplateStrings({
 	})
 }
 
+export async function createFolder({
+	name,
+	drive,
+	parentId,
+}: {
+	name: string
+	drive: driveV3.Drive
+	parentId: string
+}) {
+	const newFolderResponse = await drive.files.create({
+		requestBody: {
+			name,
+			mimeType: 'application/vnd.google-apps.folder',
+			parents: [parentId],
+		},
+	})
+	const folderId = newFolderResponse.data.id
+
+	return folderId || '' // todo Should not happen catch and report
+}
+
 export async function createEmptyFolderAndShareItToSA({
 	name,
 	userDrive,
@@ -103,25 +108,6 @@ export async function createEmptyFolderAndShareItToSA({
 	})
 
 	return folderId || '' // todo Should not happen catch and report
-}
-
-export async function shareFolderToSA({
-	folderId,
-	drive,
-}: {
-	folderId: string
-	drive: driveV3.Drive
-}) {
-	// @ts-ignore This is tested  and works
-	await drive.permissions.create({
-		fileId: folderId,
-		sendNotificationEmail: false,
-		requestBody: {
-			role: 'writer',
-			type: 'user',
-			emailAddress: SERVICE_ACCOUNT_EMAIL,
-		},
-	})
 }
 
 export async function generateFilledDocument({

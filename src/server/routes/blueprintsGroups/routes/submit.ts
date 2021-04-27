@@ -16,6 +16,8 @@ import {
 	extractDocsApiForServiceAccount,
 	extractDriveApiForServiceAccount,
 	extractUserDriveApi,
+	hasWriteAccess,
+	shareToSA,
 	withServiceAccountDocsApiMiddleware,
 	withServiceAccountDriveApiMiddleware,
 	withUserDriveApiMiddleware,
@@ -41,11 +43,10 @@ import {
 	canBeRed,
 	exportToSpreadsheet,
 	generateFilledDocument,
-	hasWriteAccess,
 	replaceTemplatesInFileName,
 	saveDocumentAsPdf,
 	sendPriceAlertIfLimitExceeded,
-	shareFolderToSA,
+	createFolder,
 } from '../utils'
 import {createAndUploadCombinedPdf} from '../utils/generateMasterPdf'
 
@@ -79,27 +80,34 @@ const submitGroupSchema = new Schema({
 	},
 })
 
-async function makeSureOutputFolderHasCorrectAccess({
+// TODO move to utils
+async function makeSureOutputFolderHasCorrectAccessAndCreateNewOne({
 	selectedId,
 	saDrive,
 	userDrive,
+	subfolderName,
 }: {
 	selectedId: string
 	saDrive: driveV3.Drive
 	userDrive: driveV3.Drive
+	subfolderName: string
 }) {
 	try {
-		if (await hasWriteAccess({fileId: selectedId, drive: saDrive})) {
-			return selectedId
+		if (!(await hasWriteAccess({fileId: selectedId, drive: saDrive}))) {
+			await shareToSA({fileId: selectedId, drive: userDrive})
+			if (!(await hasWriteAccess({fileId: selectedId, drive: saDrive}))) {
+				// will be cached later
+				throw new Error('noAccess')
+			}
 		}
 
-		await shareFolderToSA({folderId: selectedId, drive: userDrive})
-		if (!(await hasWriteAccess({fileId: selectedId, drive: saDrive}))) {
-			// will be cached later
-			throw new Error('noAccess')
-		}
-		return selectedId
+		return await createFolder({
+			drive: saDrive,
+			parentId: selectedId,
+			name: subfolderName,
+		})
 	} catch (e) {
+		console.error(e)
 		throw new SendableError(
 			`Error while acquiring access to folder ${selectedId}`,
 			{
@@ -162,14 +170,6 @@ router.post(
 			})
 		}
 
-		console.log('sharing folder')
-		const targetFolderId = await makeSureOutputFolderHasCorrectAccess({
-			selectedId: outputFolderId,
-			userDrive,
-			saDrive: serviceAccountDrive,
-		})
-		console.log('shared')
-
 		const blueprintsWithoutPermissions = (
 			await Promise.all(
 				blueprintGroup.blueprints.map(async (blueprint) => {
@@ -205,6 +205,26 @@ router.post(
 		const generatedValues: {[key: string]: {value: string; type: string}} = {
 			'project_name': {type: 'string', value: blueprintGroup.projectName},
 		}
+
+		console.info(
+			'Submitting filled blueprint',
+			'creating folder and ensuring access',
+			{outputFolderId}
+		)
+		const targetFolderId = await makeSureOutputFolderHasCorrectAccessAndCreateNewOne(
+			{
+				selectedId: outputFolderId,
+				userDrive,
+				saDrive: serviceAccountDrive,
+				subfolderName: replaceTemplatesInFileName({
+					fileName: blueprintGroup.name,
+					values,
+				}),
+			}
+		)
+		console.info('Submitting filled blueprint', 'folderCreated', {
+			targetFolderId,
+		})
 
 		// TODO start transition
 		for (const valueName of Object.keys(values)) {
