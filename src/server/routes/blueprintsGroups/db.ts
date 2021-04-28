@@ -30,7 +30,7 @@ export async function getFields({
 -- 								 )                      as "defaultValue",
 -- 				       end todo
 							 json_agg(json_build_object('id', bf.id, 'name', bf.name, 'type', bf.type, 'displayName', bf.display_name, 'helperText', bf.helper_text,
-																					'options', bf.options, 'default_value', bf.default_value)) as "fieldsProperties"
+																					'options', bf.options, 'defaultValue', bf.default_value)) as "fieldsProperties"
 				from blueprint_field bf
 							 left join blueprint b on bf.blueprint_id = b.id
 							 left join blueprint_blueprints_group bbg on b.id = bbg.blueprint_id
