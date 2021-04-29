@@ -17,7 +17,6 @@ import {
 	extractDriveApiForServiceAccount,
 	extractUserDriveApi,
 	hasWriteAccess,
-	shareToSA,
 	withServiceAccountDocsApiMiddleware,
 	withServiceAccountDriveApiMiddleware,
 	withUserDriveApiMiddleware,
@@ -47,6 +46,7 @@ import {
 	saveDocumentAsPdf,
 	sendPriceAlertIfLimitExceeded,
 	createFolder,
+	createEmptyFolderAndShareItToSA,
 } from '../utils'
 import {createAndUploadCombinedPdf} from '../utils/generateMasterPdf'
 
@@ -93,12 +93,14 @@ async function makeSureOutputFolderHasCorrectAccessAndCreateNewOne({
 	subfolderName: string
 }) {
 	try {
+		// if if we can not access to selected folder
 		if (!(await hasWriteAccess({fileId: selectedId, drive: saDrive}))) {
-			await shareToSA({fileId: selectedId, drive: userDrive})
-			if (!(await hasWriteAccess({fileId: selectedId, drive: saDrive}))) {
-				// will be cached later
-				throw new Error('noAccess')
-			}
+			// Create empty folder as user and share it to SA, so we can write to it
+			return await createEmptyFolderAndShareItToSA({
+				name: subfolderName,
+				userDrive,
+				parent: selectedId,
+			})
 		}
 
 		return await createFolder({
