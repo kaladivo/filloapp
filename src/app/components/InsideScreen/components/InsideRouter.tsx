@@ -1,12 +1,15 @@
 import React from 'react'
 import {Route, Switch} from 'react-router-dom'
 import {Section} from '../../../insideSections'
+import {useSyncSentryUser} from '../../../utils/sentry'
 
 interface Props {
 	sections: Section[]
 }
 
 function InsideRouter({sections}: Props) {
+	useSyncSentryUser()
+
 	return (
 		<Switch>
 			{sections.map((section) => (

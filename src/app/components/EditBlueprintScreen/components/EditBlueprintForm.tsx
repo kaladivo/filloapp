@@ -19,6 +19,7 @@ import {
 import BlueprintField from './BlueprintField'
 import {useApiService} from '../../../api/apiContext'
 import AreYouSureDialog from '../../AreYouSureDialog'
+import sentry from '../../../utils/sentry'
 
 const useStyles = makeStyles((theme) =>
 	createStyles({
@@ -89,14 +90,14 @@ function EditBlueprintForm({
 	useEffect(() => {
 		if (!submitTask.isRejected || !submitTask.error) return
 		enqueueSnackbar(t(t('EditBlueprintScreen.updateError')), {variant: 'error'})
-		// TODO report
+		sentry.captureException(submitTask.error, {extra: {blueprint}})
 	}, [submitTask.isRejected, submitTask.error, enqueueSnackbar, t])
 
 	// When error while deleting
 	useEffect(() => {
 		if (!deleteTask.isRejected || !deleteTask.error) return
 		enqueueSnackbar(t(t('EditBlueprintScreen.deleteError')), {variant: 'error'})
-		// TODO report
+		sentry.captureException(deleteTask.error, {extra: {blueprint}})
 	}, [deleteTask.error, enqueueSnackbar, t, deleteTask.isRejected])
 
 	const onSubmit = useCallback(

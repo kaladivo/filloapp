@@ -5,4 +5,5 @@ export interface EnvInfo {
 	googleSharingServiceAccount: string
 	googleAppId: string
 	version: string
+	environment: string
 }

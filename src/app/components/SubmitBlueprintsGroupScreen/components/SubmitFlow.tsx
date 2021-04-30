@@ -18,6 +18,7 @@ import ErrorScreen from './ErrorScreen'
 import {useCustomerInfo} from '../../CustomerInfoProvider'
 import {getDateFormatForSetting} from '../../BlueprintField/components/DateField'
 import {BlueprintField} from '../../../../constants/models/Blueprint'
+import sentry from '../../../utils/sentry'
 
 interface Props {
 	blueprintsGroup: BlueprintGroup
@@ -51,9 +52,12 @@ function SubmitFlow({blueprintsGroup}: Props) {
 				)?.value
 
 				const field = blueprintsGroup.fields.find((one) => one.name === name)
-				// TODO: sentry report to sentry
 				if (!field) {
 					console.warn('Field with that name not found')
+					sentry.captureMessage(
+						`Field with name ${name} not found when in submit flow`,
+						{extra: {blueprintsGroup}}
+					)
 					return prev
 				}
 				const properties = getBlueprintField(field)

@@ -3,6 +3,7 @@ import StringField from './components/StringField'
 import DateField from './components/DateField'
 import NumberField from './components/NumberField'
 import SelectField from './components/SelectField'
+import sentry from '../../utils/sentry'
 
 function getCorrectFieldComponent(type: string) {
 	switch (type) {
@@ -15,8 +16,8 @@ function getCorrectFieldComponent(type: string) {
 		case 'select':
 			return SelectField
 		default:
-			// TODO sentry - handle not getting for cd specific values in FillValuesScreen
 			console.warn(`Field component for ${type} does not exist`)
+			sentry.captureMessage(`Field component for ${type} does not exist`)
 			return null
 	}
 }

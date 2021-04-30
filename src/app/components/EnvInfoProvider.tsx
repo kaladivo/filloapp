@@ -1,9 +1,10 @@
-import React, {useCallback, useContext, useMemo} from 'react'
+import React, {useCallback, useContext, useEffect, useMemo} from 'react'
 import {useAsync} from 'react-async'
 import {useTranslation} from 'react-i18next'
 import {Typography} from '@material-ui/core'
 import {EnvInfo} from '../../constants/models/EnvInfo'
 import {ApiService} from '../api'
+import sentry, {configureFromEnvInfo} from '../utils/sentry'
 
 type EnvInfoStatus = 'loading' | 'done'
 
@@ -19,6 +20,7 @@ const emptyContextValue: EnvInfoContext = {
 		googleSharingServiceAccount: '',
 		googleAppId: '',
 		version: '',
+		environment: '',
 	},
 }
 
@@ -40,6 +42,13 @@ function EnvInfoProvider({children}: {children: React.ReactNode}) {
 		}, [envInfoApi]),
 	})
 
+	useEffect(() => {
+		const {data} = fetchEnvInfoTask
+		if (data) {
+			configureFromEnvInfo(data)
+		}
+	}, [fetchEnvInfoTask.data])
+
 	if (!fetchEnvInfoTask.data) {
 		return <Typography>{t('common.loading')} Env info</Typography>
 	}
@@ -56,8 +65,13 @@ function EnvInfoProvider({children}: {children: React.ReactNode}) {
 }
 
 export function useEnvInfo(): EnvInfo {
-	// TODO Report error if accessed before env info is fetched
-	return useContext(envInfoContext).envInfo
+	const {envInfo} = useContext(envInfoContext)
+	if (envInfo.googleAppId === '') {
+		sentry.captureMessage('Env info accessed before it was set', {
+			extra: {envInfo},
+		})
+	}
+	return envInfo
 }
 
 export default EnvInfoProvider

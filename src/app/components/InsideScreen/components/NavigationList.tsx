@@ -13,6 +13,8 @@ import {useTranslation} from 'react-i18next'
 import {Section} from '../../../insideSections'
 import {useEnvInfo} from '../../EnvInfoProvider'
 
+const APP_VERSION = String(process.env.REACT_APP_VERSION || 'unknown')
+
 const useStyles = makeStyles((theme) =>
 	createStyles({
 		root: {
@@ -88,7 +90,7 @@ function NavigationList({sections}: Props) {
 				<SectionsList sections={bottomSections} />
 				{env.version && (
 					<div className={classes.versionName}>
-						{t('common.version')} {env.version}
+						{t('common.version')} {APP_VERSION}
 					</div>
 				)}
 			</List>

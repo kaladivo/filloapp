@@ -6,6 +6,7 @@ import React, {
 	useRef,
 	useState,
 } from 'react'
+import {Severity} from '@sentry/types'
 import UserInfo from '../../../constants/User'
 import {
 	gapiGetCurrentUserAuthToken,
@@ -17,6 +18,7 @@ import {
 	storeFilloBearer,
 } from './utils'
 import {ApiService} from '../../api'
+import sentry from '../../utils/sentry'
 
 export interface FilloUser {
 	accessToken: string
@@ -73,7 +75,7 @@ function AuthProvider({children}: {children: React.ReactNode}) {
 					setBearer(response.data.bearer)
 				})
 				.catch((e) => {
-					// TODO sentry
+					sentry.captureException(e, {extra: {bearer}, level: Severity.Info})
 					console.warn('Error refreshing user. Logging out', e)
 					logout()
 				})

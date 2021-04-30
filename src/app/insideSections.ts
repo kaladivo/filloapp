@@ -74,19 +74,21 @@ function useSections(): Section[] {
 		},
 	]
 
-	if (process.env.NODE_ENV === 'development') {
-		sections.push({
-			paths: ['/dev'],
-			Component: DevScreen,
-			exact: true,
-			navigation: {
-				path: '/dev',
-				label: 'Dev',
-				Icon: HomeIcon,
-				section: 'bottom',
-			},
-		})
-	}
+	sections.push({
+		paths: ['/dev'],
+		Component: DevScreen,
+		exact: true,
+		// Display only if in development environment
+		navigation:
+			process.env.NODE_ENV === 'development'
+				? {
+						path: '/dev',
+						label: 'Dev',
+						Icon: HomeIcon,
+						section: 'bottom',
+				  }
+				: undefined,
+	})
 	return sections
 }
 

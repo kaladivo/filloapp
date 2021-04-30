@@ -4,6 +4,7 @@ import copy from 'copy-to-clipboard'
 import ReactJson from 'react-json-view'
 import {useCustomerInfo} from './CustomerInfoProvider'
 import {useUser} from './AuthProvider'
+import sentry from '../utils/sentry'
 
 interface Props {
 	className?: string
@@ -24,6 +25,26 @@ function DevScreen({className}: Props) {
 			<br />
 			customerInfo:
 			<ReactJson src={customerInfo} />
+			<br />
+			<Button
+				onClick={() => {
+					console.info('Capturing event')
+					sentry.captureEvent({
+						message:
+							'This is a test event to ensure the sentry integration works correctly',
+					})
+
+					sentry.captureException(new Error('Test exception for sentry'))
+					sentry.captureMessage('test message')
+					// @ts-ignore
+					// eslint-disable-next-line no-undef
+					functionThatDoesNotExistForSentry()
+				}}
+				color="primary"
+				variant="contained"
+			>
+				Test sentry
+			</Button>
 		</div>
 	)
 }

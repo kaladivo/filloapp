@@ -12,6 +12,7 @@ router.get(envInfoRoutes.getEnvInfo, async (ctx, next) => {
 		googleSharingServiceAccount: String(process.env.SERVICE_ACCOUNT_EMAIL),
 		googleAppId: String(process.env.GOOGLEAPIS_APP_ID),
 		version: String(process.env.VERSION || ''),
+		environment: String(process.env.ENVIRONMENT || 'unknown'),
 	}
 	ctx.body = envInfo
 	await next()
