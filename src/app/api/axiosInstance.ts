@@ -1,7 +1,10 @@
 import axios from 'axios'
 
+// This will always fallback to default vars
 const baseUrl: string = process.env.API_URL || '/api'
 const timeout: number = Number(process.env.API_TIMEOUT || 120000)
+
+const version: string = process.env.REACT_APP_VERSION || 'unknown'
 
 function authAxiosInstanceFactory({
 	getBearer,
@@ -15,10 +18,11 @@ function authAxiosInstanceFactory({
 		timeout,
 		headers: {
 			'Content-Type': 'application/json',
+			'X-Client-Version': version,
 		},
 	})
 
-	// Add bearer to request
+	// Add bearer and version to request
 	authApiService.interceptors.request.use(
 		(config) => {
 			const bearer = getBearer()
