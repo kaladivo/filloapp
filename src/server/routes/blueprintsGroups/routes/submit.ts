@@ -49,6 +49,7 @@ import {
 	createEmptyFolderAndShareItToSA,
 } from '../utils'
 import {createAndUploadCombinedPdf} from '../utils/generateMasterPdf'
+import sentry from '../../../utils/sentry'
 
 const router = new Router()
 
@@ -109,7 +110,7 @@ async function makeSureOutputFolderHasCorrectAccessAndCreateNewOne({
 			name: subfolderName,
 		})
 	} catch (e) {
-		console.error(e)
+		sentry.captureException(e)
 		throw new SendableError(
 			`Error while acquiring access to folder ${selectedId}`,
 			{
@@ -386,7 +387,7 @@ router.post(
 			await submit
 			ctx.body = submit
 		} catch (e) {
-			console.log(e.error)
+			sentry.captureException(e)
 			throw new SendableError(
 				'Error while generating documents',
 				{

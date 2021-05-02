@@ -7,6 +7,7 @@ import {Blueprint} from '../../../../constants/models/Blueprint'
 import sendMail from '../../../utils/sendMail'
 import {getOauth2ClientForServiceAccount} from '../../../utils/googleApis'
 import {getDataForSpreadsheetExport} from '../db'
+import sentry from '../../../utils/sentry'
 
 // const TEMP_FOLDER: string = String(process.env.TEMP_FOLDER)
 const SERVICE_ACCOUNT_EMAIL = String(process.env.SERVICE_ACCOUNT_EMAIL)
@@ -75,7 +76,13 @@ export async function createFolder({
 	})
 	const folderId = newFolderResponse.data.id
 
-	return folderId || '' // todo Should not happen catch and report
+	if (!folderId)
+		sentry.captureEvent({
+			message: 'Folder id not included when creating folder',
+			extra: {name, parentId, newFolderResponse},
+		})
+
+	return folderId || ''
 }
 
 export async function createEmptyFolderAndShareItToSA({
@@ -107,7 +114,13 @@ export async function createEmptyFolderAndShareItToSA({
 		},
 	})
 
-	return folderId || '' // todo Should not happen catch and report
+	if (!folderId)
+		sentry.captureEvent({
+			message: 'Folder id not included when creating empty folder',
+			extra: {name, parent, newFolderResponse},
+		})
+
+	return folderId || ''
 }
 
 export async function generateFilledDocument({
@@ -133,7 +146,14 @@ export async function generateFilledDocument({
 		fileId: blueprint.googleDocsId,
 		requestBody: {parents: [targetFolderId], name: fileName},
 	})
-	const copyId = copyResponse.data.id || '' // TODO catch and report
+
+	if (!copyResponse.data.id)
+		sentry.captureEvent({
+			message: 'Id for copied document was not recieved',
+			extra: {name, parent, copyResponse},
+		})
+
+	const copyId = copyResponse.data.id || ''
 
 	await replaceTemplateStrings({
 		documentId: copyId,
@@ -146,7 +166,13 @@ export async function generateFilledDocument({
 		fileId: copyId,
 	})
 
-	return getLinkResponse.data.id || '' // TODO catch and report
+	if (!getLinkResponse.data.id)
+		sentry.captureEvent({
+			message: 'Id for getFile was not received',
+			extra: {name, parent, getLinkResponse},
+		})
+
+	return getLinkResponse.data.id || ''
 }
 
 export async function saveDocumentAsPdf({

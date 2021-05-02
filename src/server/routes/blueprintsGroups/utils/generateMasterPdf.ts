@@ -3,6 +3,7 @@ import * as fs from 'fs'
 import hummus from 'hummus'
 import {drive_v3 as driveV3} from 'googleapis'
 import {uid} from 'rand-token'
+import sentry from '../../../utils/sentry'
 
 const tempFolder = process.env.TEMP_FOLDER as string
 
@@ -159,6 +160,7 @@ export async function createAndUploadCombinedPdf({
 		)
 		return generatedFileId
 	} catch (e) {
+		sentry.captureException(e)
 		console.error(
 			'Generating combined pdf',
 			'Error while generating combined pdf',

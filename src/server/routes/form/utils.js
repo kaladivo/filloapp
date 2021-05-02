@@ -1,3 +1,5 @@
+import sentry from '../../utils/sentry'
+
 const moment = require('moment')
 const {google} = require('googleapis')
 const fs = require('fs')
@@ -150,8 +152,8 @@ async function createAndUploadCombinedPdf({drive, docsIds, folderId}) {
 		await uploadPdfToDrive({drive, filePath: combinedFilePath, folderId})
 		console.info('done')
 	} catch (e) {
+		sentry.captureException(e)
 		console.error('unable to upload pdf file')
-
 		console.error(e)
 		throw e
 	} finally {
