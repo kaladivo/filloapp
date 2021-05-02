@@ -11,9 +11,12 @@ import {UNKNOWN} from '../constants/errorCodes'
 
 import rootRouter from './routes'
 import SendableError from './utils/SendableError'
+import {setupSentry} from './utils/sentry'
 
 const app = new Koa()
 const appRouter = new Router()
+
+setupSentry(app)
 
 // handle errors
 app.use(async (context, next) => {

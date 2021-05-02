@@ -1,10 +1,13 @@
 import * as Sentry from '@sentry/react'
 import {Integrations} from '@sentry/tracing'
+import {BrowserOptions} from '@sentry/react'
 import {EnvInfo} from '../../constants/models/EnvInfo'
 import User from '../../constants/User'
 import {useUser} from '../components/AuthProvider'
 
-const sentryConfig = {
+export const sentryTraceId = Math.random().toString(36).substr(2, 9)
+
+const sentryConfig: BrowserOptions = {
 	dsn: process.env.REACT_APP_SENTRY_DSN,
 	tracesSampleRate: Number(
 		process.env.REACT_APP_SENTRY_TRACES_SAMPLE_RATE || 0
@@ -14,6 +17,7 @@ const sentryConfig = {
 }
 
 Sentry.init(sentryConfig)
+Sentry.getCurrentHub().setTag('traceId', sentryTraceId)
 console.info('Sentry init done', sentryConfig)
 
 export function configureFromEnvInfo(envInfo: EnvInfo) {
@@ -28,10 +32,7 @@ export function configureFromEnvInfo(envInfo: EnvInfo) {
 export function setSentryUser(user: User | null) {
 	Sentry.configureScope((scope) => {
 		if (user) {
-			scope.setUser({
-				id: user.email,
-				selectedCustomer: user.selectedCustomer?.customerId || null,
-			})
+			scope.setUser(user)
 		} else {
 			scope.setUser(null)
 		}

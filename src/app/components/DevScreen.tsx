@@ -5,6 +5,7 @@ import ReactJson from 'react-json-view'
 import {useCustomerInfo} from './CustomerInfoProvider'
 import {useUser} from './AuthProvider'
 import sentry from '../utils/sentry'
+import {useApiService} from '../api/apiContext'
 
 interface Props {
 	className?: string
@@ -13,7 +14,10 @@ interface Props {
 function DevScreen({className}: Props) {
 	const user = useUser()
 	const customerInfo = useCustomerInfo()
+	const api = useApiService()
+
 	if (!user) return null
+
 	return (
 		<div className={className}>
 			userToken:
@@ -36,6 +40,9 @@ function DevScreen({className}: Props) {
 
 					sentry.captureException(new Error('Test exception for sentry'))
 					sentry.captureMessage('test message')
+
+					api.testSentry()
+
 					// @ts-ignore
 					// eslint-disable-next-line no-undef
 					functionThatDoesNotExistForSentry()

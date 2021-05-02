@@ -1,10 +1,13 @@
 import Router from 'koa-router'
+import sleep from 'sleep-promise'
 import auth from './auth'
 import form from './form'
 import blueprints from './blueprints'
 import blueprintsGroups from './blueprintsGroups'
 import customerInfo from './customerInfo'
 import envInfo from './envInfo'
+import {withValidUserWithCustomerMiddleware} from '../utils/auth'
+import sentry from '../utils/sentry'
 
 const router = new Router()
 
@@ -17,6 +20,20 @@ router.get('/', async (ctx, next) => {
 		version: process.env.VERSION,
 	}
 	await next()
+})
+
+router.get('/test-sentry', withValidUserWithCustomerMiddleware, async (ctx) => {
+	await sleep(3000)
+	const traceId = ctx.request.get('X-Sentry-Trace-Id')
+	const clientVersion = ctx.request.get('X-Client-Version')
+
+	sentry.captureException(new Error('exception to capture'))
+	sentry.captureMessage(
+		`message to capture. Trace id: ${traceId}, Client version: ${clientVersion}`
+	)
+	sentry.captureEvent({message: 'event to capture'})
+
+	throw new Error('Sentry test error')
 })
 
 router.use(auth.routes(), auth.allowedMethods())

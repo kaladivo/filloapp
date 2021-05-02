@@ -8,8 +8,10 @@
 		"@material-ui/icons": "^4.11.2",
 		"@material-ui/lab": "^4.0.0-alpha.56",
 		"@material-ui/pickers": "^3.2.10",
+		"@sentry/node": "^6.3.5",
 		"@sentry/react": "^6.3.4",
-		"@sentry/tracing": "^6.3.4",
+		"@sentry/tracing": "^6.3.5",
+		"@sentry/types": "^6.3.5",
 		"@testing-library/jest-dom": "^4.2.4",
 		"@testing-library/react": "^9.3.2",
 		"@testing-library/user-event": "^7.1.2",
@@ -89,8 +91,7 @@
 		"ts-node": "^8.9.1",
 		"typescript": "~3.7.2",
 		"use-debounce": "^3.4.3",
-		"validate": "^5.1.0",
-		"@sentry/types": "^6.3.5"
+		"validate": "^5.1.0"
 	},
 	"jest": {
 		"preset": "ts-jest",

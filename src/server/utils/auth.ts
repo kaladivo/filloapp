@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken'
 import errorCodes, {UNAUTHORIZED} from '../../constants/errorCodes'
 import User, {UserWithSelectedCustomer} from '../../constants/User'
 import SendableError from './SendableError'
+import sentry from './sentry'
 
 const secret = process.env.SERVER_SECRET || 'secret'
 // const publicUrl = process.env.JWT_ISS || 'https://filloapp.cz'
@@ -66,10 +67,12 @@ export async function extractAndValidateBearerFromHeader({
 }
 
 export async function withValidUserMiddleware(ctx: Context, next: Next) {
-	ctx.state.user = await extractAndValidateBearerFromHeader({
+	const user = await extractAndValidateBearerFromHeader({
 		authorizationHeader: ctx.request.headers.authorization,
 		validateAccessToken: true,
 	})
+	sentry.getCurrentHub().setUser(user)
+	ctx.state.user = user
 	await next()
 }
 

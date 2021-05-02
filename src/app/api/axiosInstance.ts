@@ -1,4 +1,5 @@
 import axios from 'axios'
+import sentry, {sentryTraceId} from '../utils/sentry'
 
 // This will always fallback to default vars
 const baseUrl: string = process.env.API_URL || '/api'
@@ -19,10 +20,11 @@ function authAxiosInstanceFactory({
 		headers: {
 			'Content-Type': 'application/json',
 			'X-Client-Version': version,
+			'X-Sentry-Trace-id': sentryTraceId,
 		},
 	})
 
-	// Add bearer and version to request
+	// Add bearer to request
 	authApiService.interceptors.request.use(
 		(config) => {
 			const bearer = getBearer()
@@ -42,6 +44,7 @@ function authAxiosInstanceFactory({
 		(response) => response,
 		(error) => {
 			if (error.response?.status === 401) onBearerRefused()
+			if (error.response?.status === 500) sentry.captureException(error)
 			return Promise.reject(error)
 		}
 	)
