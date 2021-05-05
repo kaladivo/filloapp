@@ -3,6 +3,7 @@ import {Typography} from '@material-ui/core'
 import {useTranslation} from 'react-i18next'
 import {useAsync} from 'react-async'
 import {useHistory} from 'react-router-dom'
+import Markdown from 'react-markdown'
 import RootContainer from '../RootContainer'
 import DriveFilePickerButton from '../DriveFilePickerButton'
 import {useApiService} from '../../api/apiContext'
@@ -33,12 +34,8 @@ function CreateBlueprintScreen() {
 	return (
 		<RootContainer>
 			<Typography variant="h4">{t('CreateBlueprintScreen.title')}</Typography>
-			<Typography>{t('CreateBlueprintScreen.text')}</Typography>
 			<Typography>
-				TODO: <br />
-				1) Explain how to add fields ({'{{something}}'}) into document.
-				<br />
-				2) explain that document will be shared with our service account.
+				<Markdown>{t('CreateBlueprintScreen.textMd')}</Markdown>
 			</Typography>
 			{createBlueprintTask.isRejected && createBlueprintTask.error && (
 				<RetryableError

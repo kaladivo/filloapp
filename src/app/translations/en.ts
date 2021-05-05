@@ -115,7 +115,14 @@ export default {
 	},
 	'CreateBlueprintScreen': {
 		'title': 'Create new template',
-		'text': 'TODO',
+		'textMd':
+			'Here you can create a new template. It is easy:  \n' +
+			'1. Connect any document from your google drive\n' +
+			'2. To create a field simply wrap the field text into curly bracket:  \n' +
+			'\tExample: name → &#123;&#123;name&#125;&#125;\n' +
+			'3. You can then set up the template in app. Is it number, date or text?\n' +
+			'4. Your field will be replaced by filled field during the document export.  \n' +
+			'\tExample: &#123;&#123;name&#125;&#125; → Paul\n',
 		'error': 'Error while creating template',
 		'pickerTitle': 'Pick template document',
 		'pickerLabel': 'Pick template document',

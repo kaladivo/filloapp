@@ -81,6 +81,7 @@
 		"react-google-button": "^0.7.1",
 		"react-i18next": "^11.5.0",
 		"react-json-view": "^1.19.1",
+		"react-markdown": "^6.0.1",
 		"react-router-dom": "^5.1.2",
 		"react-scripts": "3.4.1",
 		"sendmail": "^1.6.1",
