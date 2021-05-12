@@ -91,14 +91,14 @@ function EditBlueprintForm({
 		if (!submitTask.isRejected || !submitTask.error) return
 		enqueueSnackbar(t(t('EditBlueprintScreen.updateError')), {variant: 'error'})
 		sentry.captureException(submitTask.error, {extra: {blueprint}})
-	}, [submitTask.isRejected, submitTask.error, enqueueSnackbar, t])
+	}, [submitTask.isRejected, submitTask.error, enqueueSnackbar, blueprint, t])
 
 	// When error while deleting
 	useEffect(() => {
 		if (!deleteTask.isRejected || !deleteTask.error) return
 		enqueueSnackbar(t(t('EditBlueprintScreen.deleteError')), {variant: 'error'})
 		sentry.captureException(deleteTask.error, {extra: {blueprint}})
-	}, [deleteTask.error, enqueueSnackbar, t, deleteTask.isRejected])
+	}, [deleteTask.error, enqueueSnackbar, t, deleteTask.isRejected, blueprint])
 
 	const onSubmit = useCallback(
 		(e) => {

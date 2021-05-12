@@ -75,7 +75,10 @@ function AuthProvider({children}: {children: React.ReactNode}) {
 					setBearer(response.data.bearer)
 				})
 				.catch((e) => {
-					sentry.captureException(e, {extra: {bearer}, level: Severity.Info})
+					sentry.captureException(e, {
+						extra: {bearerToUse},
+						level: Severity.Info,
+					})
 					console.warn('Error refreshing user. Logging out', e)
 					logout()
 				})

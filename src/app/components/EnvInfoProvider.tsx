@@ -47,7 +47,7 @@ function EnvInfoProvider({children}: {children: React.ReactNode}) {
 		if (data) {
 			configureFromEnvInfo(data)
 		}
-	}, [fetchEnvInfoTask.data])
+	}, [fetchEnvInfoTask.data, fetchEnvInfoTask])
 
 	if (!fetchEnvInfoTask.data) {
 		return <Typography>{t('common.loading')} Env info</Typography>
