@@ -231,20 +231,28 @@ export async function getFolderInfo({
 	}
 }
 
+/**
+ * Deletes file on google drive. Does NOT throw an error when the file could not be removed.
+ * @param fileId
+ * @param drive
+ * @return fileId if successful otherwise Error object
+ */
 export async function silentlyDeleteFile({
 	fileId,
 	drive,
 }: {
 	fileId: string
 	drive: driveV3.Drive
-}) {
+}): Promise<{fileId: string; error?: Error}> {
 	console.log('removing file', {fileId})
 	try {
 		await drive.files.delete({
 			fileId,
 		})
+		return {fileId}
 	} catch (e) {
 		// Fail silently
+		return {fileId, error: e}
 	}
 }
 

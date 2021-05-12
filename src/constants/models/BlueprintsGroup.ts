@@ -34,6 +34,7 @@ export interface BlueprintsGroupPreview {
 export interface SubmitSettings {
 	generatePdfs: boolean
 	generateMasterPdf: boolean
+	generateDocuments: boolean
 	outputFolder: {
 		id: string
 		name?: string

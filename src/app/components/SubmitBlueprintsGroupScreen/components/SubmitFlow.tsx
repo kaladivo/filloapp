@@ -96,6 +96,7 @@ function SubmitFlow({blueprintsGroup}: Props) {
 		outputFolder: defaultFolder || null,
 		generateMasterPdf:
 			customerInfo.defaults?.submitSettings?.generateMasterPdf || false,
+		generateDocuments: true,
 	})
 
 	const submitDetailTask = useAsync({
@@ -125,6 +126,7 @@ function SubmitFlow({blueprintsGroup}: Props) {
 				generatePdfs: settings.generatePdfs,
 				generateMasterPdf: settings.generateMasterPdf,
 				outputFolder: {id: settings.outputFolder?.id || ''},
+				generateDocuments: settings.generateDocuments,
 			}
 
 			await api.blueprintsGroups.submit({

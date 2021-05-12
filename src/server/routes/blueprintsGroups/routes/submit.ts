@@ -47,6 +47,7 @@ import {
 	sendPriceAlertIfLimitExceeded,
 	createFolder,
 	createEmptyFolderAndShareItToSA,
+	silentlyDeleteFile,
 } from '../utils'
 import {createAndUploadCombinedPdf} from '../utils/generateMasterPdf'
 import sentry from '../../../utils/sentry'
@@ -75,6 +76,10 @@ const submitGroupSchema = new Schema({
 			type: Boolean,
 		},
 		generateMasterPdf: {
+			required: true,
+			type: Boolean,
+		},
+		generateDocuments: {
 			required: true,
 			type: Boolean,
 		},
@@ -137,6 +142,7 @@ router.post(
 			settings: {
 				generatePdfs,
 				generateMasterPdf,
+				generateDocuments,
 				outputFolder: {id: outputFolderId},
 			},
 		} = ctx.request.body
@@ -250,13 +256,10 @@ router.post(
 		}
 		// TODO finish transition
 
-		console.info('Submitting filled blueprint', 'Starting', {
+		console.info('Submitting filled blueprints', 'Starting', {
 			groupId,
 			generatedValues,
 			outputFolderId,
-		})
-
-		console.info('Submitting filled blueprint', {
 			totalFilesToGenerate: blueprintGroup.blueprints.length,
 		})
 
@@ -291,7 +294,9 @@ router.post(
 					googleDocId,
 				})
 
-				console.info('Submitting filled blueprint', 'Generating PDF')
+				console.info('Submitting filled blueprint', 'Generating PDF', {
+					generatePdfs,
+				})
 				let pdfId: string | null = null
 				if (generatePdfs) {
 					pdfId = await saveDocumentAsPdf({
@@ -336,6 +341,36 @@ router.post(
 				console.info(
 					'Submitting filled blueprint',
 					`Master pdf generated ${masterPdfId}`
+				)
+			}
+
+			if (!generateDocuments) {
+				const documentsToRemove = generated.map((one) => one.googleDocId)
+				console.info(
+					'Submitting filled blueprint',
+					'Removing generated documents'
+				)
+
+				const removeResult = await Promise.all(
+					documentsToRemove.map((documentToRemove) =>
+						silentlyDeleteFile({
+							fileId: documentToRemove,
+							drive: serviceAccountDrive,
+						})
+					)
+				)
+
+				const unsuccessfulRemoves = removeResult.filter((one) => one.error)
+				if (unsuccessfulRemoves.length > 0) {
+					sentry.captureMessage('Error while removing documents')
+					unsuccessfulRemoves.forEach((one) => sentry.captureException(one))
+				}
+
+				console.info(
+					'Submitting filled blueprint',
+					'Removing generated documents',
+					'done',
+					{results: removeResult}
 				)
 			}
 

@@ -77,6 +77,7 @@ export default {
 		'outputName': 'Jméno výstupu',
 		'generatePdfs': 'Vytvořit jednotlivé soubory',
 		'generateMasterPdf': 'Vytvořit jeden souhrnný soubor',
+		'generateDocument': 'Vytvořit vyplněné google documenty',
 		'selectOutputFolder': 'Vybrat složku pro uložení souborů',
 		'selectedOutputFolder': 'Vybraná složka: {{name}}',
 		'loading': 'Vytváříme dokumenty. Může to trvat 10 - 30 vteřin.',

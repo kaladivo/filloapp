@@ -77,6 +77,14 @@ Here goes explanation of what the test is and why are we doing it (optional)
 
 ### Submitting - values - options
 
+### Submitting - google docs can not be accessed
+
+### Submitting - user can not access blueprint
+
+### Submitting - Remove google documents when they should not be generated
+
+### Submitting - Do not remove google documents when they should be generated
+
 ### Submitting - options - folder picker
 
 ### Submitting - options - generating pdfs

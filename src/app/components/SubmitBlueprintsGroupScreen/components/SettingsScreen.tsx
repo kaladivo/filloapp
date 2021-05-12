@@ -42,6 +42,7 @@ const useStyles = makeStyles((theme) =>
 export interface SubmitSettingsState {
 	generatePdfs: boolean
 	generateMasterPdf: boolean
+	generateDocuments: boolean
 	outputFolder: {
 		id: string
 		name?: string
@@ -111,6 +112,17 @@ function SettingsScreen({onNext, values, onChange, onBack}: Props) {
 							checked={values.generateMasterPdf}
 							onChange={(_, checked) => {
 								onChange({...values, generateMasterPdf: checked})
+							}}
+						/>
+					}
+				/>
+				<FormControlLabel
+					label={t('SubmitBlueprintsGroupScreen.generateDocument')}
+					control={
+						<Checkbox
+							checked={values.generateDocuments}
+							onChange={(_, checked) => {
+								onChange({...values, generateDocuments: checked})
 							}}
 						/>
 					}
