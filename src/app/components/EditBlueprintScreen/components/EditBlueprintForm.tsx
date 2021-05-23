@@ -209,6 +209,7 @@ function EditBlueprintForm({
 						onExpand={onExpand}
 						value={field}
 						onChange={onFieldChange}
+						blueprint={blueprint}
 					/>
 				))}
 			</div>

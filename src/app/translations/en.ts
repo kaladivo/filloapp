@@ -154,6 +154,7 @@ export default {
 		'stringTypeLabel': 'Text',
 		'dateTypeLabel': 'Date',
 		'numberTypeLabel': 'Number',
+		'aresTypeLabel': 'Ares field',
 		'selectTypeLabel': 'Predefined options',
 		'multilineLabel': 'Allow inserting newline',
 		'withTimeLabel': 'Include exact time with the date',
@@ -180,6 +181,13 @@ export default {
 		'openFile': 'Open template document',
 		'defaultValueLabel': 'Default value',
 		'defaultValueHelper': 'Leave empty for no default value',
+		'aresOption': {
+			'name': 'name',
+			'obec': 'Obec',
+			'street': 'Street',
+			'helperText':
+				'Leave empty if you dont want this information to be included',
+		},
 	},
 	'BlueprintField': {
 		'valueIsNotNumber': 'Filled must be a number',

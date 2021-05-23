@@ -6,6 +6,7 @@ import blueprints from './blueprints'
 import blueprintsGroups from './blueprintsGroups'
 import customerInfo from './customerInfo'
 import envInfo from './envInfo'
+import ares from './ares'
 import {withValidUserWithCustomerMiddleware} from '../utils/auth'
 import sentry from '../utils/sentry'
 
@@ -42,5 +43,6 @@ router.use(blueprints.routes(), blueprints.allowedMethods())
 router.use(blueprintsGroups.routes(), blueprintsGroups.allowedMethods())
 router.use(customerInfo.routes(), customerInfo.allowedMethods())
 router.use(envInfo.routes(), envInfo.allowedMethods())
+router.use(ares.routes(), ares.allowedMethods())
 
 export default router

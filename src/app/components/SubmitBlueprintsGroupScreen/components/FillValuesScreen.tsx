@@ -11,7 +11,7 @@ interface Props {
 	fields: BlueprintFieldI[]
 	values: {[key: string]: string}
 	onSubmit: () => void
-	onChange: (data: {[id: string]: string}) => void
+	onChange: React.Dispatch<React.SetStateAction<{[p: string]: string}>>
 }
 
 function FillValuesScreen({fields, values, onChange, onSubmit}: Props) {
@@ -29,9 +29,9 @@ function FillValuesScreen({fields, values, onChange, onSubmit}: Props) {
 
 	const onFieldChange = useCallback(
 		(value: string, field: {name: string}) => {
-			onChange({...values, [field.name]: value})
+			onChange((old) => ({...old, [field.name]: value}))
 		},
-		[onChange, values]
+		[onChange]
 	)
 
 	const valuesRef = useRef(values)
@@ -126,6 +126,7 @@ function FillValuesScreen({fields, values, onChange, onSubmit}: Props) {
 								value={values[fieldOptions.name]}
 								field={fieldOptions}
 								onChange={onFieldChange}
+								allFields={fields}
 							/>
 
 							{/* Cd specific start */}

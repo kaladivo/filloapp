@@ -49,6 +49,7 @@
 		"eslint-plugin-react": "^7.19.0",
 		"eslint-plugin-react-hooks": "^3.0.0",
 		"extendable-error": "^0.1.5",
+		"fast-xml-parser": "^3.19.0",
 		"googleapis": "^49.0.0",
 		"http-proxy-middleware": "^1.0.3",
 		"http-status-codes": "^1.4.0",

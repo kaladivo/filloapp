@@ -4,6 +4,8 @@ import DateField from './components/DateField'
 import NumberField from './components/NumberField'
 import SelectField from './components/SelectField'
 import sentry from '../../utils/sentry'
+import AresField from './components/AresField'
+import {BlueprintField as BlueprintFieldI} from '../../../constants/models/Blueprint'
 
 function getCorrectFieldComponent(type: string) {
 	switch (type) {
@@ -15,6 +17,8 @@ function getCorrectFieldComponent(type: string) {
 			return NumberField
 		case 'select':
 			return SelectField
+		case 'ares':
+			return AresField
 		default:
 			console.warn(`Field component for ${type} does not exist`)
 			sentry.captureMessage(`Field component for ${type} does not exist`)
@@ -36,9 +40,16 @@ export interface FieldProps {
 	field: FieldOptions
 	value: string
 	onChange: (newValue: string, field: FieldOptions) => void
+	allFields: BlueprintFieldI[]
 }
 
-function BlueprintField({className, field, value, onChange}: FieldProps) {
+function BlueprintField({
+	className,
+	field,
+	value,
+	onChange,
+	allFields,
+}: FieldProps) {
 	const FieldComponent = getCorrectFieldComponent(field.type)
 
 	if (!FieldComponent) return null
@@ -49,6 +60,7 @@ function BlueprintField({className, field, value, onChange}: FieldProps) {
 			field={field}
 			value={value}
 			onChange={onChange}
+			allFields={allFields}
 		/>
 	)
 }

@@ -10,6 +10,7 @@ import {
 } from '@material-ui/core'
 import {useTranslation} from 'react-i18next'
 import {
+	Blueprint,
 	BlueprintField as BlueprintFieldI,
 	BlueprintField,
 	BlueprintFieldType,
@@ -17,6 +18,7 @@ import {
 import OptionCheckbox from './OptionCheckbox'
 import NumberOptions from './NumberOptions'
 import SelectOptions from './SelectOptions'
+import AresOptions from './AresOptions'
 
 const useStyles = makeStyles(() =>
 	createStyles({
@@ -28,9 +30,10 @@ interface Props {
 	className?: string
 	field: BlueprintField
 	onChange: (field: BlueprintFieldI) => void
+	blueprint: Blueprint
 }
 
-function FieldTypeEdit({className, field, onChange}: Props) {
+function FieldTypeEdit({className, field, onChange, blueprint}: Props) {
 	const classes = useStyles()
 
 	const {t} = useTranslation()
@@ -87,6 +90,9 @@ function FieldTypeEdit({className, field, onChange}: Props) {
 					<MenuItem value="select">
 						{t('EditBlueprintScreen.selectTypeLabel')}
 					</MenuItem>
+					<MenuItem value="ares">
+						{t('EditBlueprintScreen.aresTypeLabel')}
+					</MenuItem>
 				</Select>
 			</FormControl>
 
@@ -123,6 +129,14 @@ function FieldTypeEdit({className, field, onChange}: Props) {
 
 			{field.type === 'select' && (
 				<SelectOptions options={field.options} onChange={handleOptionsChange} />
+			)}
+
+			{field.type === 'ares' && (
+				<AresOptions
+					options={field.options}
+					onChange={handleOptionsChange}
+					blueprint={blueprint}
+				/>
 			)}
 		</div>
 	)

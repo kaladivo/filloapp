@@ -47,8 +47,6 @@ function NumberOptions({options, onChange, className}: Props) {
 		[options, onChange]
 	)
 
-	console.log(options)
-
 	return (
 		<div className={`${classes.root} ${className}`}>
 			<div>

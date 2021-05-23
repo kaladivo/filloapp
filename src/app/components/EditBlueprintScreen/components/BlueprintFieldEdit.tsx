@@ -7,7 +7,10 @@ import {
 } from '@material-ui/core'
 import {useTranslation} from 'react-i18next'
 import {Delete} from '@material-ui/icons'
-import {BlueprintField as BlueprintFieldI} from '../../../../constants/models/Blueprint'
+import {
+	Blueprint,
+	BlueprintField as BlueprintFieldI,
+} from '../../../../constants/models/Blueprint'
 import FieldTypeEdit from './FieldTypeEdit'
 import BlueprintField from '../../BlueprintField'
 
@@ -30,9 +33,16 @@ interface Props {
 	value: BlueprintFieldI
 	onChange: (field: BlueprintFieldI) => void
 	onDelete: (id: string) => void
+	blueprint: Blueprint
 }
 
-function BlueprintFieldEdit({className, value, onChange, onDelete}: Props) {
+function BlueprintFieldEdit({
+	className,
+	value,
+	onChange,
+	onDelete,
+	blueprint,
+}: Props) {
 	const classes = useStyles()
 	const {t} = useTranslation()
 
@@ -71,27 +81,29 @@ function BlueprintFieldEdit({className, value, onChange, onDelete}: Props) {
 				}}
 			/>
 
-			{!(value.type === 'date' && value.options.setNow) && (
-				<BlueprintField
-					field={{
-						type: value.type,
-						name: t('EditBlueprintScreen.defaultValueLabel'),
-						helperText: t('EditBlueprintScreen.defaultValueHelper'),
-						options: value.options,
-						displayName: t('EditBlueprintScreen.defaultValueLabel'),
-						defaultValue: null,
-					}}
-					value={value.defaultValue || ''}
-					onChange={(newDefaultValue) => {
-						onChange({
-							...value,
-							defaultValue: newDefaultValue === '' ? null : newDefaultValue,
-						})
-					}}
-				/>
-			)}
+			{!(value.type === 'date' && value.options.setNow) &&
+				value.type !== 'ares' && (
+					<BlueprintField
+						field={{
+							type: value.type,
+							name: t('EditBlueprintScreen.defaultValueLabel'),
+							helperText: t('EditBlueprintScreen.defaultValueHelper'),
+							options: value.options,
+							displayName: t('EditBlueprintScreen.defaultValueLabel'),
+							defaultValue: null,
+						}}
+						allFields={blueprint.fields}
+						value={value.defaultValue || ''}
+						onChange={(newDefaultValue) => {
+							onChange({
+								...value,
+								defaultValue: newDefaultValue === '' ? null : newDefaultValue,
+							})
+						}}
+					/>
+				)}
 
-			<FieldTypeEdit field={value} onChange={onChange} />
+			<FieldTypeEdit blueprint={blueprint} field={value} onChange={onChange} />
 
 			<IconButton onClick={() => onDelete(value.id)}>
 				<Delete />

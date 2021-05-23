@@ -9,7 +9,10 @@ import {
 	withStyles,
 } from '@material-ui/core'
 import {ExpandMore} from '@material-ui/icons'
-import {BlueprintField as BlueprintFieldI} from '../../../../constants/models/Blueprint'
+import {
+	Blueprint,
+	BlueprintField as BlueprintFieldI,
+} from '../../../../constants/models/Blueprint'
 import BlueprintFieldEdit from './BlueprintFieldEdit'
 
 interface Props {
@@ -19,6 +22,7 @@ interface Props {
 	expanded: boolean
 	onExpand: (value: boolean, blueprint: BlueprintFieldI) => void
 	onDelete: (id: string) => void
+	blueprint: Blueprint
 }
 
 const StyledAccordionSummary = withStyles({
@@ -59,6 +63,7 @@ const useStyles = makeStyles((theme) =>
 function BlueprintField({
 	className,
 	value,
+	blueprint,
 	onChange,
 	expanded,
 	onExpand,
@@ -89,10 +94,11 @@ function BlueprintField({
 					onDelete={onDelete}
 					value={value}
 					onChange={onChange}
+					blueprint={blueprint}
 				/>
 			</AccordionDetails>
 		</Accordion>
 	)
 }
 
-export default React.memo(BlueprintField)
+export default BlueprintField
