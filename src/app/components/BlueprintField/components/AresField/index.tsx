@@ -1,4 +1,4 @@
-import React, {useCallback} from 'react'
+import React, {useCallback, useEffect} from 'react'
 import {
 	Button,
 	CircularProgress,
@@ -8,6 +8,7 @@ import {
 } from '@material-ui/core'
 import {useTranslation} from 'react-i18next'
 import {useAsync} from 'react-async'
+import {useSnackbar} from 'notistack'
 import {FieldProps} from '../../index'
 import {useApiService} from '../../../../api/apiContext'
 
@@ -31,6 +32,7 @@ function AresField({className, field, value, onChange, allFields}: FieldProps) {
 	const {t} = useTranslation()
 	const api = useApiService()
 	const classes = useStyles()
+	const {enqueueSnackbar} = useSnackbar()
 
 	const fetchTask = useAsync({
 		deferFn: useCallback(async () => {
@@ -77,6 +79,14 @@ function AresField({className, field, value, onChange, allFields}: FieldProps) {
 			if (pscTarget) onChange(data.psc, pscTarget)
 		}, [field, allFields, onChange, api]),
 	})
+
+	useEffect(() => {
+		if (fetchTask.isRejected) {
+			enqueueSnackbar(t('EditBlueprintScreen.ares.errorMessage'), {
+				variant: 'error',
+			})
+		}
+	}, [fetchTask.isRejected, enqueueSnackbar])
 
 	return (
 		<div className={`${className} ${classes.root}`}>

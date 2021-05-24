@@ -181,12 +181,19 @@ export default {
 		'openFile': 'Open template document',
 		'defaultValueLabel': 'Default value',
 		'defaultValueHelper': 'Leave empty for no default value',
-		'aresOption': {
-			'name': 'name',
+		'ares': {
+			'name': 'Name',
 			'obec': 'Obec',
 			'street': 'Street',
+			'okres': 'Okres',
+			'castObce': 'Část obce',
+			'mestskaCast': 'Městská část',
+			'domovni': 'Domovní číslo',
+			'orientacni': 'Orientační číslo',
+			'psc': 'PSČ',
 			'helperText':
 				'Leave empty if you dont want this information to be included',
+			'errorMessage': 'Unable to find entity with this ico. Is the ico valid?',
 		},
 	},
 	'BlueprintField': {

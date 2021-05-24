@@ -36,7 +36,7 @@ function AresOptions({options, onChange, className}: Props) {
 				onChange={handleChange('nameTarget')}
 				value={options.nameTarget || ''}
 				label={t('EditBlueprintScreen.ares.name')}
-				helperText={t('EditBlueprintScreen.helperText')}
+				helperText={t('EditBlueprintScreen.ares.helperText')}
 			/>
 			<TextField
 				margin="normal"
@@ -44,7 +44,7 @@ function AresOptions({options, onChange, className}: Props) {
 				onChange={handleChange('obecTarget')}
 				value={options.obecTarget || ''}
 				label={t('EditBlueprintScreen.ares.obec')}
-				helperText={t('EditBlueprintScreen.helperText')}
+				helperText={t('EditBlueprintScreen.ares.helperText')}
 			/>
 			<TextField
 				margin="normal"
@@ -52,15 +52,7 @@ function AresOptions({options, onChange, className}: Props) {
 				onChange={handleChange('streetTarget')}
 				value={options.streetTarget || ''}
 				label={t('EditBlueprintScreen.ares.street')}
-				helperText={t('EditBlueprintScreen.helperText')}
-			/>
-			<TextField
-				margin="normal"
-				fullWidth
-				onChange={handleChange('icoTarget')}
-				value={options.icoTarget || ''}
-				label={t('EditBlueprintScreen.ares.ico')}
-				helperText={t('EditBlueprintScreen.helperText')}
+				helperText={t('EditBlueprintScreen.ares.helperText')}
 			/>
 			<TextField
 				margin="normal"
@@ -68,7 +60,7 @@ function AresOptions({options, onChange, className}: Props) {
 				onChange={handleChange('okresTarget')}
 				value={options.okresTarget || ''}
 				label={t('EditBlueprintScreen.ares.okres')}
-				helperText={t('EditBlueprintScreen.helperText')}
+				helperText={t('EditBlueprintScreen.ares.helperText')}
 			/>
 			<TextField
 				margin="normal"
@@ -76,7 +68,7 @@ function AresOptions({options, onChange, className}: Props) {
 				onChange={handleChange('castObceTarget')}
 				value={options.castObceTarget || ''}
 				label={t('EditBlueprintScreen.ares.castObce')}
-				helperText={t('EditBlueprintScreen.helperText')}
+				helperText={t('EditBlueprintScreen.ares.helperText')}
 			/>
 			<TextField
 				margin="normal"
@@ -84,7 +76,7 @@ function AresOptions({options, onChange, className}: Props) {
 				onChange={handleChange('mestskaCastTarget')}
 				value={options.mestskaCastTarget || ''}
 				label={t('EditBlueprintScreen.ares.mestskaCast')}
-				helperText={t('EditBlueprintScreen.helperText')}
+				helperText={t('EditBlueprintScreen.ares.helperText')}
 			/>
 			<TextField
 				margin="normal"
@@ -92,7 +84,7 @@ function AresOptions({options, onChange, className}: Props) {
 				onChange={handleChange('domovniTarget')}
 				value={options.domovniTarget || ''}
 				label={t('EditBlueprintScreen.ares.domovni')}
-				helperText={t('EditBlueprintScreen.helperText')}
+				helperText={t('EditBlueprintScreen.ares.helperText')}
 			/>
 			<TextField
 				margin="normal"
@@ -100,7 +92,7 @@ function AresOptions({options, onChange, className}: Props) {
 				onChange={handleChange('orientacniTarget')}
 				value={options.orientacniTarget || ''}
 				label={t('EditBlueprintScreen.ares.orientacni')}
-				helperText={t('EditBlueprintScreen.helperText')}
+				helperText={t('EditBlueprintScreen.ares.helperText')}
 			/>
 			<TextField
 				margin="normal"
@@ -108,7 +100,7 @@ function AresOptions({options, onChange, className}: Props) {
 				onChange={handleChange('pscTarget')}
 				value={options.pscTarget || ''}
 				label={t('EditBlueprintScreen.ares.psc')}
-				helperText={t('EditBlueprintScreen.helperText')}
+				helperText={t('EditBlueprintScreen.ares.helperText')}
 			/>
 		</div>
 	)

@@ -188,6 +188,19 @@ export default {
 		'defaultValueLabel': 'Výchozí hodnota',
 		'defaultValueHelper':
 			'Pole nechte prázdné, pokud žádnou výchozí hodnotu nechcete určovat.',
+		'ares': {
+			'name': 'Name',
+			'obec': 'Obec',
+			'street': 'Ulice',
+			'okres': 'Okres',
+			'castObce': 'Část obce',
+			'mestskaCast': 'Městská část',
+			'domovni': 'Domovní číslo',
+			'orientacni': 'Orientační číslo',
+			'psc': 'PSČ',
+			'helperText': 'Zanechte prázdné, pokud nechcete tuto informaci vyplňovat',
+			'errorMessage': 'Ičo nebylo nalezeno v registru.',
+		},
 	},
 	'BlueprintField': {
 		'valueIsNotNumber': 'V tomto poli musí být vyplněno číslo',
