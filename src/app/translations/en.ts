@@ -191,6 +191,7 @@ export default {
 			'domovni': 'House Number',
 			'orientacni': 'Reference nNmber',
 			'psc': 'ZIP Code',
+			'dic': 'DIČ',
 			'helperText':
 				'Leave empty if you dont want this information to be included',
 			'errorMessage': 'Unable to find entity with this ico. Is the ico valid?',

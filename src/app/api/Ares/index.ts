@@ -13,6 +13,7 @@ interface AresResponse {
 	domovni: string
 	orientacni: string
 	psc: string
+	dic: string | null
 }
 
 export default class Ares {

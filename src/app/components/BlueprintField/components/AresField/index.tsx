@@ -65,6 +65,7 @@ function AresField({className, field, value, onChange, allFields}: FieldProps) {
 				(one) => one.name === options.orientacniTarget
 			)
 			const pscTarget = allFields.find((one) => one.name === options.pscTarget)
+			const dicTarget = allFields.find((one) => one.name === options.dicTarget)
 
 			if (obecField) onChange(String(data.obec), obecField)
 			if (streetField) onChange(String(data.ulice), streetField)
@@ -78,6 +79,7 @@ function AresField({className, field, value, onChange, allFields}: FieldProps) {
 			if (domovniTarget) onChange(String(data.domovni), domovniTarget)
 			if (orientacniTarget) onChange(String(data.orientacni), orientacniTarget)
 			if (pscTarget) onChange(String(data.psc), pscTarget)
+			if (dicTarget && data.dic) onChange(data.dic, dicTarget)
 		}, [field, allFields, onChange, api]),
 	})
 

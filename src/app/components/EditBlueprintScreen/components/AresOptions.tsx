@@ -97,6 +97,14 @@ function AresOptions({options, onChange, className}: Props) {
 			<TextField
 				margin="normal"
 				fullWidth
+				onChange={handleChange('dicTarget')}
+				value={options.dicTarget || ''}
+				label={t('EditBlueprintScreen.ares.dic')}
+				helperText={t('EditBlueprintScreen.ares.helperText')}
+			/>
+			<TextField
+				margin="normal"
+				fullWidth
 				onChange={handleChange('pscTarget')}
 				value={options.pscTarget || ''}
 				label={t('EditBlueprintScreen.ares.psc')}

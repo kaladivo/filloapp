@@ -7,6 +7,18 @@ import SendableError from '../../utils/SendableError'
 
 const router = new Router()
 
+async function fetchDIC(dic: string) {
+	try {
+		const url = `https://wwwinfo.mfcr.cz/cgi-bin/ares/darv_bas.cgi?ico=${dic}`
+		const result = await axios.get(url)
+		const data = xml.parse(result.data)
+
+		return data['are:Ares_odpovedi']['are:Odpoved']['D:VBAS']['D:DIC']
+	} catch (e) {
+		return null
+	}
+}
+
 async function fetchIco(ico: string) {
 	const url = `https://wwwinfo.mfcr.cz/cgi-bin/ares/darv_std.cgi?ico=${ico}`
 	const result = await axios.get(url)
@@ -14,7 +26,6 @@ async function fetchIco(ico: string) {
 	const data = xml.parse(result.data)
 
 	const root = data['are:Ares_odpovedi']['are:Odpoved']['are:Zaznam']
-	console.log(root)
 	const identification = root['are:Identifikace']['are:Adresa_ARES']
 
 	return {
@@ -28,6 +39,7 @@ async function fetchIco(ico: string) {
 		domovni: identification['dtt:Cislo_domovni'],
 		orientacni: identification['dtt:Cislo_orientacni'],
 		psc: identification['dtt:PSC'],
+		dic: await fetchDIC(ico),
 	}
 }
 
