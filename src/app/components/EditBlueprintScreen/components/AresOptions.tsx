@@ -97,6 +97,14 @@ function AresOptions({options, onChange, className}: Props) {
 			<TextField
 				margin="normal"
 				fullWidth
+				onChange={handleChange('longAddressTarget')}
+				value={options.longAddressTarget || ''}
+				label={t('EditBlueprintScreen.ares.longAddress')}
+				helperText={t('EditBlueprintScreen.ares.helperText')}
+			/>
+			<TextField
+				margin="normal"
+				fullWidth
 				onChange={handleChange('dicTarget')}
 				value={options.dicTarget || ''}
 				label={t('EditBlueprintScreen.ares.dic')}

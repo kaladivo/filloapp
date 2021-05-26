@@ -2,7 +2,7 @@ import {AxiosInstance, AxiosPromise} from 'axios'
 
 import * as aresUrls from '../../../constants/api/ares'
 
-interface AresResponse {
+export interface AresResponse {
 	name: string
 	ico: string
 	okres: string

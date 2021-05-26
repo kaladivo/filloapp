@@ -192,6 +192,7 @@ export default {
 			'orientacni': 'Reference nNmber',
 			'psc': 'ZIP Code',
 			'dic': 'DIČ',
+			'longAddress': 'Complete address',
 			'helperText':
 				'Leave empty if you dont want this information to be included',
 			'errorMessage': 'Unable to find entity with this ico. Is the ico valid?',

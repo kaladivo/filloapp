@@ -198,6 +198,7 @@ export default {
 			'domovni': 'Domovní číslo',
 			'orientacni': 'Orientační číslo',
 			'psc': 'PSČ',
+			'longAddress': 'Dlouhá (kompletní) adresa',
 			'dic': 'DIČ',
 			'helperText': 'Zanechte prázdné, pokud nechcete tuto informaci vyplňovat',
 			'errorMessage': 'Ičo nebylo nalezeno v registru.',

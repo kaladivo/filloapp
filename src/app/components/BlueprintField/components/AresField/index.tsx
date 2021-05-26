@@ -11,6 +11,7 @@ import {useAsync} from 'react-async'
 import {useSnackbar} from 'notistack'
 import {FieldProps} from '../../index'
 import {useApiService} from '../../../../api/apiContext'
+import {AresResponse} from '../../../../api/Ares'
 
 const useStyles = makeStyles((theme) =>
 	createStyles({
@@ -28,11 +29,48 @@ const useStyles = makeStyles((theme) =>
 	})
 )
 
+function toStringOrEmpty(value: any) {
+	return value ? String(value) : ''
+}
+
+function getLongAddress(data: AresResponse) {
+	let addressString = `${toStringOrEmpty(data.ulice || data.obec)}`
+
+	if (data.domovni && data.orientacni)
+		addressString += ` ${data.domovni}/${data.orientacni}`
+	if (data.domovni) addressString += ` ${data.domovni}`
+	if (data.orientacni) addressString += ` ${data.orientacni}`
+
+	addressString += `, ${data.psc}`
+	if (data.mestskaCast) addressString += ` ${data.mestskaCast}`
+	if (data.mestskaCast && data.castObce) addressString += ` -`
+	if (data.castObce) addressString += ` ${data.castObce}`
+
+	if (data.obec) addressString += `, ${data.obec}`
+
+	return addressString
+}
+
 function AresField({className, field, value, onChange, allFields}: FieldProps) {
 	const {t} = useTranslation()
 	const api = useApiService()
 	const classes = useStyles()
 	const {enqueueSnackbar} = useSnackbar()
+
+	const fillField = useCallback(
+		({
+			newValue,
+			targetName,
+		}: {
+			newValue?: string | null
+			targetName?: string | null
+		}) => {
+			const target = allFields.find((one) => one.name === targetName)
+			const newValueString = toStringOrEmpty(newValue)
+			if (target && newValueString) onChange(newValueString, target)
+		},
+		[onChange, allFields]
+	)
 
 	const fetchTask = useAsync({
 		deferFn: useCallback(async () => {
@@ -40,46 +78,28 @@ function AresField({className, field, value, onChange, allFields}: FieldProps) {
 			const {data} = aresResponse
 
 			const {options} = field
-			const nameField = allFields.find((one) => one.name === options.nameTarget)
-			const obecField = allFields.find((one) => one.name === options.obecTarget)
-			const streetField = allFields.find(
-				(one) => one.name === options.streetTarget
-			)
-			const icoTarget = allFields.find((one) => one.name === options.icoTarget)
-			const okresTarget = allFields.find(
-				(one) => one.name === options.okresTarget
-			)
-			const castObceTarget = allFields.find(
-				(one) => one.name === options.castObceTarget
-			)
-			const mestskaCastTarget = allFields.find(
-				(one) => one.name === options.mestskaCastTarget
-			)
-			const streetTarget = allFields.find(
-				(one) => one.name === options.streetTarget
-			)
-			const domovniTarget = allFields.find(
-				(one) => one.name === options.domovniTarget
-			)
-			const orientacniTarget = allFields.find(
-				(one) => one.name === options.orientacniTarget
-			)
-			const pscTarget = allFields.find((one) => one.name === options.pscTarget)
-			const dicTarget = allFields.find((one) => one.name === options.dicTarget)
 
-			if (obecField) onChange(String(data.obec), obecField)
-			if (streetField) onChange(String(data.ulice), streetField)
-			if (nameField) onChange(String(data.name), nameField)
-			if (icoTarget) onChange(String(data.ico), icoTarget)
-			if (okresTarget) onChange(String(data.okres), okresTarget)
-			if (castObceTarget) onChange(String(data.castObce), castObceTarget)
-			if (mestskaCastTarget)
-				onChange(String(data.mestskaCast), mestskaCastTarget)
-			if (streetTarget) onChange(String(data.ulice), streetTarget)
-			if (domovniTarget) onChange(String(data.domovni), domovniTarget)
-			if (orientacniTarget) onChange(String(data.orientacni), orientacniTarget)
-			if (pscTarget) onChange(String(data.psc), pscTarget)
-			if (dicTarget && data.dic) onChange(data.dic, dicTarget)
+			fillField({newValue: data.name, targetName: options.nameTarget})
+			fillField({newValue: data.obec, targetName: options.obecTarget})
+			fillField({newValue: data.ulice, targetName: options.streetTarget})
+			fillField({newValue: data.ico, targetName: options.icoTarget})
+			fillField({newValue: data.okres, targetName: options.okresTarget})
+			fillField({newValue: data.castObce, targetName: options.castObceTarget})
+			fillField({
+				newValue: data.mestskaCast,
+				targetName: options.mestskaCastTarget,
+			})
+			fillField({newValue: data.domovni, targetName: options.domovniTarget})
+			fillField({
+				newValue: data.orientacni,
+				targetName: options.orientacniTarget,
+			})
+			fillField({newValue: data.psc, targetName: options.pscTarget})
+			fillField({newValue: data.dic, targetName: options.dicTarget})
+			fillField({
+				newValue: getLongAddress(data),
+				targetName: options.longAddressTarget,
+			})
 		}, [field, allFields, onChange, api]),
 	})
 
