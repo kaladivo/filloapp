@@ -263,6 +263,19 @@ export default {
 				'text': 'lorem shit',
 			},
 		},
+		'contactForm': {
+			'title': 'Napište nám',
+			'subtitle': 'My se vám ozveme',
+			'optional': 'Není povinné',
+			'mail': 'Váš e-mail',
+			'phoneNumber': 'Vaše telefoní číslo',
+			'message': 'Jak byste chtěli aplikaci využívat?',
+			'name': 'Vaše jméno',
+			'consent':
+				'Kliknutím na tlačítko potvrdit souhlasíte, že Vás můžeme kontaktovat na Vámi poskytnuté údaje',
+			'success': 'Zpráva byla odeslána. Brzy se vám ozveme',
+			'error': 'Něco se stalo. Prosím zkuste to znovu',
+		},
 		'footer': {
 			'menu': {
 				'contactUs': 'Napište nám',

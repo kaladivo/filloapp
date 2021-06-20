@@ -6,6 +6,7 @@ import BlueprintsGroupsService from './BlueprintsGroups'
 import CustomerInfoService from './customerInfo'
 import EnvInfo from './envInfo'
 import Ares from './Ares'
+import ContactForm from './contactForm'
 
 export class ApiService {
 	auth: AuthService
@@ -14,6 +15,7 @@ export class ApiService {
 	customerInfo: CustomerInfoService
 	envInfo: EnvInfo
 	ares: Ares
+	contactForm: ContactForm
 
 	_axiosInstance: AxiosInstance
 
@@ -32,6 +34,7 @@ export class ApiService {
 		this.customerInfo = new CustomerInfoService(axiosInstance)
 		this.envInfo = new EnvInfo(axiosInstance)
 		this.ares = new Ares(axiosInstance)
+		this.contactForm = new ContactForm(axiosInstance)
 	}
 
 	testSentry = () => {

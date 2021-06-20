@@ -258,6 +258,19 @@ export default {
 				'text': 'lorem shit',
 			},
 		},
+		'contactForm': {
+			'title': 'Contact us',
+			'subtitle': 'We will get back to you',
+			'optional': 'Is optional',
+			'mail': 'Your e-mail',
+			'phoneNumber': 'Your phone number',
+			'message': 'Tell us about how you want to use the app',
+			'name': 'Your name',
+			'consent':
+				'By clicking the submit button you agree that submitted information will be used for marketing purposes',
+			'success': 'Your contact form was submitted. We will get to you soon',
+			'error': 'There was an error while submitting the form. Please try again',
+		},
 		'footer': {
 			'menu': {
 				'contactUs': 'Contact Us',
