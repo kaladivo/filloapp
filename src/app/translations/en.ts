@@ -205,6 +205,8 @@ export default {
 		'noDateSelected': 'No date selected',
 	},
 	'Presentation': {
+		'showcaseVideoSrc':
+			'https://www.loom.com/embed/6a3fb642620f4d5ca8ad90266836d363',
 		'menu': {
 			'about': 'About',
 			'faq': 'FAQ',

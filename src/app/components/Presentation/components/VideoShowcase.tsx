@@ -1,6 +1,7 @@
 import React from 'react'
 import clsx from 'clsx'
 import {Container, createStyles, makeStyles} from '@material-ui/core'
+import {useTranslation} from 'react-i18next'
 
 const useStyles = makeStyles(() =>
 	createStyles({
@@ -25,6 +26,7 @@ interface Props {
 }
 
 function VideoShowcase({className}: Props): JSX.Element {
+	const {t} = useTranslation()
 	const classes = useStyles()
 	return (
 		<Container
@@ -36,7 +38,7 @@ function VideoShowcase({className}: Props): JSX.Element {
 				<iframe
 					className={classes.video}
 					title="video"
-					src="https://www.loom.com/embed/6a3fb642620f4d5ca8ad90266836d363"
+					src={t('Presentation.showcaseVideoSrc')}
 					frameBorder="0"
 					// @ts-ignore
 					webkitallowfullscreen

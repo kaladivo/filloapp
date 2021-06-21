@@ -211,6 +211,8 @@ export default {
 		'noDateSelected': 'Vyberte datum',
 	},
 	'Presentation': {
+		'showcaseVideoSrc':
+			'https://www.loom.com/embed/86e4192f59024657a3d1699aaf8478bc',
 		'menu': {
 			'about': 'O nás',
 			'faq': 'Časté otázky',
