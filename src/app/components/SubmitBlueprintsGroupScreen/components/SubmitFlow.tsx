@@ -97,7 +97,7 @@ function SubmitFlow({blueprintsGroup}: Props) {
 		generateMasterPdf:
 			customerInfo.defaults?.submitSettings?.generateMasterPdf || false,
 		generateDocuments:
-			customerInfo.defaults?.submitSettings?.generateGoogleDocuments || true,
+			customerInfo.defaults?.submitSettings?.generateGoogleDocuments || false,
 	})
 
 	const submitDetailTask = useAsync({
