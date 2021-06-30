@@ -19,6 +19,7 @@ export interface CustomerInfo {
 		submitSettings?: {
 			generatePdfs?: boolean
 			generateMasterPdf?: boolean
+			generateGoogleDocuments?: boolean
 			folder?: {
 				id: string
 				name: string
