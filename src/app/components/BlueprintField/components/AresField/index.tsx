@@ -38,8 +38,8 @@ function getLongAddress(data: AresResponse) {
 
 	if (data.domovni && data.orientacni)
 		addressString += ` ${data.domovni}/${data.orientacni}`
-	if (data.domovni) addressString += ` ${data.domovni}`
-	if (data.orientacni) addressString += ` ${data.orientacni}`
+	else if (data.domovni) addressString += ` ${data.domovni}`
+	else if (data.orientacni) addressString += ` ${data.orientacni}`
 
 	addressString += `, ${data.psc}`
 	if (data.mestskaCast) addressString += ` ${data.mestskaCast}`
