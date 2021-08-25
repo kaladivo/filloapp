@@ -51,6 +51,7 @@ import {
 } from '../utils'
 import {createAndUploadCombinedPdf} from '../utils/generateMasterPdf'
 import sentry from '../../../utils/sentry'
+import {inSequence} from '../../../utils/PromiseUtils'
 
 const router = new Router()
 
@@ -180,7 +181,7 @@ router.post(
 		}
 
 		const blueprintsWithoutPermissions = (
-			await Promise.all(
+			await inSequence(
 				blueprintGroup.blueprints.map(async (blueprint) => {
 					const hasPermissions = await canBeRed({
 						drive: serviceAccountDrive,
@@ -188,7 +189,8 @@ router.post(
 					})
 
 					return {blueprint, hasPermissions}
-				})
+				}),
+				{delayBetweenMs: 500}
 			)
 		).filter((one) => !one.hasPermissions)
 
@@ -322,7 +324,9 @@ router.post(
 
 		try {
 			console.info('Submitting filled blueprint', 'Inserting submits')
-			const generated = await Promise.all(generateBlueprintTasks)
+			const generated = await inSequence(generateBlueprintTasks, {
+				delayBetweenMs: 500,
+			})
 			console.info('Submitting filled blueprint', 'Submits inserted')
 
 			console.info('Submitting filled blueprint', {generateMasterPdf})
@@ -351,13 +355,14 @@ router.post(
 					'Removing generated documents'
 				)
 
-				const removeResult = await Promise.all(
+				const removeResult = await inSequence(
 					documentsToRemove.map((documentToRemove) =>
 						silentlyDeleteFile({
 							fileId: documentToRemove,
 							drive: serviceAccountDrive,
 						})
-					)
+					),
+					{delayBetweenMs: 500}
 				)
 
 				const unsuccessfulRemoves = removeResult.filter((one) => one.error)
