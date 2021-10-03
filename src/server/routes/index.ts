@@ -11,15 +11,20 @@ import service from './service'
 import contactForm from './contactForm'
 import {withValidUserWithCustomerMiddleware} from '../utils/auth'
 import sentry from '../utils/sentry'
+import {extractDbClient, withDataDbMiddleware} from '../dbService'
 
 const router = new Router()
 
 router.prefix(process.env.REACT_APP_API || '/api')
 
-router.get('/', async (ctx, next) => {
+router.get('/', withDataDbMiddleware, async (ctx, next) => {
+	const db = extractDbClient(ctx)
+	const currentDb = await db.query(`SELECT current_database() as db`)
+
 	ctx.body = {
 		message: '😇 Api is up and running 🤩 🤩',
 		currentEnvironment: process.env.NODE_ENV,
+		currentDatabase: currentDb.rows[0].db,
 		version: process.env.VERSION,
 	}
 	await next()
