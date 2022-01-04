@@ -31,7 +31,7 @@ async function getBlueprintByFileIdAndUser({
                json_agg(json_build_object('id', blueprint_field.id, 'name', blueprint_field.name, 'type',
                                           blueprint_field.type, 'displayName', blueprint_field.display_name,
                                           'helperText', blueprint_field.helper_text, 'defaultValue', blueprint_field.default_value, 'options',
-                                          blueprint_field.options))           as fields,
+                                          blueprint_field.options) order by blueprint_field.name)           as fields,
                json_build_object('email', u.email, 'info', u.additional_info) as owner
         from blueprint
                  left join blueprint_field on blueprint.id = blueprint_field.blueprint_id
@@ -65,7 +65,7 @@ export async function getBlueprintById({
                json_agg(json_build_object('id', blueprint_field.id, 'name', blueprint_field.name, 'type',
                                           blueprint_field.type, 'displayName', blueprint_field.display_name,
                                           'helperText', blueprint_field.helper_text, 'defaultValue', blueprint_field.default_value, 'options',
-                                          blueprint_field.options))           as fields,
+                                          blueprint_field.options) order by blueprint_field.name)           as fields,
                json_build_object('email', u.email, 'info', u.additional_info) as owner
         from blueprint
                  left join blueprint_field on blueprint.id = blueprint_field.blueprint_id
@@ -261,7 +261,7 @@ export async function listBlueprints({
                      json_agg(json_build_object('id', blueprint_field.id, 'name', blueprint_field.name, 'type',
                                                 blueprint_field.type, 'displayName', blueprint_field.display_name,
                                                 'helperText', blueprint_field.helper_text, 'defaultValue', blueprint_field.default_value, 'options',
-                                                blueprint_field.options))           as fields,
+                                                blueprint_field.options) order by blueprint_field.name)           as fields,
                      json_build_object('email', u.email, 'info', u.additional_info) as owner
               from blueprint
                        left join blueprint_field on blueprint.id = blueprint_field.blueprint_id
@@ -308,7 +308,7 @@ export async function searchBlueprints({
                      json_agg(json_build_object('id', blueprint_field.id, 'name', blueprint_field.name, 'type',
                                                 blueprint_field.type, 'displayName', blueprint_field.display_name,
                                                 'helperText', blueprint_field.helper_text, 'defaultValue', blueprint_field.default_value,
-                                                blueprint_field.options))           as fields,
+                                                blueprint_field.options) order by blueprint_field.name)           as fields,
                      json_build_object('email', u.email, 'info', u.additional_info) as owner
               from blueprint
                        left join blueprint_field on blueprint.id = blueprint_field.blueprint_id
