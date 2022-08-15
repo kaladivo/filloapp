@@ -9,14 +9,17 @@ build_app:
   image: docker:1.11
   services:
     - docker:dind
+  before_script:
+    - NICE_TIME=$(echo $CI_COMMIT_TIMESTAMP | cut -f1 -d"+" | tr ":" "-" | tr '[:upper:]' '[:lower:]')
+    - export DOCKER_IMAGE_TAG_NEW="${NICE_TIME}-${CI_COMMIT_SHORT_SHA}"
   script:
-    - echo "VERSION=$CI_COMMIT_SHA" > .env
-    - echo "REACT_APP_VERSION=$CI_COMMIT_SHA" >> .env
+    - echo "VERSION=$DOCKER_IMAGE_TAG_NEW" > .env
+    - echo "REACT_APP_VERSION=$DOCKER_IMAGE_TAG_NEW" >> .env
     - echo "$REACT_APP_ENV" | tr -d '\r' >> .env
     - docker build -t $CI_REGISTRY_IMAGE:latest .
-    - docker tag $CI_REGISTRY_IMAGE:latest $CI_REGISTRY_IMAGE:$CI_BUILD_TAG
+    - docker tag $CI_REGISTRY_IMAGE:latest $CI_REGISTRY_IMAGE:$DOCKER_IMAGE_TAG_NEW
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker push $CI_REGISTRY_IMAGE:$CI_BUILD_TAG
+    - docker push $CI_REGISTRY_IMAGE:$DOCKER_IMAGE_TAG_NEW
 
 deploy:stage:
   image: curlimages/curl:7.72.0
@@ -24,7 +27,7 @@ deploy:stage:
     - master
   stage: deploy
   script:
-    - curl "$WEBHOOK_DEPLOY_STAGE$CI_BUILD_TAG" -f
+    - curl "$WEBHOOK_DEPLOY_STAGE$DOCKER_IMAGE_TAG_NEW" -f
 
 deploy:prod:
   image: curlimages/curl:7.72.0
@@ -33,4 +36,4 @@ deploy:prod:
   when: manual
   stage: deploy
   script:
-    - curl "$WEBHOOK_DEPLOY_PROD$CI_BUILD_TAG" -f
+    - curl "$WEBHOOK_DEPLOY_PROD$DOCKER_IMAGE_TAG_NEW" -f
